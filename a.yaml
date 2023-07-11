@@ -1,0 +1,88 @@
+service: divkit
+title: VGSL
+
+arcanum:
+  auto_merge:
+    enabled: false
+    requirements:
+      - system: arcanum
+        type: comment_issues_closed
+        disabling_policy: denied
+
+      - system: arcanum
+        type: st_issue_linked
+        disabling_policy: denied
+        data:
+          in_commit_message: true
+
+      - system: teamcity-common
+        type: MobileNew_Monorepo_DivKit_iOS_PullRequests
+        alias: DivKit iOS Pull Requests
+        disabling_policy: denied
+        restartable: true
+        data:
+          branch_prefix: divkit/ios
+          strategy: merge-head
+
+      - system: teamcity-common
+        type: MobileNew_Monorepo_DivKit_iOS_SnapshotTests
+        alias: DivKit iOS Snapshot Tests
+        disabling_policy: denied
+        restartable: true
+        data:
+          branch_prefix: divkit/ios
+          strategy: merge-head
+
+      - system: teamcity-common
+        type: MobileNew_Monorepo_DivKit_iOS_CheckAPI
+        alias: DivKit iOS Check API
+        disabling_policy: need_reason
+        restartable: true
+        data:
+          branch_prefix: divkit/ios
+          strategy: merge-head
+
+  review:
+    auto_assign: false
+    disabling_policy: denied
+    min_approvers_count: 1
+    skip_review_for: robot
+    groups:
+      - name: ios-reviewers
+        roles: developer_ios
+
+    rules:
+      - subpaths: "**"
+        reviewers:
+          - name: ios-reviewers
+            ship: 1
+            assign: 1
+
+ci:
+  secret: sec-01g5vmdm0dfzmdmwdzyx5e0w2r
+  runtime:
+    sandbox-owner: DIVKIT
+
+  triggers:
+    - on: pr
+      flow: pr_checks
+      into:
+        - trunk
+        - release-branch
+
+  flows:
+    pr_checks:
+      title: Pull Request Checks
+      jobs:
+        run_checks:
+          title: Run Checks
+          task: common/misc/run_command
+          input:
+            config:
+              arc_mount_config:
+                enabled: true
+              logs_config:
+                stdout_ci_badge: true
+                redirect_stderr_to_stdout: true
+              cmd_line: |
+                divkit/internal/scripts/check_pr.sh "${context.launch_pull_request_info.pull_request.summary}" "${not_null(context.launch_pull_request_info.pull_request.description, '')}"
