@@ -15,30 +15,14 @@ let package = Package(
   targets: [
     .target(
       name: "BaseTinyPublic",
-      path: "BaseTinyPublic",
-      swiftSettings: [
-        .unsafeFlags(
-          [
-            "-emit-module-interface",
-            "-enable-library-evolution",
-          ]
-        )
-      ]
+      path: "BaseTinyPublic"
     ),
     .target(
       name: "BaseUIPublic",
       dependencies: [
         "BaseTinyPublic",
       ],
-      path: "BaseUIPublic",
-      swiftSettings: [
-        .unsafeFlags(
-          [
-            "-emit-module-interface",
-            "-enable-library-evolution",
-          ]
-        )
-      ]
+      path: "BaseUIPublic"
     ),
     .target(
       name: "BasePublic",
@@ -46,30 +30,14 @@ let package = Package(
         "BaseTinyPublic",
         "BaseUIPublic",
       ],
-      path: "BasePublic",
-      swiftSettings: [
-        .unsafeFlags(
-          [
-            "-emit-module-interface",
-            "-enable-library-evolution",
-          ]
-        )
-      ]
+      path: "BasePublic"
     ),
     .target(
       name: "CommonCorePublic",
       dependencies: [
         "BasePublic",
       ],
-      path: "CommonCorePublic",
-      swiftSettings: [
-        .unsafeFlags(
-          [
-            "-emit-module-interface",
-            "-enable-library-evolution",
-          ]
-        )
-      ]
+      path: "CommonCorePublic"
     ),
 
     .target(
@@ -77,15 +45,7 @@ let package = Package(
       dependencies: [
         "BasePublic",
       ],
-      path: "NetworkingPublic",
-      swiftSettings: [
-        .unsafeFlags(
-          [
-            "-emit-module-interface",
-            "-enable-library-evolution",
-          ]
-        )
-      ]
+      path: "NetworkingPublic"
     ),
   ]
 )

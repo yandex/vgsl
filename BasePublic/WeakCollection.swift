@@ -73,7 +73,7 @@ extension WeakCollection: ExpressibleByArrayLiteral {
 }
 
 extension WeakCollection {
-  public init<T: Sequence>(_ other: T) where T.Element == Element {
+  public init<U: Sequence>(_ other: U) where U.Element == Element {
     array = other.map { Weak(value: $0 as AnyObject) }
   }
 }

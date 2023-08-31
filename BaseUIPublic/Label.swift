@@ -14,6 +14,8 @@ public final class Label: UIView {
     }
   }
 
+  public private(set) var textLayout: AttributedStringLayout<URL>?
+
   public var attributedText: NSAttributedString? {
     get {
       _attributedText
@@ -172,7 +174,14 @@ public final class Label: UIView {
   public override func draw(_ rect: CGRect) {
     let context = UIGraphicsGetCurrentContext()!
     let textToDraw = attributedText ?? NSAttributedString()
-    textToDraw.draw(inContext: context, rect: rect)
+    textLayout = textToDraw.drawAndGetLayout(
+      inContext: context,
+      rect: rect,
+      actionKey: .link,
+      backgroundKey: nil,
+      borderKey: nil,
+      selectedRange: nil
+    )
   }
 
   public override func sizeThatFits(_ size: CGSize) -> CGSize {

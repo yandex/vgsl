@@ -314,6 +314,45 @@ extension JSONObject: CustomStringConvertible {
   }
 }
 
+extension JSONObject: ExpressibleByStringLiteral {
+  public init(stringLiteral value: String) {
+    self = .string(value)
+  }
+
+  public init(_ string: String) {
+    self = .string(string)
+  }
+}
+
+extension JSONObject: ExpressibleByArrayLiteral {
+  public typealias ArrayLiteralElement = JSONObject
+  public init(arrayLiteral elements: JSONObject...) {
+    self = .array(elements)
+  }
+}
+
+extension JSONObject: ExpressibleByFloatLiteral {
+  public typealias FloatLiteralType = Double
+  public init(floatLiteral value: Double) {
+    self = .number(value)
+  }
+}
+
+extension JSONObject: ExpressibleByIntegerLiteral {
+  public typealias IntegerLiteralType = Int
+  public init(integerLiteral value: Int) {
+    self = .number(Double(value))
+  }
+}
+
+extension JSONObject: ExpressibleByDictionaryLiteral {
+  public typealias Key = String
+  public typealias Value = JSONObject
+  public init(dictionaryLiteral elements: (String, JSONObject)...) {
+    self = .object(Dictionary(elements, uniquingKeysWith: { $1 }))
+  }
+}
+
 extension Dictionary where Key == String {
   public func typedJSON(fallback: (Any) -> JSONObject? = { _ in nil }) -> [String: JSONObject] {
     typedJSON(fallback: fallback, errorHandler: { _ in })

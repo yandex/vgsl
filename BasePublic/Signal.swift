@@ -169,6 +169,20 @@ extension Signal {
   }
 
   @inlinable
+  public func delay(_ interval: TimeInterval) -> Signal {
+    Signal { observer in
+      var cancellable: Cancellable?
+      let disposable = addObserver { t in
+        cancellable = after(interval, onQueue: .main) { observer.action(t) }
+      }
+      return Disposable {
+        disposable.dispose()
+        cancellable?.cancel()
+      }
+    }
+  }
+
+  @inlinable
   public func scan<U>(
     _ accumulator: U,
     updateAccumulator: @escaping (inout U, T) -> Void

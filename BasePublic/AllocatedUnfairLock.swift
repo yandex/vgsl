@@ -13,6 +13,7 @@ public struct AllocatedUnfairLock<State>: @unchecked Sendable {
   @usableFromInline
   let buffer: Buffer
 
+  @inlinable
   public init(uncheckedState initialState: State) {
     buffer = Buffer.create(minimumCapacity: 1) { buffer in
       buffer.withUnsafeMutablePointerToElements { lock in

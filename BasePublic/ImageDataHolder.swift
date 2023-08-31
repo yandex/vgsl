@@ -1,3 +1,4 @@
+// Copyright 2023 Yandex LLC. All rights reserved.
 import Foundation
 
 final class ImageDataHolder: ImageHolder {

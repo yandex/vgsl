@@ -172,6 +172,41 @@ extension ObservableProperty {
   }
 }
 
+extension ObservableProperty where T: Equatable {
+  /// Stops `newValues` from calling observers after receiving value equal to the current one.
+  /// `ObservableVariables` derived from the `self` will follow the same behaviour.
+  public func skipRepeats() -> Self {
+    Self(
+      getter: getter,
+      setter: setter,
+      newValues: newValues.skipRepeats(initialValue: getter)
+    )
+  }
+
+  public enum Modification {
+    /// Applies `skipRepeats` on current `ObservableProperty`
+    case skipRepeats
+  }
+
+  /// This initializer allows to add modifications declared by `Modification` enum
+  @inlinable
+  public init(initialValue: T, _ mods: [Modification]) {
+    var property = Self(initialValue: initialValue)
+    mods.forEach { mod in
+      switch mod {
+      case .skipRepeats:
+        property = property.skipRepeats()
+      }
+    }
+    self = property
+  }
+
+  @inlinable
+  public init(wrappedValue: T, _ mods: Modification...) {
+    self.init(initialValue: wrappedValue, mods)
+  }
+}
+
 extension ObservableProperty where T: ExpressibleByArrayLiteral {
   public init() {
     self.init(initialValue: [])

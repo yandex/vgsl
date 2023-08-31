@@ -41,7 +41,7 @@ extension SettingProperty where T: RawRepresentable, T.RawValue: KeyValueDirectS
   }
 }
 
-extension SettingProperty where T: NSCoding {
+extension SettingProperty where T: Archivable {
   @inlinable
   public static func encodedStorage(
     _ storage: KeyValueStorage,
@@ -54,7 +54,16 @@ extension SettingProperty where T: NSCoding {
         assertionFailure()
         return nil
       }
-      return try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? T)
+      if #available(iOS 11, *) {
+        do {
+          return try NSKeyedUnarchiver.unarchivedObject(ofClass: T.self, from: data)
+        } catch let e as NSError {
+          assertionFailure(e.description)
+          return nil
+        }
+      } else {
+        return try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? T
+      }
     }, setter: {
       if let newValue = $0 {
         let encodedValue: Data?
@@ -103,7 +112,7 @@ extension Property where T == Data? {
   }
 }
 
-extension SettingProperty where T: ReferenceConvertible, T.ReferenceType: NSCoding {
+extension SettingProperty where T: ReferenceConvertible, T.ReferenceType: NSSecureCoding {
   @inlinable
   public static func referencedEncodedStorage(
     _ storage: KeyValueStorage,

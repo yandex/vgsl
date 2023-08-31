@@ -150,11 +150,14 @@ extension AccessibilityElement {
     }
   }
 
-  public static func staticText(label: String?) -> AccessibilityElement? {
+  public static func staticText(
+    label: String?,
+    identifier: String? = nil
+  ) -> AccessibilityElement? {
     label.map {
       AccessibilityElement(
         traits: .staticText,
-        strings: Strings(label: $0)
+        strings: Strings(label: $0, identifier: identifier)
       )
     }
   }

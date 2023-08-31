@@ -2,6 +2,12 @@
 
 import CoreGraphics
 
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 public protocol DimensionsFlipping {
   func flipDimensions() -> Self
 }

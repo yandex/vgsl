@@ -56,7 +56,7 @@ private class SyncedCacheStorage<Storage: CacheStorage>: CacheStorage
   where Storage.Item: SizedItem {
   typealias Item = Storage.Item
 
-  private let lock = RWLock()
+  private let lock = AllocatedUnfairLock()
   private let wrapee: Storage
 
   init(wrapee: Storage) {
@@ -64,13 +64,13 @@ private class SyncedCacheStorage<Storage: CacheStorage>: CacheStorage
   }
 
   func add(key: String, item: Item) -> EvictedKeys {
-    lock.write {
+    lock.withLock {
       wrapee.add(key: key, item: item)
     }
   }
 
   func value(for key: String) -> Item? {
-    lock.read {
+    lock.withLock {
       wrapee.value(for: key)
     }
   }

@@ -1,7 +1,7 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
 import CoreGraphics
-@_exported import UIKit
+import UIKit
 
 public typealias Color = RGBAColor
 public typealias SystemColor = UIColor
@@ -9,6 +9,15 @@ public typealias SystemColor = UIColor
 public typealias SystemShadow = NSShadow
 
 public typealias EdgeInsets = UIEdgeInsets
+
+public typealias UserInterfaceLayoutDirection = UIUserInterfaceLayoutDirection
+
+extension UserInterfaceLayoutDirection {
+  @available(iOSApplicationExtension, unavailable)
+  public static var system: UserInterfaceLayoutDirection {
+    UIApplication.shared.userInterfaceLayoutDirection
+  }
+}
 
 extension NSShadow {
   public var cgColor: CGColor? { (shadowColor as? UIColor)?.cgColor }
@@ -125,6 +134,16 @@ extension RGBAColor {
 
 extension URL {
   public static let applicationOpenSettingsURL = URL(string: UIApplication.openSettingsURLString)!
+
+  public static var openNotificationSettingsURL: URL {
+    if #available(iOS 16, *) {
+      return URL(string: UIApplication.openNotificationSettingsURLString)!
+    } else if #available(iOS 15.4, *) {
+      return URL(string: UIApplicationOpenNotificationSettingsURLString)!
+    } else {
+      return .applicationOpenSettingsURL
+    }
+  }
 }
 
 #if os(iOS)

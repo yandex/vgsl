@@ -103,6 +103,7 @@ public struct ImageData: Equatable {
       queue.addOperation(action)
     }
   }
+
   public func makeImage() -> Image? {
     decode(base64: base64).flatMap(Image.init(data:))
   }

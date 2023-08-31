@@ -19,7 +19,6 @@ extension Property where T: Codable {
     var value: T?
     self.init(
       getter: {
-        Thread.assertIsMain()
         if let currentValue = value {
           return currentValue
         }
@@ -34,7 +33,6 @@ extension Property where T: Codable {
         return currentValue
       },
       setter: {
-        Thread.assertIsMain()
         value = $0
         write($0, url: fileURL.value, onError: onError)
       }

@@ -5,16 +5,20 @@ import Foundation
 @dynamicMemberLookup
 @propertyWrapper
 public struct Variable<T> {
-  private let getter: () -> T
+  @usableFromInline
+  let getter: () -> T
 
+  @inlinable
   public var wrappedValue: T { getter() }
 
+  @inlinable
   public init(_ getter: @escaping () -> T) {
     self.getter = getter
   }
 }
 
 extension Variable {
+  @inlinable
   public var value: T {
     getter()
   }

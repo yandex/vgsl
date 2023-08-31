@@ -121,4 +121,16 @@ extension URL {
       $0?.port = nil
     }?.url
   }
+
+  public var origin: URL {
+    var components = URLComponents()
+    components.scheme = scheme
+    components.host = host
+    components.port = port
+    guard let url = components.url else {
+      assertionFailure()
+      return URL(string: "brokenurl:")!
+    }
+    return url
+  }
 }

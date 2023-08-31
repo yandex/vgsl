@@ -21,8 +21,7 @@ extension SignalPipe where T == Void {
   public func send() { send(()) }
 }
 
-// TODO: - Сделать приватным в рамках тикета https://st.yandex-team.ru/IBRO-28094
-public final class Bag<T> {
+private class Bag<T> {
   private final class Container {
     var payload: T?
 
@@ -35,9 +34,9 @@ public final class Bag<T> {
   private var counter: Key = 0
   private var items: [Key: Container] = [:]
 
-  public init() {}
+  fileprivate init() {}
 
-  public func add(_ item: T) -> Disposable {
+  fileprivate func add(_ item: T) -> Disposable {
     let key = counter
     counter += 1
     items[key] = Container(payload: item)
@@ -49,12 +48,7 @@ public final class Bag<T> {
     }
   }
 
-  // TODO: - Убрать computed property values в рамках тикета https://st.yandex-team.ru/IBRO-28094
-  public var values: [T] {
-    items.values.compactMap { $0.payload }
-  }
-
-  func forEach(_ block: (T) -> Void) {
+  fileprivate func forEach(_ block: (T) -> Void) {
     #if INTERNAL_BUILD
     // ensure failure of code relying on the order of observers
     let values = items.values.shuffled()

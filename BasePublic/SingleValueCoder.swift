@@ -41,12 +41,10 @@ private final class SingleValueEncoderImpl: Encoder {
   func container<Key>(
     keyedBy _: Key.Type
   ) -> KeyedEncodingContainer<Key> where Key: CodingKey {
-    fatalError("only singleValueContainer() should be called")
+    fatalError()
   }
 
-  func unkeyedContainer() -> UnkeyedEncodingContainer {
-    fatalError("only singleValueContainer() should be called")
-  }
+  func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
 
   func singleValueContainer() -> SingleValueEncodingContainer { container }
 }
