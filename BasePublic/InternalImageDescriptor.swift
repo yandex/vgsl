@@ -3,7 +3,7 @@
 import CoreGraphics
 
 // TODO: fix publicity of the internal struct
-// and bring BaseUI import back in https://st.yandex-team.ru/IBRO-28090
+// and bring BaseUI import back in IBRO-28090
 public struct InternalImageDescriptor {
   public let drawingHandler: (CGContext) -> Void
   public let size: CGSize

@@ -3,7 +3,7 @@
 import Foundation
 
 public struct HTTPHeaders: Equatable {
-  // TODO: remove public headersDictionary after https://st.yandex-team.ru/SSDK-1104
+  // TODO: remove public headersDictionary after SSDK-1104
   public let headersDictionary: [String: String]
   private let lowercasedKeysHeadersDictionary: [String: String]
 
@@ -37,35 +37,6 @@ extension HTTPHeaders {
     let headersDict = HTTPCookie.requestHeaderFields(with: cookies)
     self.init(headersDictionary: headersDict)
   }
-}
-
-extension HTTPHeaders {
-  private func addHeader(_ header: String, _ value: String?) -> HTTPHeaders {
-    var headers = self.headersDictionary
-    headers[header] = value
-    return HTTPHeaders(headersDictionary: headers)
-  }
-
-  public func addContentTypeJson() -> HTTPHeaders {
-    self.addHeader("Content-Type", "application/json")
-  }
-
-  public func addOAuthToken(_ token: String?) -> HTTPHeaders {
-    guard let token = token else { return self }
-    return self.addHeader("Authorization", "OAuth " + token)
-  }
-
-  public func addXUUID(_ uuid: String?) -> HTTPHeaders {
-    self.addHeader("X-UUID", uuid)
-  }
-
-  public func addXYandexTheme(_ theme: String) -> HTTPHeaders {
-    self.addHeader("X-Yandex-Theme", theme)
-  }
-}
-
-extension HTTPHeaders {
-  public static let yandexUID = "X-Yandex-RandomUID"
 }
 
 extension HTTPHeaders {

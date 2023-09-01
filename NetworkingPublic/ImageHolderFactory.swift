@@ -44,7 +44,7 @@ public struct ImageHolderFactory {
 
   public init(
     localImageProvider: LocalImageProviding?,
-    imageProcessingQueueLabel: String = "ru.yandex.commonCore.image-processing",
+    imageProcessingQueueLabel: String = "vgsl.commonCore.image-processing",
     requestPerformer: URLRequestPerforming
   ) {
     let networkRequester = NetworkURLResourceRequester(performer: requestPerformer)

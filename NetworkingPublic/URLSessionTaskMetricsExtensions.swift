@@ -2,8 +2,7 @@
 
 import Foundation
 
-// Base is exported with minimal iOS version 9.0.
-// It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+// Exported with minimal iOS version 9.0.
 @available(iOS 10, tvOS 10, *)
 extension URLSessionTaskMetrics {
   var networkSessionMetrics: [NetworkSessionMetrics] {
@@ -11,7 +10,6 @@ extension URLSessionTaskMetrics {
   }
 }
 
-// Base is exported with minimal iOS version 9.0.
-// It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+// Exported with minimal iOS version 9.0.
 @available(iOS 10, tvOS 10, *)
 extension URLSessionTaskTransactionMetrics: NetworkSessionMetrics {}

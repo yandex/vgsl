@@ -9,8 +9,7 @@ public protocol PhysicalFeedbackGenerator {
   func generateFeedback()
 }
 
-// Base is exported with minimal iOS version 9.0.
-// It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+// Exported with minimal iOS version 9.0.
 @available(iOS 10, *)
 @available(tvOS, unavailable)
 extension UIImpactFeedbackGenerator: PhysicalFeedbackGenerator {

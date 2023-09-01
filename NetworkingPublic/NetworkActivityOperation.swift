@@ -4,7 +4,8 @@ import Foundation
 
 import BasePublic
 
-public let NetworkActivityOperationErrorDomain = "ru.yandex.mobile.NetworkActivityOperation"
+public let NetworkActivityOperationErrorDomain =
+  "vgsl.commonCore.networking.NetworkActivityOperation"
 public enum NetworkActivityOperationErrorCode: Int {
   case failedToCreateResource
 }
@@ -29,7 +30,7 @@ public class NetworkActivityOperation<Response>: AsyncOperation {
   private let uploadProgress: ProgressHandler?
   private var wasCancelled = false
 
-  // public for tests ):
+  // public for tests
   public let errorStrategy: NetworkErrorHandlingStrategy?
 
   public private(set) var result: Result<Response, NSError>?

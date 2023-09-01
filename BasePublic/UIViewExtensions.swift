@@ -117,8 +117,7 @@ extension UIView {
     return screenshot?.crop(rect: cropRect, preserveScale: true)
   }
 
-  // Base is exported with minimal iOS version 9.0.
-  // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+  // Exported with minimal iOS version 9.0.
   @available(iOS 11, tvOS 11, *)
   public func makeSafeAreaScreenshot(
     isOpaque: Bool = false,
@@ -172,8 +171,7 @@ extension UIView {
     })
   }
 
-  // Base is exported with minimal iOS version 9.0.
-  // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+  // Exported with minimal iOS version 9.0.
   @available(iOS 11, tvOS 11, *)
   public func addTopRoundedCorners(withRadius radius: CGFloat) {
     layer.masksToBounds = true
@@ -181,8 +179,7 @@ extension UIView {
     layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
   }
 
-  // Base is exported with minimal iOS version 9.0.
-  // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+  // Exported with minimal iOS version 9.0.
   @available(iOS 11, tvOS 11, *)
   public func addBottomRoundedCorners(withRadius radius: CGFloat) {
     layer.masksToBounds = true
@@ -221,8 +218,7 @@ extension UIView {
   }
 }
 
-// Base is exported with minimal iOS version 9.0.
-// It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+// Exported with minimal iOS version 9.0.
 @available(iOS 11, tvOS 11, *)
 extension UIView {
   @objc public func roundCorners(_ corners: UIRectCorner, radius: CGFloat) {

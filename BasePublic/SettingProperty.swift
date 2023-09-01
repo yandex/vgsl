@@ -67,8 +67,7 @@ extension SettingProperty where T: Archivable {
     }, setter: {
       if let newValue = $0 {
         let encodedValue: Data?
-        // Base is exported with minimal iOS version 9.0.
-        // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+        // Exported with minimal iOS version 9.0.
         if #available(iOS 11, tvOS 11, *) {
           encodedValue = try? NSKeyedArchiver.archivedData(
             withRootObject: newValue,

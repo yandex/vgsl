@@ -32,7 +32,6 @@ public protocol URLRequestPerforming: AnyObject {
   ) -> NetworkTask
 }
 
-// just because you can't provide default param value in protocol
 extension URLRequestPerforming {
   public func performRequest(
     _ request: URLRequest,

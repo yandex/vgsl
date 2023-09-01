@@ -9,8 +9,7 @@ extension UIScrollView: ScrollViewType {
     bounds.size
   }
 
-  // Base is exported with minimal iOS version 9.0.
-  // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+  // Exported with minimal iOS version 9.0.
   @available(iOS 11, tvOS 11, *)
   public func disableContentInsetAdjustmentBehavior() {
     contentInsetAdjustmentBehavior = .never
@@ -62,8 +61,7 @@ extension UIScrollView: ScrollViewType {
     bounds.width < contentSize.width && !alwaysBounceHorizontal
   }
 
-  // Base is exported with minimal iOS version 9.0.
-  // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+  // Exported with minimal iOS version 9.0.
   public var adjustedInsetForContent: UIEdgeInsets {
     if #available(iOS 11, tvOS 11, *) {
       return adjustedContentInset

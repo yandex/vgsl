@@ -4,7 +4,7 @@ import Foundation
 
 import BasePublic
 
-public let APIRequestErrorDomain = "ru.yandex.mobile.networking"
+public let APIRequestErrorDomain = "vgsl.commonCore.networking"
 public let APIRequestResponseParsingErrorCode = 0
 
 @inlinable

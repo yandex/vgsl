@@ -71,7 +71,7 @@ private class MemoizeParams3AClass<A: Hashable, B: Hashable, C: Hashable>: Hasha
   }
 
   static func ==(lhs: MemoizeParams3AClass, rhs: MemoizeParams3AClass) -> Bool {
-    // This 🦃 performs a very specific optimization for the case when
+    // This code performs a very specific optimization for the case when
     // we put the calculations for the specific string (which has reference type) to the cache,
     // but _sometimes_ we re-create the instance of this string. Thus, if we don't modify
     // dictionary key, we'll always miss comparison by reference.

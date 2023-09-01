@@ -14,6 +14,7 @@ public typealias UserInterfaceLayoutDirection = UIUserInterfaceLayoutDirection
 
 extension UserInterfaceLayoutDirection {
   @available(iOSApplicationExtension, unavailable)
+  @available(tvOSApplicationExtension, unavailable)
   public static var system: UserInterfaceLayoutDirection {
     UIApplication.shared.userInterfaceLayoutDirection
   }

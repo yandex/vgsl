@@ -17,7 +17,7 @@ extension URL {
       otherComponents.fragment = nil
       return components == otherComponents
     } else {
-      // https://st.yandex-team.ru/MOBYANDEXIOS-735
+      // MOBYANDEXIOS-735
       //
       // As specified in RFC 3986, in "Parsing a URI Reference with a Regular Expression" part,
       // this expression could be used for parsing into components:
