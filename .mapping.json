@@ -253,5 +253,10 @@
   "NetworkingPublic/URLSessionTaskMetricsExtensions.swift":"mobile/vgsl/public/NetworkingPublic/URLSessionTaskMetricsExtensions.swift",
   "NetworkingPublic/URLTransform.swift":"mobile/vgsl/public/NetworkingPublic/URLTransform.swift",
   "NetworkingPublic/iOS.swift":"mobile/vgsl/public/NetworkingPublic/iOS.swift",
-  "Package.swift":"mobile/vgsl/public/Package.swift"
+  "Package.swift":"mobile/vgsl/public/Package.swift",
+  "Specs/VGSLBase/2.2.0/VGSLBase.podspec":"mobile/vgsl/public/Specs/VGSLBase/2.2.0/VGSLBase.podspec",
+  "Specs/VGSLBaseTiny/2.2.0/VGSLBaseTiny.podspec":"mobile/vgsl/public/Specs/VGSLBaseTiny/2.2.0/VGSLBaseTiny.podspec",
+  "Specs/VGSLBaseUI/2.2.0/VGSLBaseUI.podspec":"mobile/vgsl/public/Specs/VGSLBaseUI/2.2.0/VGSLBaseUI.podspec",
+  "Specs/VGSLCommonCore/2.2.0/VGSLCommonCore.podspec":"mobile/vgsl/public/Specs/VGSLCommonCore/2.2.0/VGSLCommonCore.podspec",
+  "Specs/VGSLNetworking/2.2.0/VGSLNetworking.podspec":"mobile/vgsl/public/Specs/VGSLNetworking/2.2.0/VGSLNetworking.podspec"
 }
