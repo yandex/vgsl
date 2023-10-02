@@ -7,19 +7,16 @@ import BaseUIPublic
 
 public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
   public var appearanceAnimation: ImageViewAnimation?
-  private lazy var commandQueue = metalView.device?.makeCommandQueue()
-  private lazy var ciContext = metalView.device.map { CIContext(mtlDevice: $0) }
-  private lazy var textureLoader = metalView.device.map(MTKTextureLoader.init(device:))
+  private var commandQueue: MTLCommandQueue?
+  private var ciContext: CIContext?
   private lazy var device = MTLCreateSystemDefaultDevice()
-  private lazy var metalView = {
-    let mtkView = MTKView(frame: frame, device: device)
-    mtkView.enableSetNeedsDisplay = true
-    mtkView.framebufferOnly = false
-    mtkView.delegate = self
-    mtkView.backgroundColor = .clear
-    addSubview(mtkView)
-    return mtkView
-  }()
+  private var metalView: MTKView? {
+    didSet {
+      oldValue?.removeFromSuperview()
+      oldValue?.delegate = nil
+      metalView.flatMap(addSubview(_:))
+    }
+  }
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
@@ -32,8 +29,8 @@ public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    metalView.frame = bounds
-    metalView.setNeedsDisplay()
+    metalView?.frame = bounds
+    metalView?.setNeedsDisplay()
   }
 
   public func setImage(_ image: UIImage?, animated: Bool?) {
@@ -61,8 +58,11 @@ public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
 
   private var ciImage: CIImage? {
     didSet {
-      if oldValue !== ciImage {
-        metalView.setNeedsDisplay()
+      guard oldValue !== ciImage else { return }
+      if ciImage == nil {
+        metalView = nil
+      } else {
+        configureMetalView()
       }
     }
   }
@@ -70,7 +70,7 @@ public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
   public var imageRedrawingStyle: ImageRedrawingStyle? {
     didSet {
       if oldValue != imageRedrawingStyle {
-        metalView.setNeedsDisplay()
+        metalView?.setNeedsDisplay()
       }
     }
   }
@@ -78,7 +78,7 @@ public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
   public var imageContentMode = ImageContentMode.default {
     didSet {
       if oldValue != imageContentMode {
-        metalView.setNeedsDisplay()
+        metalView?.setNeedsDisplay()
       }
     }
   }
@@ -94,6 +94,18 @@ public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
         completion: nil
       )
     }
+  }
+
+  private func configureMetalView() {
+    let mtkView = MTKView(frame: frame, device: device)
+    mtkView.enableSetNeedsDisplay = true
+    mtkView.isPaused = true
+    mtkView.framebufferOnly = false
+    mtkView.delegate = self
+    mtkView.backgroundColor = .clear
+    metalView = mtkView
+    commandQueue = mtkView.device?.makeCommandQueue()
+    ciContext = mtkView.device.map(CIContext.init(mtlDevice:))
   }
 }
 
