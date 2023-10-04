@@ -2,6 +2,8 @@
 
 import UIKit
 
+@available(tvOSApplicationExtension, unavailable)
+@available(tvOS, unavailable)
 extension UIMenuController {
   public func presentMenu(from view: UIView, in rect: CGRect) {
     if #available(iOS 13.0, *) {

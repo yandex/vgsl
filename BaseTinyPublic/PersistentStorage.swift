@@ -46,13 +46,27 @@ extension AsyncPersistentStorage {
 // Implementation of this class should provide fast access to load/store methods
 // No long-term file operation or hard calculating is allowed here
 public protocol SyncPersistentStorage: AnyObject {
-  func object<T: Archivable>(forKey key: String) -> T?
+  func object<T: Archivable>(forKey key: String, with classes: [AnyClass]) -> T?
 
   // Transferring nil as first object should remove it from storage
   func setObject<T: Archivable>(_ object: T?, forKey key: String)
 }
 
 extension SyncPersistentStorage {
+  public func object<T: Archivable>(forKey key: String) -> T? {
+    object(forKey: key, with: [
+      NSDictionary.self,
+      NSURL.self,
+      NSSet.self,
+      NSString.self,
+      NSArray.self,
+      NSNumber.self,
+      NSData.self,
+      NSDate.self,
+      NSNull.self,
+    ])
+  }
+
   public subscript<T: Archivable>(key: String, _: T.Type = T.self) -> T? {
     get { object(forKey: key) }
     set { setObject(newValue, forKey: key) }

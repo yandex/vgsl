@@ -5,6 +5,7 @@ import SwiftUI
 public typealias AccessibilityPriorities<Tag> = (Tag) -> Double
 
 @available(iOS 14.0, macOS 11.0, *)
+@available(tvOS 14.0, *)
 extension View {
   public func accessibilityPriority<Tag>(
     of tag: Tag, in priorities: AccessibilityPriorities<Tag>

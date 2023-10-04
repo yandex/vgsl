@@ -46,6 +46,11 @@ extension Sequence where Element: Hashable {
   public func countElements() -> [Element: Int] {
     reduce(into: [Element: Int]()) { $0[$1, default: 0] += 1 }
   }
+
+  @inlinable
+  public func uniqued() -> [Element] {
+    uniqued(on: { $0 })
+  }
 }
 
 extension Sequence {
@@ -61,6 +66,20 @@ extension Sequence {
     by path: KeyPath<Element, Value>
   ) rethrows -> Result {
     try reduce(initial) { try nextPartialResult($0, $1[keyPath: path]) }
+  }
+
+  @inlinable
+  public func uniqued<Subject: Hashable>(
+    on projection: (Element) -> Subject
+  ) -> [Element] {
+    var seen: Set<Subject> = []
+    var result: [Element] = []
+    for element in self {
+      if seen.insert(projection(element)).inserted {
+        result.append(element)
+      }
+    }
+    return result
   }
 }
 

@@ -112,6 +112,7 @@ extension UIDevice {
   }
 
   @available(iOS 13.0, *)
+  @available(tvOS 14.0, *)
   public var isHapticEngineAvailable: Bool {
     CHHapticEngine.capabilitiesForHardware().supportsHaptics
   }
