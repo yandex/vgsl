@@ -1,9 +1,9 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit) && !os(tvOS)
+
 import UIKit
 
-@available(tvOSApplicationExtension, unavailable)
-@available(tvOS, unavailable)
 extension UIMenuController {
   public func presentMenu(from view: UIView, in rect: CGRect) {
     if #available(iOS 13.0, *) {
@@ -13,7 +13,6 @@ extension UIMenuController {
       setMenuVisible(true, animated: true)
     }
   }
-
   public func hideMenu(animated: Bool) {
     if #available(iOS 13.0, *) {
       hideMenu()
@@ -22,3 +21,5 @@ extension UIMenuController {
     }
   }
 }
+
+#endif

@@ -20,7 +20,7 @@ extension Theme {
     }
   }
 
-  @available(iOS 13, macOS 10.15, *)
+  @available(iOS 13, macOS 10.15, tvOS 13.0, *)
   public var colorScheme: ColorScheme {
     switch self {
     case .light:
