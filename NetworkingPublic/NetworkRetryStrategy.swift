@@ -4,7 +4,7 @@ import Foundation
 
 import BasePublic
 
-public class NetworkRetryStrategy: NetworkErrorHandlingStrategy {
+public final class NetworkRetryStrategy: NetworkErrorHandlingStrategy {
   public typealias NetworkReachabilityObserverFactory = (URL) -> NetworkReachabilityObserving?
   public typealias NetworkErrorClassifier = (NSError) -> NetworkErrorType
 

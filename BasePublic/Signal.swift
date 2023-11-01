@@ -48,6 +48,51 @@ extension Signal {
     })
   }
 
+  /// Creates a `Signal` from `Future`.
+  ///
+  /// The resulting `Signal` will deliver the value **exactly once**.
+  /// If the future is already resolved, for every subscription its observer
+  /// will be invoked immediately.
+  /// Once the future is resolved the observer will be released.
+  /// Once the subscription is cancelled with `Disposable` the observer will be released.
+  @inlinable
+  public init(fromFuture future: Future<T>) {
+    func onObserverSubscribed(observer: Observer<T>) -> Disposable {
+      var observer = Optional(observer)
+      func onResolved(value: T) {
+        guard let action = observer?.action else {
+          return
+        }
+        observer = nil
+        action(value)
+      }
+      func onDispose() {
+        observer = nil
+      }
+      future.resolved(onResolved(value:))
+      return Disposable(onDispose)
+    }
+    self.init(addObserver: onObserverSubscribed(observer:))
+  }
+
+  /// Creates a `Signal` from `Future`.
+  ///
+  /// The resulting `Signal` will deliver the value **at most once**.
+  /// If the future is already resolved by the time of subscription, no value
+  /// will be delivered to its observer.
+  /// Once the future is resolved the observer will be released.
+  /// Once the subscription is cancelled with `Disposable` the observer will be released.
+  @inlinable
+  internal init(_fromFulfillmentOfFuture future: Future<T>) {
+    func onObserverSubscribed(observer: Observer<T>) -> Disposable {
+      guard !future.isFulfilled else {
+        return .empty
+      }
+      return Self(fromFuture: future).addObserver(observer)
+    }
+    self.init(addObserver: onObserverSubscribed(observer:))
+  }
+
   @inlinable
   public static func values<S: Sequence>(_ values: S) -> Signal where S.Element == T {
     Signal(addObserver: { observer in
@@ -99,6 +144,11 @@ extension Signal {
         innerDisposable?.dispose()
       }
     })
+  }
+
+  @inlinable
+  public func flatten<U>() -> Signal<U> where T == Signal<U> {
+    flatMap(identity(_:))
   }
 
   public func takeFirst(_ count: Int = 1) -> Signal {

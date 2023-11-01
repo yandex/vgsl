@@ -109,6 +109,11 @@ extension ObservableVariable {
   }
 
   @inlinable
+  public func flatten<U>() -> ObservableVariable<U> where T == ObservableVariable<U> {
+    flatMap(identity(_:))
+  }
+
+  @inlinable
   public func compactMap<U>(
     valueIfNil: @autoclosure () -> U,
     _ transform: @escaping (T) -> U?

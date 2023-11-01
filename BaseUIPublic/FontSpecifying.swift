@@ -8,7 +8,7 @@ public protocol FontSpecifying: AnyObject {
   func font(weight: FontWeight, size: CGFloat) -> Font
 }
 
-public class FontSpecifiers {
+public final class FontSpecifiers {
   public let text: FontSpecifying
   public let display: FontSpecifying
 

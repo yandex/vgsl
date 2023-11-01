@@ -2,7 +2,7 @@
 
 import Foundation
 
-public class ReusableNetworkRetryStrategy: ReusableNetworkErrorHandlingStrategy {
+public final class ReusableNetworkRetryStrategy: ReusableNetworkErrorHandlingStrategy {
   public weak var delegate: NetworkErrorHandlingStrategyDelegate? {
     didSet {
       _strategy?.delegate = delegate

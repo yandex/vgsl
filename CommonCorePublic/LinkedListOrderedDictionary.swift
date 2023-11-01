@@ -23,6 +23,15 @@ public final class LinkedListOrderedDictionary<T>: OrderedDictionary {
     self.init(items: [])
   }
 
+  deinit {
+    if case let .nonEmpty(_, _, keyToNode) = state {
+      keyToNode.values.forEach {
+        $0.previous = nil
+        $0.next = nil
+      }
+    }
+  }
+
   public func asArray() -> [(key: String, item: T)] {
     switch state {
     case .empty:

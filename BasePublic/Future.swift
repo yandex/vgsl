@@ -354,3 +354,36 @@ public func first<T, U>(_ a: Future<T>, _ b: Future<U>) -> Future<Either<T, U>> 
   let lastFutures = Array(futures.dropFirst())
   return all(future, all(futures: lastFutures)).flatMap { Future(payload: [$0.0] + $0.1) }
 }
+
+extension Future {
+  /// Creates a `Signal` from the `Future`.
+  ///
+  /// The resulting `Signal` will deliver the value **exactly once**.
+  /// If the future is already resolved for every subscription its observer
+  /// will be invoked immediately.
+  /// Once the future is resolved the observer will be released.
+  /// Once the subscription is cancelled with `Disposable` the observer will be released.
+  public func asSignal() -> Signal<T> {
+    Signal(fromFuture: self)
+  }
+
+  public func asObservableVariable() -> ObservableVariable<T?> {
+    func getter() -> T? {
+      self.unwrap()
+    }
+    return ObservableVariable<T?>(
+      getter: getter,
+      newValues: Signal(_fromFulfillmentOfFuture: self).map(Optional.init(_:))
+    )
+  }
+
+  public func asObservableVariable(fallbackUntilResolved: T) -> ObservableVariable<T> {
+    func getter() -> T {
+      self.unwrap() ?? fallbackUntilResolved
+    }
+    return ObservableVariable<T>(
+      getter: getter,
+      newValues: Signal(_fromFulfillmentOfFuture: self)
+    )
+  }
+}
