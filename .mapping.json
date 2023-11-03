@@ -54,6 +54,7 @@
   "BasePublic/KeyValueStorage.swift":"mobile/vgsl/public/BasePublic/KeyValueStorage.swift",
   "BasePublic/KeyboardAppearance.swift":"mobile/vgsl/public/BasePublic/KeyboardAppearance.swift",
   "BasePublic/Lazy.swift":"mobile/vgsl/public/BasePublic/Lazy.swift",
+  "BasePublic/LazyExtensions.swift":"mobile/vgsl/public/BasePublic/LazyExtensions.swift",
   "BasePublic/LinearGradientView+Layer.swift":"mobile/vgsl/public/BasePublic/LinearGradientView+Layer.swift",
   "BasePublic/MainQueue.swift":"mobile/vgsl/public/BasePublic/MainQueue.swift",
   "BasePublic/NSTimerExtensions.swift":"mobile/vgsl/public/BasePublic/NSTimerExtensions.swift",
