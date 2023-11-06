@@ -8,6 +8,8 @@ let package = Package(
     .iOS(.v11),
   ],
   products: [
+    .library(name: "BaseTinyPublic", targets: ["BaseTinyPublic"]),
+    .library(name: "BaseUIPublic", targets: ["BaseUIPublic"]),
     .library(name: "BasePublic", targets: ["BasePublic"]),
     .library(name: "CommonCorePublic", targets: ["CommonCorePublic"]),
     .library(name: "NetworkingPublic", targets: ["NetworkingPublic"]),
