@@ -1,6 +1,52 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
+// TODO(dmt021): @_spi(Extensions)
 extension Sequence {
+  public func group(batchSize: Int) -> [[Element]] {
+    var result = [[Element]]()
+    var iterator = makeIterator()
+    var currentBatch = [Element]()
+    while let currentItem = iterator.next() {
+      if currentBatch.count == batchSize {
+        result.append(currentBatch)
+        currentBatch = [Element]()
+      }
+      currentBatch.append(currentItem)
+    }
+    if !currentBatch.isEmpty {
+      result.append(currentBatch)
+    }
+    return result
+  }
+
+  /// Returns array of unique element based on comparator
+  /// Complexity: O(n^2)
+  @inlinable
+  public func uniqued(comparator: @escaping (Element, Element) -> Bool) -> [Element] {
+    var result: [Element] = []
+    for element in self {
+      if result.contains(where: { comparator(element, $0) }) {
+        continue
+      }
+      result.append(element)
+    }
+    return result
+  }
+
+  @inlinable
+  public func uniqued<Subject: Hashable>(
+    on projection: (Element) -> Subject
+  ) -> [Element] {
+    var seen: Set<Subject> = []
+    var result: [Element] = []
+    for element in self {
+      if seen.insert(projection(element)).inserted {
+        result.append(element)
+      }
+    }
+    return result
+  }
+
   @inlinable
   public func firstMatch(_ predicate: (Element) -> Bool) -> Element? {
     for item in self {
@@ -27,8 +73,50 @@ extension Sequence {
       .filter { $0.0 == maxScore }
       .map { $0.1 }
   }
+
+  @inlinable
+  public func map<Value>(to path: KeyPath<Element, Value>) -> [Value] {
+    map { $0[keyPath: path] }
+  }
+
+  @inlinable
+  public func reduce<Result, Value>(
+    _ initial: Result,
+    _ nextPartialResult: (Result, Value) throws -> Result,
+    by path: KeyPath<Element, Value>
+  ) rethrows -> Result {
+    try reduce(initial) { try nextPartialResult($0, $1[keyPath: path]) }
+  }
+
+  @inlinable
+  public func toDictionary<KeyType, ValueType>(
+    keyMapper: (Element) throws -> KeyType,
+    valueMapper: (Element) throws -> ValueType
+  ) rethrows -> [KeyType: ValueType] {
+    var result = [:] as [KeyType: ValueType]
+    for element in self {
+      result[try keyMapper(element)] = try valueMapper(element)
+    }
+    return result
+  }
+
+  @inlinable
+  public func categorize(
+    _ predicate: (Element) -> Bool
+  ) -> (onTrue: [Element], onFalse: [Element]) {
+    var res = (onTrue: [Element](), onFalse: [Element]())
+    for el in self {
+      if predicate(el) {
+        res.onTrue.append(el)
+      } else {
+        res.onFalse.append(el)
+      }
+    }
+    return res
+  }
 }
 
+// TODO(dmt021): @_spi(Extensions)
 extension Sequence where Element: Hashable {
   @inlinable
   public func makeDictionary<T>(withValueForKey valueForKey: (Element) throws -> T?) rethrows
@@ -53,36 +141,7 @@ extension Sequence where Element: Hashable {
   }
 }
 
-extension Sequence {
-  @inlinable
-  public func map<Value>(to path: KeyPath<Element, Value>) -> [Value] {
-    map { $0[keyPath: path] }
-  }
-
-  @inlinable
-  public func reduce<Result, Value>(
-    _ initial: Result,
-    _ nextPartialResult: (Result, Value) throws -> Result,
-    by path: KeyPath<Element, Value>
-  ) rethrows -> Result {
-    try reduce(initial) { try nextPartialResult($0, $1[keyPath: path]) }
-  }
-
-  @inlinable
-  public func uniqued<Subject: Hashable>(
-    on projection: (Element) -> Subject
-  ) -> [Element] {
-    var seen: Set<Subject> = []
-    var result: [Element] = []
-    for element in self {
-      if seen.insert(projection(element)).inserted {
-        result.append(element)
-      }
-    }
-    return result
-  }
-}
-
+// TODO(dmt021): @_spi(Extensions)
 extension Sequence where Element: Numeric {
   @inlinable
   public var partialSums: [Element] {
@@ -103,26 +162,12 @@ public func unzip<SequenceType: Sequence, E1, E2>(
   return (sequence.map { $0.0 }, sequence.map { $0.1 })
 }
 
-extension Sequence {
-  @inlinable
-  public func toDictionary<KeyType, ValueType>(
-    keyMapper: (Element) throws -> KeyType,
-    valueMapper: (Element) throws -> ValueType
-  ) rethrows -> [KeyType: ValueType] {
-    var result = [:] as [KeyType: ValueType]
-    for element in self {
-      result[try keyMapper(element)] = try valueMapper(element)
-    }
-    return result
-  }
-}
-
 @inlinable
 public func walk<IteratorType: IteratorProtocol, Element>(
   iterator: IteratorType,
-  elementAction: @escaping (Element, @escaping Action) -> Void,
-  noElementAction: @escaping Action = {},
-  asyncMainThreadRunner: @escaping MainThreadAsyncRunner
+  elementAction: @escaping (Element, @escaping () -> Void) -> Void,
+  noElementAction: @escaping () -> Void = {},
+  asyncMainThreadRunner: @escaping (@escaping () -> Void) -> Void
 ) where IteratorType.Element == Element {
   var it = iterator
   guard let element = it.next() else {
@@ -145,7 +190,7 @@ public func walk<IteratorType: IteratorProtocol, Element>(
 public func walkSync<IteratorType: IteratorProtocol, Element>(
   iterator: IteratorType,
   elementAction: @escaping (Element, @escaping (Bool) -> Void) -> Void,
-  noElementAction: @escaping Action = {}
+  noElementAction: @escaping () -> Void = {}
 ) where IteratorType.Element == Element {
   var it = iterator
   func walkSync() {
@@ -178,47 +223,4 @@ public func walkSync<IteratorType: IteratorProtocol, Element>(
     noElementAction()
   }
   walkSync()
-}
-
-extension Sequence {
-  @inlinable
-  public func categorize(
-    _ predicate: (Element) -> Bool
-  ) -> (onTrue: [Element], onFalse: [Element]) {
-    var res = (onTrue: [Element](), onFalse: [Element]())
-    for el in self {
-      if predicate(el) {
-        res.onTrue.append(el)
-      } else {
-        res.onFalse.append(el)
-      }
-    }
-    return res
-  }
-}
-
-extension Array where Element: Equatable {
-  @inlinable
-  public func endsWith(_ other: [Element]) -> Bool {
-    Array(self.suffix(other.count)) == other
-  }
-}
-
-extension Array where Element: Hashable {
-  @inlinable
-  public func isPermutation(of other: Array) -> Bool {
-    let set = Set(self)
-    let otherSet = Set(other)
-    let diff = set.symmetricDifference(otherSet)
-    return diff.isEmpty
-  }
-}
-
-extension Set {
-  @inlinable
-  public static func union<T: Collection>(
-    _ sets: T
-  ) -> Set<Element> where T.Element == Set<Element> {
-    sets.reduce(into: Set<Element>()) { $0.formUnion($1) }
-  }
 }

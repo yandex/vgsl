@@ -13,6 +13,7 @@ extension UIMenuController {
       setMenuVisible(true, animated: true)
     }
   }
+
   public func hideMenu(animated: Bool) {
     if #available(iOS 13.0, *) {
       hideMenu()

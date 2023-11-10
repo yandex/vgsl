@@ -294,6 +294,12 @@ extension Signal {
   }
 }
 
+extension Signal where T == Void {
+  public func addObserver(_ observer: @escaping Action) -> Disposable {
+    addObserver { _ in observer() }
+  }
+}
+
 extension Signal where T: Equatable {
   @inlinable
   public func skipRepeats(initialValue: (() -> T?)? = nil) -> Signal {
@@ -393,23 +399,6 @@ extension Signal {
     ofWeak object: O
   ) -> Disposable {
     addObserver { [weak object] in object?[keyPath: keyPath] = $0 }
-  }
-}
-
-extension Signal where T == Void {
-  public static func timer(interval: TimeInterval, scheduler: Scheduling) -> Signal<Void> {
-    Signal { observer in
-      let timer = scheduler.makeRepeatingTimer(interval: interval) {
-        observer.action(())
-      }
-      return Disposable {
-        timer.invalidate()
-      }
-    }
-  }
-
-  public func addObserver(_ observer: @escaping Action) -> Disposable {
-    addObserver { _ in observer() }
   }
 }
 

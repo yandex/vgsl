@@ -1,13 +1,12 @@
 // Copyright 2020 Yandex LLC. All rights reserved.
 
-import Foundation
-
 // radix must be in the range 2...36
 public enum Radix: Int {
   case decimal = 10
   case hex = 16
 }
 
+// TODO(dmt021): @_spi(Extensions)
 extension FixedWidthInteger {
   @inlinable
   public init?<S>(_ text: S, safeRadix radix: Radix) where S: StringProtocol {
@@ -17,6 +16,7 @@ extension FixedWidthInteger {
   }
 }
 
+// TODO(dmt021): @_spi(Extensions)
 extension String {
   @inlinable
   public init<T>(_ value: T, safeRadix radix: Radix, uppercase: Bool = false)

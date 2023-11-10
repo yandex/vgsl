@@ -1,7 +1,6 @@
 // Copyright 2017 Yandex LLC. All rights reserved.
 
-import Foundation
-
+// TODO(dmt021): @_spi(Extensions)
 extension Optional {
   public enum Error: Swift.Error {
     case valueIsNil

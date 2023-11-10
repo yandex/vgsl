@@ -1,7 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-import Foundation
-
+// TODO(dmt021): @_spi(Extensions)
 extension FloatingPoint where Self.Stride: ExpressibleByFloatLiteral {
   public func isApproximatelyGreaterThan(
     _ number: Self,
@@ -64,6 +63,37 @@ extension FloatingPoint where Self.Stride: ExpressibleByFloatLiteral {
   public func isApproximatelyNotEqualTo(_ number: Self) -> Bool {
     !isApproximatelyEqualTo(number, withAccuracy: defaultAccuracy())
   }
+}
+
+// TODO(dmt021): @_spi(Extensions)
+extension BinaryFloatingPoint {
+  // https://github.com/apple/swift-evolution/blob/master/proposals/0259-approximately-equal.md
+  @inlinable
+  public func isAlmostEqual(
+    _ other: Self,
+    maxRelDev: Self = Self.ulpOfOne.squareRoot()
+  ) -> Bool {
+    precondition(maxRelDev >= Self.zero)
+    precondition(isFinite && other.isFinite)
+    guard self != other else { return true }
+    guard !isZero else { return other.isAlmostZero() }
+    guard !other.isZero else { return isAlmostZero() }
+    let scale = max(abs(self), abs(other), .leastNormalMagnitude)
+    return abs(self - other) < scale * maxRelDev
+  }
+
+  @inlinable
+  public func isAlmostZero(
+    absoluteTolerance tolerance: Self = Self.ulpOfOne.squareRoot()
+  ) -> Bool {
+    assert(tolerance > 0)
+    return abs(self) < tolerance
+  }
+}
+
+@inlinable
+public func lerp<T: FloatingPoint>(at: T, beetween lhs: T, _ rhs: T) -> T {
+  lhs + (rhs - lhs) * at
 }
 
 private func defaultAccuracy<Type: ExpressibleByFloatLiteral>() -> Type { 1e-8 }

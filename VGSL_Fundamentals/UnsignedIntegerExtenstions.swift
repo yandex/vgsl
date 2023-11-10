@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+// TODO(dmt021): @_spi(Extensions)
 extension UnsignedInteger where Self: FixedWidthInteger {
   /// Creates a new instance from the given integer, if it can be represented
   /// exactly. Otherwise `InvalidArgumentError` will be thrown.

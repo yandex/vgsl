@@ -75,6 +75,7 @@ public final class TimerScheduler: Scheduling {
 
 extension Timer: TimerType {}
 
+// TODO(dmt021): @_spi(Extensions)
 extension Timer {
   public static func make(
     withTimeInterval ti: TimeInterval,
@@ -90,5 +91,18 @@ extension Timer {
       userInfo: userInfo,
       repeats: yesOrNo
     )
+  }
+}
+
+extension Signal where T == Void {
+  public static func timer(interval: TimeInterval, scheduler: Scheduling) -> Signal<Void> {
+    Signal { observer in
+      let timer = scheduler.makeRepeatingTimer(interval: interval) {
+        observer.action(())
+      }
+      return Disposable {
+        timer.invalidate()
+      }
+    }
   }
 }

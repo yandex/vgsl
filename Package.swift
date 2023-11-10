@@ -17,6 +17,9 @@ let package = Package(
   targets: [
     .target(
       name: "BaseTinyPublic",
+      dependencies: [
+        "VGSL_Fundamentals_Tiny",
+      ],
       path: "BaseTinyPublic"
     ),
     .target(
@@ -31,6 +34,7 @@ let package = Package(
       dependencies: [
         "BaseTinyPublic",
         "BaseUIPublic",
+        "VGSL_Fundamentals",
       ],
       path: "BasePublic"
     ),
@@ -41,7 +45,6 @@ let package = Package(
       ],
       path: "CommonCorePublic"
     ),
-
     .target(
       name: "NetworkingPublic",
       dependencies: [
@@ -49,5 +52,24 @@ let package = Package(
       ],
       path: "NetworkingPublic"
     ),
+    .target(
+      name: "VGSL",
+      dependencies: [
+        "VGSL_Fundamentals",
+      ],
+      path: "VGSL"
+    ),
+    .target(
+      name: "VGSL_Fundamentals",
+      dependencies: [
+        "VGSL_Fundamentals_Tiny",
+      ],
+      path: "VGSL_Fundamentals"
+    ),
+    .target(
+      name: "VGSL_Fundamentals_Tiny",
+      path: "VGSL_Fundamentals_Tiny"
+    ),
+
   ]
 )
