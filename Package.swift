@@ -8,6 +8,9 @@ let package = Package(
     .iOS(.v11),
   ],
   products: [
+    .library(name: "VGSL_Fundamentals_Tiny", targets: ["VGSL_Fundamentals_Tiny"]),
+    .library(name: "VGSL_Fundamentals", targets: ["VGSL_Fundamentals"]),
+    .library(name: "VGSL", targets: ["VGSL"]),
     .library(name: "BaseTinyPublic", targets: ["BaseTinyPublic"]),
     .library(name: "BaseUIPublic", targets: ["BaseUIPublic"]),
     .library(name: "BasePublic", targets: ["BasePublic"]),
