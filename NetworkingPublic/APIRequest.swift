@@ -11,7 +11,7 @@ public let APIRequestResponseParsingErrorCode = 0
 public func wrappedAPIRequest<T>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
-  preRequestAction: ((() -> Void)?) = nil,
+  preRequestAction: (() -> Void)? = nil,
   observer: APIRequestObserving? = nil,
   networkActivityIndicator: NetworkActivityIndicatorController
 ) -> NetworkActivityOperation<T>.Request {
@@ -37,7 +37,7 @@ public func wrappedAPIRequest<T>(
 public func wrappedAPIRequest<T>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
-  preRequestAction: ((() -> Void)?) = nil,
+  preRequestAction: (() -> Void)? = nil,
   observer: APIRequestObserving? = nil,
   customNetworkActivityIndicator: NetworkActivityIndicatorController? = nil
 ) -> NetworkActivityOperation<T>.Request {

@@ -3,7 +3,7 @@
 import Foundation
 
 #if DEBUG && canImport(OSLog)
-import OSLog
+@_implementationOnly import OSLog
 #endif
 
 @dynamicMemberLookup

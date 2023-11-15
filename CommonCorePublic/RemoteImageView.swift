@@ -3,7 +3,8 @@
 import UIKit
 
 public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
-  private let contentsLayer = CALayer()
+  private let contentsView = UIView()
+  private lazy var contentsLayer = { contentsView.layer }()
   private lazy var clipMask: CALayer = {
     let mask = CALayer()
     mask.backgroundColor = UIColor.white.cgColor
@@ -77,7 +78,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
-    layer.addSublayer(contentsLayer)
+    addSubview(contentsView)
   }
 
   @available(*, unavailable)
@@ -88,24 +89,22 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   public override func layoutSubviews() {
     super.layoutSubviews()
 
-    CATransaction.performWithoutAnimations {
-      let layout = ImageLayerLayout(
-        contentMode: imageContentMode,
-        contentSize: image?.size ?? .zero,
-        boundsSize: bounds.size,
-        capInsets: image?.capInsets ?? .zero
-      )
+    let layout = ImageLayerLayout(
+      contentMode: imageContentMode,
+      contentSize: image?.size ?? bounds.size,
+      boundsSize: bounds.size,
+      capInsets: image?.capInsets ?? .zero
+    )
 
-      contentsLayer.frame = layout.frame
-      contentsLayer.contentsRect = layout.contentRect
-      contentsLayer.contentsCenter = layout.contentCenter
+    contentsView.frame = layout.frame
+    contentsLayer.contentsRect = layout.contentRect
+    contentsLayer.contentsCenter = layout.contentCenter
 
-      templateLayer?.frame = contentsLayer.bounds
-      templateLayer?.contentsRect = layout.contentRect
-      templateLayer?.contentsCenter = layout.contentCenter
+    templateLayer?.frame = contentsView.bounds
+    templateLayer?.contentsRect = layout.contentRect
+    templateLayer?.contentsCenter = layout.contentCenter
 
-      updateMask()
-    }
+    updateMask()
   }
 
   private func updateMask() {

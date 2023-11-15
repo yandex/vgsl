@@ -2,8 +2,6 @@
 
 import SwiftUI
 
-import BaseTinyPublic
-
 extension BaseTinyPublic.EdgeInsets {
   @available(iOS 13, tvOS 13, macOS 10.15, *)
   public var swiftui: SwiftUI.EdgeInsets {
