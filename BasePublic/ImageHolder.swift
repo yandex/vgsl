@@ -3,7 +3,7 @@
 import Foundation
 
 public protocol ImageHolder: AnyObject, CustomDebugStringConvertible {
-  typealias CompletionHandlerWithSource = (((Image, URLRequestResult.Source)?) -> Void)
+  typealias CompletionHandlerWithSource = ((Image, URLRequestResult.Source)?) -> Void
 
   var image: Image? { get }
   var placeholder: ImagePlaceholder? { get }
@@ -38,11 +38,11 @@ public func ==(lhs: ImageHolder, rhs: ImageHolder) -> Bool {
 public func ==(lhs: ImageHolder?, rhs: ImageHolder?) -> Bool {
   switch (lhs, rhs) {
   case (.none, .none):
-    return true
+    true
   case let (.some(value1), .some(value2)):
-    return value1 == value2
+    value1 == value2
   default:
-    return false
+    false
   }
 }
 

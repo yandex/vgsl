@@ -89,9 +89,9 @@ extension HTTPRetryAfterHeader {
   fileprivate func timeInterval(since refDate: Date) -> TimeInterval {
     switch self {
     case let .date(date):
-      return date.timeIntervalSince(refDate)
+      date.timeIntervalSince(refDate)
     case let .seconds(seconds):
-      return seconds
+      seconds
     }
   }
 }

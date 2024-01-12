@@ -43,7 +43,7 @@ public enum Gradient: Equatable {
       endColor: Color,
       direction: Direction
     ) {
-      let positions = intermediatePoints.map { $0.location }
+      let positions = intermediatePoints.map(\.location)
       assert(positions == positions.sorted())
 
       self.startColor = startColor
@@ -70,7 +70,7 @@ public enum Gradient: Equatable {
       outerColor: Color? = nil,
       shape: Shape? = nil
     ) {
-      let positions = intermediatePoints.map { $0.location }
+      let positions = intermediatePoints.map(\.location)
       assert(positions == positions.sorted())
 
       self.centerX = .relative(center.x)
@@ -90,7 +90,7 @@ public enum Gradient: Equatable {
       intermediatePoints: [Point] = [],
       outerColor: Color? = nil
     ) {
-      let positions = intermediatePoints.map { $0.location }
+      let positions = intermediatePoints.map(\.location)
       assert(positions == positions.sorted())
 
       self.centerX = centerX
@@ -210,11 +210,11 @@ extension Gradient: CustomDebugStringConvertible {
   public var debugDescription: String {
     switch self {
     case let .box(color):
-      return "Box \(color)"
+      "Box \(color)"
     case let .radial(radial):
-      return radial.debugDescription
+      radial.debugDescription
     case let .linear(linear):
-      return linear.debugDescription
+      linear.debugDescription
     }
   }
 }
@@ -230,11 +230,11 @@ extension RelativeRect {
 
 extension Gradient.Linear {
   public var colors: [Color] {
-    let intermediateColors = intermediatePoints.map { $0.color }
+    let intermediateColors = intermediatePoints.map(\.color)
     return [startColor] + intermediateColors + [endColor]
   }
 
   public var locations: [CGFloat] {
-    [0] + intermediatePoints.map { $0.location } + [1]
+    [0] + intermediatePoints.map(\.location) + [1]
   }
 }

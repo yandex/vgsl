@@ -12,15 +12,15 @@ private enum ImageHeaderData: CaseIterable {
   var rawValue: UInt8 {
     switch self {
     case .png:
-      return 0x89
+      0x89
     case .jpeg:
-      return 0xFF
+      0xFF
     case .gif:
-      return 0x47
+      0x47
     case .tiff_01:
-      return 0x49
+      0x49
     case .tiff_02:
-      return 0x4D
+      0x4D
     }
   }
 }
@@ -41,7 +41,7 @@ extension Data {
   }
 }
 
-extension Optional where Wrapped == ImageHeaderData {
+extension ImageHeaderData? {
   fileprivate var format: ImageFormat {
     guard let format = self else { return .unknown }
     switch format {

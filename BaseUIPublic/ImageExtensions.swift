@@ -23,34 +23,34 @@ func imageOrientationTransform(
 ) -> CGAffineTransform {
   switch imageOrientation {
   case .up:
-    return .identity
+    .identity
   case .upMirrored:
-    return CGAffineTransform(translationX: size.width, y: 0)
+    CGAffineTransform(translationX: size.width, y: 0)
       .scaledBy(x: -1, y: 1)
   case .down:
-    return CGAffineTransform(translationX: size.width, y: size.height)
+    CGAffineTransform(translationX: size.width, y: size.height)
       .rotated(by: .pi)
   case .downMirrored:
-    return CGAffineTransform(translationX: 0, y: size.height)
+    CGAffineTransform(translationX: 0, y: size.height)
       .scaledBy(x: 1, y: -1)
   case .left:
-    return CGAffineTransform(translationX: size.height, y: 0)
+    CGAffineTransform(translationX: size.height, y: 0)
       .rotated(by: .pi / 2)
   case .leftMirrored:
-    return CGAffineTransform(translationX: 0, y: size.width)
+    CGAffineTransform(translationX: 0, y: size.width)
       .rotated(by: -.pi / 2)
       .translatedBy(x: size.width, y: 0)
       .scaledBy(x: -1, y: 1)
   case .right:
-    return CGAffineTransform(translationX: 0, y: size.width)
+    CGAffineTransform(translationX: 0, y: size.width)
       .rotated(by: -.pi / 2)
   case .rightMirrored:
-    return CGAffineTransform(translationX: size.height, y: 0)
+    CGAffineTransform(translationX: size.height, y: 0)
       .rotated(by: .pi / 2)
       .translatedBy(x: size.width, y: 0)
       .scaledBy(x: -1, y: 1)
   @unknown default:
-    return .identity
+    .identity
   }
 }
 #endif

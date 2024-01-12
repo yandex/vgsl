@@ -9,11 +9,15 @@ extension HTTPURLResponse {
 
   public func yb_value(forHTTPHeader headerName: String) -> String? {
     if #available(iOS 13, tvOS 13, macOS 10.15, *) {
-      return value(forHTTPHeaderField: headerName)
+      value(forHTTPHeaderField: headerName)
     } else {
       // https://bugs.swift.org/browse/SR-2429
-      // swiftlint:disable:next use_http_headers
-      return (allHeaderFields as NSDictionary)[headerName] as? String
+      cast((allHeaderFields as NSDictionary)[headerName], to: String.self)
     }
   }
+}
+
+// https://github.com/apple/swift/issues/69764
+private func cast<T>(_ k: Any?, to _: T.Type) -> T? {
+  k as? T
 }

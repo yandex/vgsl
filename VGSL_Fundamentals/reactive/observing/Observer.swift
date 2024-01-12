@@ -47,7 +47,7 @@ extension Observer {
   ) -> Observer {
     var latest = initialValue
     return Observer(action: { t in
-      if let latest = latest, areEqual(latest, t) {
+      if let latest, areEqual(latest, t) {
         return
       }
       latest = t

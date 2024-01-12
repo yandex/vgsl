@@ -266,7 +266,7 @@ extension Future {
     withFallback value: T
   ) -> Future {
     let fallback = Future(payload: value).after(timeInterval: timeout, on: queue)
-    return first(self, fallback).map { $0.value }
+    return first(self, fallback).map(\.value)
   }
 }
 

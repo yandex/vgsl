@@ -62,7 +62,7 @@ public struct WeakCollection<T> {
 
 extension WeakCollection: CustomStringConvertible {
   public var description: String {
-    array.map { $0.value }.description
+    array.map(\.value).description
   }
 }
 
@@ -73,7 +73,7 @@ extension WeakCollection: ExpressibleByArrayLiteral {
 }
 
 extension WeakCollection {
-  public init<U: Sequence>(_ other: U) where U.Element == Element {
+  public init(_ other: some Sequence<Element>) {
     array = other.map { Weak(value: $0 as AnyObject) }
   }
 }

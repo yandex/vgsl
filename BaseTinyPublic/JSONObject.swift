@@ -25,7 +25,7 @@ public enum JSONObject: Codable, Equatable {
   public static let `false` = JSONObject.bool(false)
 
   @inlinable
-  public static func number<IntType: BinaryInteger>(_ integer: IntType) -> Self {
+  public static func number(_ integer: some BinaryInteger) -> Self {
     .number(Double(integer))
   }
 
@@ -73,7 +73,7 @@ public enum JSONObject: Codable, Equatable {
     } else if var array = try? decoder.unkeyedContainer() {
       var result: [JSONObject] = []
       while !array.isAtEnd {
-        result.append(try array.decode(JSONObject.self))
+        try result.append(array.decode(JSONObject.self))
       }
       self = .array(result)
     } else if let obj = try? decoder.container(keyedBy: StringCodingKey.self) {
@@ -121,25 +121,24 @@ extension JSONObject {
   private var shortDescription: String {
     switch self {
     case let .bool(bool):
-      return "bool: \(bool)"
+      "bool: \(bool)"
     case let .number(number):
-      return "number: \(number)"
+      "number: \(number)"
     case let .string(string):
-      return "string: \(string)"
+      "string: \(string)"
     case .array:
-      return "array"
+      "array"
     case .object:
-      return "object"
+      "object"
     case .null:
-      return "null"
+      "null"
     }
   }
 
-  private func value<C>(
-    atPath path: C,
+  private func value(
+    atPath path: some Collection<Path.Component>,
     subpath: String = ""
-  ) throws -> JSONObject
-    where C: Collection, C.Element == Path.Component {
+  ) throws -> JSONObject {
     guard !path.isEmpty else {
       return self
     }
@@ -202,19 +201,19 @@ extension JSONObject {
   public var untypedValue: Any {
     switch self {
     case let .bool(value):
-      return NSNumber(value: value)
+      NSNumber(value: value)
     case let .number(value):
-      return value as NSNumber
+      value as NSNumber
     case let .string(value):
-      return value
+      value
     case let .array(array):
-      return array.map { $0.untypedValue }
+      array.map(\.untypedValue)
     case let .object(dict):
-      return dict.mapValues {
+      dict.mapValues {
         $0.untypedValue
       }
     case .null:
-      return NSNull()
+      NSNull()
     }
   }
 
@@ -250,7 +249,7 @@ extension JSONObject {
     fallback: (Any) -> JSONObject?,
     errorHandler: (Any) throws -> Void
   ) rethrows {
-    self = .array(try array.compactMap {
+    self = try .array(array.compactMap {
       try JSONObject(value: $0, fallback: fallback, errorHandler: errorHandler)
     })
   }
@@ -281,7 +280,7 @@ extension JSONObject {
     fallback: (Any) -> JSONObject? = { _ in nil },
     errorHandler: (Any) throws -> Void = { _ in }
   ) rethrows {
-    self = .object(try dictionary.typedJSON(fallback: fallback, errorHandler: errorHandler))
+    self = try .object(dictionary.typedJSON(fallback: fallback, errorHandler: errorHandler))
   }
 }
 
@@ -376,7 +375,7 @@ extension Dictionary where Key == String {
   }
 }
 
-extension Dictionary where Key == String, Value == JSONObject {
+extension [String: JSONObject] {
   public func untypedJSON() -> [String: Any] {
     mapValues {
       $0.untypedValue
@@ -384,7 +383,7 @@ extension Dictionary where Key == String, Value == JSONObject {
   }
 }
 
-extension Dictionary where Key == String, Value == JSONObject {
+extension [String: JSONObject] {
   public func value(atPath path: JSONObject.Path) throws -> JSONObject {
     try JSONObject.object(self).value(atPath: path)
   }
@@ -400,11 +399,11 @@ extension JSONObject {
     private var asConcatinationSuffix: String {
       switch components.first {
       case .none:
-        return ""
+        ""
       case .key:
-        return "." + asString
+        "." + asString
       case .index:
-        return asString
+        asString
       }
     }
 
@@ -440,7 +439,7 @@ extension JSONObject {
     }
 
     public init(from decoder: Decoder) throws {
-      try self.init(string: try String(from: decoder))
+      try self.init(string: String(from: decoder))
     }
 
     public static let empty = Self(components: [], string: "")
@@ -535,18 +534,18 @@ public enum JSONPathComponent: Hashable {
   var stringValue: String {
     switch self {
     case let .index(index):
-      return "[\(index)]"
+      "[\(index)]"
     case let .key(key):
-      return key
+      key
     }
   }
 
   var expectedType: String {
     switch self {
     case .key:
-      return "Object"
+      "Object"
     case .index:
-      return "Array"
+      "Array"
     }
   }
 

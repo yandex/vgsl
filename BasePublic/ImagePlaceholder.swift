@@ -14,13 +14,13 @@ extension ImagePlaceholder {
   public func toImageHolder() -> ImageHolder {
     switch self {
     case let .image(image):
-      return image
+      image
     case let .imageData(imageData):
-      return ImageDataHolder(imageData: imageData)
+      ImageDataHolder(imageData: imageData)
     case let .color(color):
-      return ColorHolder(color: color)
+      ColorHolder(color: color)
     case let .view(view):
-      return ViewImageHolder(view: view)
+      ViewImageHolder(view: view)
     }
   }
 
@@ -61,21 +61,21 @@ extension ImagePlaceholder {
   }
 }
 
-extension Optional where Wrapped == ImagePlaceholder {
+extension ImagePlaceholder? {
   public static func ===(lhs: ImagePlaceholder?, rhs: ImagePlaceholder?) -> Bool {
     switch (lhs, rhs) {
     case let (.image(lImage)?, .image(rImage)?):
-      return lImage === rImage
+      lImage === rImage
     case let (.imageData(lData), .imageData(rData)):
-      return lData == rData
+      lData == rData
     case let (.color(lColor)?, .color(rColor)?):
-      return lColor == rColor
+      lColor == rColor
     case let (.view(lView)?, .view(rView)?):
-      return lView === rView
+      lView === rView
     case (.none, .none):
-      return true
+      true
     case (.image?, _), (.color?, _), (.view?, _), (.imageData?, _), (.none, _):
-      return false
+      false
     }
   }
 }

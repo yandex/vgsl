@@ -26,7 +26,7 @@ public struct ImageHolderFactory {
     imageLoadingOptimizationEnabled: Bool = false
   ) {
     _make = { url, placeholder in
-      guard let url = url else {
+      guard let url else {
         return placeholder?.toImageHolder() ?? NilImageHolder()
       }
       if let localImage = localImageProvider?.localImage(for: url) {

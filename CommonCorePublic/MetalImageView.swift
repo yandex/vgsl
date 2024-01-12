@@ -115,7 +115,7 @@ extension MetalImageView: MTKViewDelegate {
   public func draw(in view: MTKView) {
     guard !view.bounds.isEmpty,
           let drawable = view.currentDrawable,
-          let commandQueue = commandQueue,
+          let commandQueue,
           let currentRenderPassDescriptor = view.currentRenderPassDescriptor
     else {
       return
@@ -125,7 +125,7 @@ extension MetalImageView: MTKViewDelegate {
     let renderEncoder = buffer?.makeRenderCommandEncoder(descriptor: currentRenderPassDescriptor)
     renderEncoder?.endEncoding()
 
-    guard let ciImage = ciImage else {
+    guard let ciImage else {
       buffer?.present(drawable)
       buffer?.commit()
       return
@@ -257,17 +257,17 @@ extension TintMode {
   fileprivate var composerType: ImageComposerType {
     switch self {
     case .sourceIn:
-      return .sourceIn
+      .sourceIn
     case .sourceAtop:
-      return .sourceAtop
+      .sourceAtop
     case .darken:
-      return .darken
+      .darken
     case .lighten:
-      return .lighten
+      .lighten
     case .multiply:
-      return .multiply
+      .multiply
     case .screen:
-      return .screen
+      .screen
     }
   }
 }

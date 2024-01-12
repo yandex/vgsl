@@ -26,14 +26,12 @@ extension CGSize {
           let selfRatio = aspectRatio else {
       return nil
     }
-
-    let multiplier: CGFloat
-
-    // rect is "wider", so we cut top and bottom of self
-    if sizeRatio > selfRatio {
-      multiplier = size.width / width
-    } else { // rect is "higher", so we cut left and right of self
-      multiplier = size.height / height
+    let multiplier: CGFloat = if sizeRatio > selfRatio {
+      // rect is "wider", so we cut top and bottom of self
+      size.width / width
+    } else {
+      // rect is "higher", so we cut left and right of self
+      size.height / height
     }
 
     return (self * multiplier).rounded()
@@ -54,13 +52,12 @@ extension CGSize {
       return nil
     }
 
-    let multiplier: CGFloat
-
-    // rect is "wider", so we leave empty sides
-    if sizeRatio > selfRatio {
-      multiplier = size.height / height
-    } else { // rect is "higher", so we leave empty top and bottom
-      multiplier = size.width / width
+    let multiplier: CGFloat = if sizeRatio > selfRatio {
+      size.height / height
+      // rect is "wider", so we leave empty sides
+    } else {
+      // rect is "higher", so we leave empty top and bottom
+      size.width / width
     }
 
     return (self * multiplier).rounded()

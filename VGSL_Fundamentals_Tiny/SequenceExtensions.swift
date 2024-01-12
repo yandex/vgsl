@@ -64,14 +64,14 @@ extension Sequence {
   }
 
   @inlinable
-  public func maxElements<T: Comparable>(by scoringFunction: (Element) -> T) -> [Element] {
+  public func maxElements(by scoringFunction: (Element) -> some Comparable) -> [Element] {
     let scores = map(scoringFunction)
     guard let maxScore = scores.max() else {
       return []
     }
     return zip(scores, self)
       .filter { $0.0 == maxScore }
-      .map { $0.1 }
+      .map(\.1)
   }
 
   @inlinable
@@ -95,7 +95,7 @@ extension Sequence {
   ) rethrows -> [KeyType: ValueType] {
     var result = [:] as [KeyType: ValueType]
     for element in self {
-      result[try keyMapper(element)] = try valueMapper(element)
+      try result[keyMapper(element)] = try valueMapper(element)
     }
     return result
   }
@@ -156,10 +156,10 @@ extension Sequence where Element: Numeric {
 }
 
 @inlinable
-public func unzip<SequenceType: Sequence, E1, E2>(
-  _ sequence: SequenceType
-) -> ([E1], [E2]) where SequenceType.Element == (E1, E2) {
-  return (sequence.map { $0.0 }, sequence.map { $0.1 })
+public func unzip<E1, E2>(
+  _ sequence: some Sequence<(E1, E2)>
+) -> ([E1], [E2]) {
+  (sequence.map(\.0), sequence.map(\.1))
 }
 
 @inlinable
@@ -209,7 +209,7 @@ public func walkSync<IteratorType: IteratorProtocol, Element>(
       }
       inSyncCall = false
 
-      if let syncResult = syncResult {
+      if let syncResult {
         if syncResult {
           return
         } else {

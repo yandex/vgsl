@@ -225,9 +225,9 @@ extension NonEmpty where C: RangeReplaceableCollection & BidirectionalCollection
 }
 
 extension NonEmpty {
-  public func joined<S: Sequence, RRC: RangeReplaceableCollection>(
-    separator: S
-  ) -> NonEmpty<RRC> where Element == NonEmpty<RRC>, S.Element == RRC.Element {
+  public func joined<RRC: RangeReplaceableCollection>(
+    separator: some Sequence<RRC.Element>
+  ) -> NonEmpty<RRC> where Element == NonEmpty<RRC> {
     NonEmpty<RRC>(
       head.head, head.tail + RRC(separator) + RRC(tail.joined(separator: separator))
     )
@@ -241,7 +241,7 @@ extension NonEmpty {
 }
 
 extension NonEmpty {
-  public func randomElement<T: RandomNumberGenerator>(using generator: inout T) -> Element {
+  public func randomElement(using generator: inout some RandomNumberGenerator) -> Element {
     ContiguousArray(self).randomElement(using: &generator) ?? head
   }
 
@@ -253,7 +253,7 @@ extension NonEmpty {
 }
 
 extension NonEmpty where C: RangeReplaceableCollection {
-  public mutating func shuffle<T: RandomNumberGenerator>(using generator: inout T) {
+  public mutating func shuffle(using generator: inout some RandomNumberGenerator) {
     let result = ContiguousArray(self).shuffled(using: &generator)
     head = result.first ?? head
     tail = C(result.dropFirst())
@@ -265,7 +265,7 @@ extension NonEmpty where C: RangeReplaceableCollection {
   }
 
   @inlinable
-  public func shuffled<T: RandomNumberGenerator>(using generator: inout T) -> NonEmpty {
+  public func shuffled(using generator: inout some RandomNumberGenerator) -> NonEmpty {
     var copy = self
     copy.shuffle(using: &generator)
     return copy

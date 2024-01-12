@@ -138,11 +138,11 @@ extension URL {
 
   public static var openNotificationSettingsURL: URL {
     if #available(iOS 16, *) {
-      return URL(string: UIApplication.openNotificationSettingsURLString)!
+      URL(string: UIApplication.openNotificationSettingsURLString)!
     } else if #available(iOS 15.4, *) {
-      return URL(string: UIApplicationOpenNotificationSettingsURLString)!
+      URL(string: UIApplicationOpenNotificationSettingsURLString)!
     } else {
-      return .applicationOpenSettingsURL
+      .applicationOpenSettingsURL
     }
   }
 }

@@ -16,13 +16,13 @@ extension CGRect {
   public func coordinate(ofCorner corner: Corner) -> CGPoint {
     switch corner {
     case .topLeft:
-      return origin
+      origin
     case .topRight:
-      return CGPoint(x: maxX, y: minY)
+      CGPoint(x: maxX, y: minY)
     case .bottomLeft:
-      return CGPoint(x: minX, y: maxY)
+      CGPoint(x: minX, y: maxY)
     case .bottomRight:
-      return CGPoint(x: maxX, y: maxY)
+      CGPoint(x: maxX, y: maxY)
     }
   }
 
@@ -164,8 +164,8 @@ extension CGRect {
 
 public func contentSize(for frames: [CGRect]) -> CGSize {
   CGSize(
-    width: frames.map { $0.maxX }.max() ?? 0,
-    height: frames.map { $0.maxY }.max() ?? 0
+    width: frames.map(\.maxX).max() ?? 0,
+    height: frames.map(\.maxY).max() ?? 0
   )
 }
 

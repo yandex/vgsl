@@ -42,38 +42,38 @@ public struct ImageContentMode: Equatable {
   public func contentsGravity(isGeometryFlipped: Bool) -> CALayerContentsGravity {
     switch scale {
     case .resize:
-      return .resize
+      .resize
     case .aspectFill:
-      return .resizeAspectFill
+      .resizeAspectFill
     case .aspectFit:
-      return .resizeAspect
+      .resizeAspect
     case .aspectWidth:
-      return .resize
+      .resize
     case .noScale:
-      return noScaleGravity(isGeometryFlipped: isGeometryFlipped)
+      noScaleGravity(isGeometryFlipped: isGeometryFlipped)
     }
   }
 
   private func noScaleGravity(isGeometryFlipped: Bool) -> CALayerContentsGravity {
     switch (verticalAlignment, horizontalAlignment) {
     case (.top, .left):
-      return isGeometryFlipped ? .bottomLeft : .topLeft
+      isGeometryFlipped ? .bottomLeft : .topLeft
     case (.center, .left):
-      return .left
+      .left
     case (.bottom, .left):
-      return isGeometryFlipped ? .topLeft : .bottomLeft
+      isGeometryFlipped ? .topLeft : .bottomLeft
     case (.top, .center):
-      return isGeometryFlipped ? .bottom : .top
+      isGeometryFlipped ? .bottom : .top
     case (.center, .center):
-      return .center
+      .center
     case (.bottom, .center):
-      return isGeometryFlipped ? .top : .bottom
+      isGeometryFlipped ? .top : .bottom
     case (.top, .right):
-      return isGeometryFlipped ? .bottomRight : .topRight
+      isGeometryFlipped ? .bottomRight : .topRight
     case (.center, .right):
-      return .right
+      .right
     case (.bottom, .right):
-      return isGeometryFlipped ? .topRight : .bottomRight
+      isGeometryFlipped ? .topRight : .bottomRight
     }
   }
 }
@@ -128,11 +128,10 @@ extension ImageContentMode {
 
 extension ImageContentMode: CustomDebugStringConvertible {
   public var debugDescription: String {
-    let alignmentDescription: String
-    if verticalAlignment == .center, horizontalAlignment == .center {
-      alignmentDescription = "\(verticalAlignment)"
+    let alignmentDescription = if verticalAlignment == .center, horizontalAlignment == .center {
+      "\(verticalAlignment)"
     } else {
-      alignmentDescription = "\(verticalAlignment)-\(horizontalAlignment)"
+      "\(verticalAlignment)-\(horizontalAlignment)"
     }
     return "Scale: \(scale), Alignment: \(alignmentDescription)"
   }

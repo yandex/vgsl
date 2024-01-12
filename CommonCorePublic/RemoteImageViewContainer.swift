@@ -25,7 +25,7 @@ public final class RemoteImageViewContainer: UIView {
 
       let newValue = imageHolder
       imageRequest = imageHolder?.requestImageWithSource { [weak self] result in
-        guard let self = self,
+        guard let self,
               newValue === self.imageHolder else {
           return
         }

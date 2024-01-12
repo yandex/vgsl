@@ -22,9 +22,9 @@ enum HTMLTag: CustomStringConvertible, Equatable {
   var description: String {
     switch self {
     case .bold:
-      return "tag.bold"
+      "tag.bold"
     case let .font(color):
-      return "tag.font(color: \(dbgStr(color)))"
+      "tag.font(color: \(dbgStr(color)))"
     }
   }
 }

@@ -13,24 +13,24 @@ public enum ImageComposerType: FilterProtocol {
   public var name: String {
     switch self {
     case .sourceAtop:
-      return "CISourceAtopCompositing"
+      "CISourceAtopCompositing"
     case .sourceIn:
-      return "CISourceInCompositing"
+      "CISourceInCompositing"
     case .darken:
-      return "CIDarkenBlendMode"
+      "CIDarkenBlendMode"
     case .lighten:
-      return "CILightenBlendMode"
+      "CILightenBlendMode"
     case .multiply:
-      return "CIMultiplyCompositing"
+      "CIMultiplyCompositing"
     case .screen:
-      return "CIScreenBlendMode"
+      "CIScreenBlendMode"
     }
   }
 
   public var parameters: [String: Any] {
     switch self {
     case .sourceAtop, .sourceIn, .darken, .lighten, .multiply, .screen:
-      return [:]
+      [:]
     }
   }
 

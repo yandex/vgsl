@@ -27,7 +27,7 @@ public struct AccessibilityElement: Equatable, Codable {
       identifier: String? = nil
     ) {
       self.init(
-        label: label.compactMap { $0 }.joined(separator: " "),
+        label: label.compactMap { $0?.isEmpty == true ? nil : $0 }.joined(separator: " "),
         hint: hint,
         value: value,
         identifier: identifier
@@ -53,8 +53,9 @@ public struct AccessibilityElement: Equatable, Codable {
   public var strings: Strings
   public var enabled: Bool
   public var selected: Bool
-  public var startsMediaSession: Bool
-  public var hideElementWithChildren: Bool
+  public let startsMediaSession: Bool
+  public let hideElementWithChildren: Bool
+  public let isContainer: Bool
 
   public init(
     traits: Traits,
@@ -62,14 +63,16 @@ public struct AccessibilityElement: Equatable, Codable {
     enabled: Bool = true,
     selected: Bool = false,
     startsMediaSession: Bool = false,
-    hideElementWithChildren: Bool = false
+    hideElementWithChildren: Bool = false,
+    isContainer: Bool = false
   ) {
     self.traits = traits
     self.strings = strings
     self.enabled = enabled
     self.selected = selected
-    self.hideElementWithChildren = hideElementWithChildren
     self.startsMediaSession = startsMediaSession
+    self.hideElementWithChildren = hideElementWithChildren
+    self.isContainer = isContainer
   }
 }
 
@@ -148,6 +151,10 @@ extension AccessibilityElement {
         strings: Strings(label: $0)
       )
     }
+  }
+
+  public static func image(strings: Strings?) -> AccessibilityElement? {
+    strings.map { AccessibilityElement(traits: .image, strings: $0) }
   }
 
   public static func staticText(

@@ -22,11 +22,11 @@ extension Alignment {
   ) -> CGFloat {
     switch self {
     case .leading:
-      return 0
+      0
     case .center:
-      return ((availableSpace - contentSize) * 0.5).roundedToScreenScale
+      ((availableSpace - contentSize) * 0.5).roundedToScreenScale
     case .trailing:
-      return availableSpace - contentSize
+      availableSpace - contentSize
     }
   }
 }
@@ -35,11 +35,11 @@ extension Alignment: CustomDebugStringConvertible {
   public var debugDescription: String {
     switch self {
     case .leading:
-      return "Leading"
+      "Leading"
     case .center:
-      return "Center"
+      "Center"
     case .trailing:
-      return "Trailing"
+      "Trailing"
     }
   }
 }

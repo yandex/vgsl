@@ -3,8 +3,7 @@
 // TODO(dmt021): @_spi(Extensions)
 extension Dictionary {
   @inlinable
-  public init<K: Sequence, E: Sequence>(_ keys: K, _ values: E) where K.Element == Key,
-    E.Element == Value {
+  public init(_ keys: some Sequence<Key>, _ values: some Sequence<Value>) {
     self.init(zip(keys, values), uniquingKeysWith: { $1 })
   }
 
@@ -21,7 +20,7 @@ extension Dictionary {
 
   @inlinable
   public func transformed<T>(_ transform: (Value) throws -> T) rethrows -> [Key: T] {
-    [Key: T](try map { ($0.key, try transform($0.value)) }, uniquingKeysWith: { $1 })
+    try [Key: T](map { try ($0.key, transform($0.value)) }, uniquingKeysWith: { $1 })
   }
 
   @inlinable
@@ -31,7 +30,7 @@ extension Dictionary {
   ) rethrows -> [ResultKey: ResultValue] {
     var result = [:] as [ResultKey: ResultValue]
     for (key, value) in self {
-      result[try keyMapper(key)] = try valueMapper(value)
+      try result[keyMapper(key)] = try valueMapper(value)
     }
     return result
   }

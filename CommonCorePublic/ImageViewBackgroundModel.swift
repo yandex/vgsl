@@ -20,7 +20,7 @@ extension ImageViewBackgroundModel {
   }
 }
 
-extension Optional where Wrapped == ImageViewBackgroundModel {
+extension ImageViewBackgroundModel? {
   public func applyTo(_ view: UIView, oldValue: Self) {
     view.subviews.filter { $0 == oldValue?.view }.forEach { $0.removeFromSuperview() }
     view.backgroundColor = self?.color
@@ -35,9 +35,9 @@ extension ImageViewBackgroundModel {
   fileprivate var view: UIView? {
     switch self {
     case .color:
-      return nil
+      nil
     case let .view(view):
-      return view
+      view
     }
   }
 }
@@ -46,9 +46,9 @@ extension ImageViewBackgroundModel {
   fileprivate var color: UIColor? {
     switch self {
     case let .color(color):
-      return color.systemColor
+      color.systemColor
     case .view:
-      return nil
+      nil
     }
   }
 }

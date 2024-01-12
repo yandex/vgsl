@@ -19,7 +19,7 @@ struct HTMLTaggedString: CustomStringConvertible {
       case .bold:
         typo = typo.with(fontWeight: .bold)
       case let .font(color):
-        if let color = color {
+        if let color {
           typo = typo.with(color: color)
         }
       }

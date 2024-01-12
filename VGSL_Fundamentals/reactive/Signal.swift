@@ -94,7 +94,7 @@ extension Signal {
   }
 
   @inlinable
-  public static func values<S: Sequence>(_ values: S) -> Signal where S.Element == T {
+  public static func values(_ values: some Sequence<T>) -> Signal {
     Signal(addObserver: { observer in
       for value in values {
         observer.action(value)
@@ -311,7 +311,7 @@ extension Signal {
   /// Makes a new Signal based on `self`. It, and all subscriptions (`Disposable`s)
   /// are made by it retain the `object`
   @inlinable
-  public func retaining<U>(object: U) -> Signal<T> {
+  public func retaining(object: some Any) -> Signal<T> {
     Signal(addObserver: { observer in
       let baseDisposable = addObserver(observer)
       return Disposable {

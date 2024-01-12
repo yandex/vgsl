@@ -7,26 +7,26 @@ extension AccessibilityElement.Traits {
   public var uiTraits: UIAccessibilityTraits {
     switch self {
     case .button:
-      return .button
+      .button
     case .header:
-      return .header
+      .header
     case .link:
-      return .link
+      .link
     case .image:
-      return .image
+      .image
     case .staticText:
-      return .staticText
+      .staticText
     case .searchField:
-      return .searchField
+      .searchField
     case .tabBar:
-      return .tabBar
+      .tabBar
     case .switchButton:
       // https://github.com/akaDuality/AccessibilityTraits/blob/main/AccessibilityTraits/Trait/Traits.swift#L47
-      return [.button, UIAccessibilityTraits(rawValue: 1 << 53)]
+      [.button, UIAccessibilityTraits(rawValue: 1 << 53)]
     case .none:
-      return .none
+      .none
     case .updatesFrequently:
-      return .updatesFrequently
+      .updatesFrequently
     }
   }
 }
@@ -38,18 +38,32 @@ extension UIView {
     preservingIdentifier: Bool = true,
     forceIsAccessibilityElement: Bool? = nil
   ) {
-    guard let element = element else {
+    guard let element else {
       return
     }
+
     if element.hideElementWithChildren {
       isAccessibilityElement = false
       accessibilityElementsHidden = true
       return
     }
-    isAccessibilityElement = forceIsAccessibilityElement ?? (element.strings.label != nil)
-    accessibilityLabel = element.strings.label
-    accessibilityValue = element.strings.value
+
+    let strings = element.strings
+
+    if element.isContainer {
+      isAccessibilityElement = false
+      if #available(iOS 13, *) {
+        accessibilityContainerType = .semanticGroup
+      }
+    } else {
+      isAccessibilityElement = forceIsAccessibilityElement ?? (strings.label != nil)
+    }
+
+    accessibilityLabel = strings.label
+    accessibilityValue = strings.value
+    accessibilityHint = strings.hint
     accessibilityTraits = element.traits.uiTraits
+
     if !element.enabled {
       accessibilityTraits.insert(.notEnabled)
     }
@@ -59,11 +73,11 @@ extension UIView {
     if element.startsMediaSession {
       accessibilityTraits.insert(.startsMediaSession)
     }
-    accessibilityHint = element.strings.hint
+
     if preservingIdentifier {
-      accessibilityIdentifier = element.strings.identifier ?? accessibilityIdentifier
+      accessibilityIdentifier = strings.identifier ?? accessibilityIdentifier
     } else {
-      accessibilityIdentifier = element.strings.identifier
+      accessibilityIdentifier = strings.identifier
     }
   }
 

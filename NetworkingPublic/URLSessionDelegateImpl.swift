@@ -105,7 +105,7 @@ extension URLSessionDelegateImpl: URLSessionDataDelegate {
       URLCredential?
     ) -> Void
   ) {
-    guard let challengeHandler = challengeHandler else {
+    guard let challengeHandler else {
       return completionHandler(.performDefaultHandling, nil)
     }
     challengeHandler.handleChallenge(

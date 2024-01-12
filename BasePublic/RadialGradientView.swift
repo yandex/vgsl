@@ -33,10 +33,10 @@ public final class RadialGradientView: UIView {
 
   private func setGradientProperties() {
     gradientLayer.colors = [gradient.centerColor.cgColor]
-      + gradient.intermediatePoints.map { $0.color.cgColor }
+      + gradient.intermediatePoints.map(\.color.cgColor)
       + [gradient.outerColor.cgColor]
     gradientLayer.locations =
-      ([0] + gradient.intermediatePoints.map { $0.location } + [1]) as [NSNumber]
+      ([0] + gradient.intermediatePoints.map(\.location) + [1]) as [NSNumber]
   }
 
   public override func layoutSubviews() {
@@ -46,19 +46,17 @@ public final class RadialGradientView: UIView {
   }
 
   private var startPoint: CGPoint {
-    let centerX: CGFloat
-    switch gradient.centerX {
+    let centerX: CGFloat = switch gradient.centerX {
     case let .relative(x):
-      centerX = x
+      x
     case let .absolute(x):
-      centerX = CGFloat(x) / bounds.width
+      CGFloat(x) / bounds.width
     }
-    let centerY: CGFloat
-    switch gradient.centerY {
+    let centerY: CGFloat = switch gradient.centerY {
     case let .relative(y):
-      centerY = y
+      y
     case let .absolute(y):
-      centerY = CGFloat(y) / bounds.height
+      CGFloat(y) / bounds.height
     }
     return CGPoint(x: centerX, y: centerY)
   }

@@ -21,7 +21,7 @@ public final class Disposable {
 
 extension Disposable {
   @inlinable
-  public convenience init<S: Sequence>(_ disposables: S) where S.Element == Disposable {
+  public convenience init(_ disposables: some Sequence<Disposable>) {
     self.init {
       for disposable in disposables {
         disposable.dispose()

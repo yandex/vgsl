@@ -84,7 +84,7 @@ extension String {
         hyphenationLocale as CFLocale,
         nil
       )
-      return (hyphenIndex == kCFNotFound ? nil : hyphenIndex)
+      return hyphenIndex == kCFNotFound ? nil : hyphenIndex
     }
 
     let result = NSMutableString(string: self)

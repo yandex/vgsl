@@ -6,14 +6,14 @@ extension UIView {
   #if !os(tvOS)
   @available(iOSApplicationExtension, unavailable)
   public var statusBarFrame: CGRect? {
-    guard let window = window else { return nil }
+    guard let window else { return nil }
     let appStatusBarFrame = UIApplication.shared.statusBarFrame
     return convert(appStatusBarFrame, from: window)
   }
   #endif
 
   public func maybeAddSubview(_ view: UIView?) {
-    if let view = view {
+    if let view {
       addSubview(view)
     }
   }
@@ -73,7 +73,7 @@ extension UIView {
   }
 
   public var frameInWindowCoordinates: CGRect {
-    guard let window = window else {
+    guard let window else {
       return .null
     }
     return convert(bounds, to: window)
@@ -85,7 +85,7 @@ extension UIView {
   }
 
   public var visibleBounds: CGRect {
-    guard let window = window else {
+    guard let window else {
       return .null
     }
     let screen = window.screen
@@ -107,12 +107,24 @@ extension UIView {
     scale: CGFloat = 0
   ) -> Image? {
     let targetRect = CGRect(origin: .zero, size: bounds.size)
-    UIGraphicsBeginImageContextWithOptions(targetRect.size, isOpaque, scale)
-    guard let _ = UIGraphicsGetCurrentContext() else { return nil }
-
-    drawHierarchy(in: targetRect, afterScreenUpdates: afterScreenUpdates)
-    let screenshot = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
+    var screenshot: UIImage?
+    if #available(iOS 10.0, *) {
+      screenshot = UIGraphicsImageRenderer(
+        size: targetRect.size,
+        format: modified(UIGraphicsImageRendererFormat()) {
+          $0.opaque = isOpaque
+          $0.scale = scale
+        }
+      ).image { _ in
+        drawHierarchy(in: targetRect, afterScreenUpdates: afterScreenUpdates)
+      }
+    } else {
+      UIGraphicsBeginImageContextWithOptions(targetRect.size, isOpaque, scale)
+      defer { UIGraphicsEndImageContext() }
+      guard let _ = UIGraphicsGetCurrentContext() else { return nil }
+      drawHierarchy(in: targetRect, afterScreenUpdates: afterScreenUpdates)
+      screenshot = UIGraphicsGetImageFromCurrentImageContext()
+    }
 
     return screenshot?.crop(rect: cropRect, preserveScale: true)
   }
@@ -137,7 +149,7 @@ extension UIView {
     feedbackGenerator: PhysicalFeedbackGenerator?,
     completion: @escaping (Image?) -> Void
   ) {
-    guard let window = window else {
+    guard let window else {
       completion(nil)
       return
     }

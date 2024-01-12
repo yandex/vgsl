@@ -12,8 +12,8 @@ extension Collection {
   }
 
   @inlinable
-  public func floorIndex<T: BinaryFloatingPoint>(
-    _ index: T
+  public func floorIndex(
+    _ index: some BinaryFloatingPoint
   ) -> Int where Index == Int {
     guard !isEmpty else {
       return startIndex
@@ -24,8 +24,8 @@ extension Collection {
   }
 
   @inlinable
-  public func ceilIndex<T: BinaryFloatingPoint>(
-    _ index: T
+  public func ceilIndex(
+    _ index: some BinaryFloatingPoint
   ) -> Int where Index == Int {
     guard !isEmpty else {
       return startIndex
@@ -70,8 +70,8 @@ extension RangeReplaceableCollection {
   /// throws `InvalidArgumentError` when `desiredCount` is less than `count`
   public func paddedAtBeginning(upTo desiredCount: Int, with value: Element) throws -> Self {
     var result = self
-    result.insert(
-      contentsOf: Array(repeating: value, times: try UInt(value: desiredCount - count)),
+    try result.insert(
+      contentsOf: Array(repeating: value, times: UInt(value: desiredCount - count)),
       at: startIndex
     )
     return result

@@ -9,7 +9,7 @@ public enum Radix: Int {
 // TODO(dmt021): @_spi(Extensions)
 extension FixedWidthInteger {
   @inlinable
-  public init?<S>(_ text: S, safeRadix radix: Radix) where S: StringProtocol {
+  public init?(_ text: some StringProtocol, safeRadix radix: Radix) {
     // swiftlint:disable init_radix
     self.init(text, radix: radix.rawValue)
     // swiftlint:enable init_radix
@@ -19,8 +19,7 @@ extension FixedWidthInteger {
 // TODO(dmt021): @_spi(Extensions)
 extension String {
   @inlinable
-  public init<T>(_ value: T, safeRadix radix: Radix, uppercase: Bool = false)
-    where T: BinaryInteger {
+  public init(_ value: some BinaryInteger, safeRadix radix: Radix, uppercase: Bool = false) {
     // swiftlint:disable init_radix
     self.init(value, radix: radix.rawValue, uppercase: uppercase)
     // swiftlint:enable init_radix

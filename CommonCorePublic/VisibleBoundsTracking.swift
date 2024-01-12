@@ -38,4 +38,4 @@ extension VisibleBoundsTrackingLeaf {
   public func onVisibleBoundsChanged(from _: CGRect, to _: CGRect) {}
 }
 
-public typealias VisibleBoundsTrackingView = VisibleBoundsTracking & UIView
+public typealias VisibleBoundsTrackingView = UIView & VisibleBoundsTracking

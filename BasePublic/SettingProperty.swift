@@ -36,7 +36,7 @@ extension SettingProperty where T: RawRepresentable, T.RawValue: KeyValueDirectS
     let field = SettingProperty<[T.RawValue]>.storage(storage, key: key)
     return Property(
       getter: { field.value.map { $0.compactMap(T.init(rawValue:)) } },
-      setter: { field.value = $0?.map { $0.rawValue } }
+      setter: { field.value = $0?.map(\.rawValue) }
     )
   }
 }
@@ -66,15 +66,14 @@ extension SettingProperty where T: Archivable {
       }
     }, setter: {
       if let newValue = $0 {
-        let encodedValue: Data?
         // Exported with minimal iOS version 9.0.
-        if #available(iOS 11, tvOS 11, *) {
-          encodedValue = try? NSKeyedArchiver.archivedData(
+        let encodedValue = if #available(iOS 11, tvOS 11, *) {
+          try? NSKeyedArchiver.archivedData(
             withRootObject: newValue,
             requiringSecureCoding: false
           )
         } else {
-          encodedValue = NSKeyedArchiver.archivedData(
+          NSKeyedArchiver.archivedData(
             withRootObject: newValue
           )
         }

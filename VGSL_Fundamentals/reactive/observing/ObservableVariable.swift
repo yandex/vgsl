@@ -174,7 +174,7 @@ extension ObservableVariable {
     onNSObject object: Root
   ) -> ObservableVariable {
     let newValues = Signal.changesForKeyPath(keyPath, onNSObject: object, options: .new)
-      .compactMap { $0.change.newValue }
+      .compactMap(\.change.newValue)
     return ObservableVariable(
       getter: { object[keyPath: keyPath] },
       newValues: newValues
@@ -230,7 +230,7 @@ extension ObservableVariable {
 
 extension ObservableVariable {
   @inlinable
-  public func retaining<U>(_ object: U) -> Self {
+  public func retaining(_ object: some Any) -> Self {
     Self(initialValue: value, newValues: newValues.retaining(object: object))
   }
 
@@ -244,14 +244,14 @@ extension ObservableVariable {
     var inner: ObservableProperty<U>?
 
     let subscription = currentAndNewValues.addObserver { state in
-      guard let state = state else {
+      guard let state else {
         if inner != nil {
           _outer.wrappedValue = nil
           inner = nil
         }
         return
       }
-      if let inner = inner {
+      if let inner {
         inner.value = state
       } else {
         let localInner = ObservableProperty(initialValue: state)

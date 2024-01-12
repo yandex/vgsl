@@ -8,14 +8,14 @@ public enum ImageCropType: FilterProtocol {
   public var name: String {
     switch self {
     case .crop:
-      return "CICrop"
+      "CICrop"
     }
   }
 
   public var parameters: [String: Any] {
     switch self {
     case let .crop(rect):
-      return ["inputRectangle": rect]
+      ["inputRectangle": rect]
     }
   }
 

@@ -24,16 +24,15 @@ extension RGBAColor {
     let colorValue = hexString.dropFirst()
     guard let format = HexStringFormat(rawValue: colorValue.count) else { return nil }
     do {
-      let argb: UInt32
-      switch format {
+      let argb: UInt32 = switch format {
       case .rgb:
-        argb = try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
+        try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
       case .argb:
-        argb = try colorValueForShortFormat(colorValue)
+        try colorValueForShortFormat(colorValue)
       case .rrggbb:
-        argb = try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
+        try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
       case .aarrggbb:
-        argb = try colorValueForFullFormat(colorValue)
+        try colorValueForFullFormat(colorValue)
       }
       return colorWithARGBHexCode(argb)
     } catch {
@@ -86,7 +85,7 @@ extension RGBAColor: Codable {
   }
 }
 
-private func colorValueForShortFormat<S: StringProtocol>(_ string: S) throws -> UInt32 {
+private func colorValueForShortFormat(_ string: some StringProtocol) throws -> UInt32 {
   guard let value = UInt32(string, safeRadix: .hex) else {
     throw ColorError.unexpectedCharacter
   }
@@ -111,7 +110,7 @@ private func colorValueForShortFormat<S: StringProtocol>(_ string: S) throws -> 
   return aComp | rComp | gComp | bComp
 }
 
-private func colorValueForFullFormat<S: StringProtocol>(_ string: S) throws -> UInt32 {
+private func colorValueForFullFormat(_ string: some StringProtocol) throws -> UInt32 {
   guard let value = UInt32(string, safeRadix: .hex) else {
     throw ColorError.unexpectedCharacter
   }

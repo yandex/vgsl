@@ -13,11 +13,11 @@ extension URL {
   public static func mailToURL(_ email: String, subject: String?, body: String?) -> URL? {
     var params = [String: String]()
 
-    if let subject = subject {
+    if let subject {
       params["subject"] = subject
     }
 
-    if let body = body {
+    if let body {
       params["body"] = body
     }
 
@@ -27,7 +27,7 @@ extension URL {
   public func URLByAddingGETParameters(_ params: URLQueryParams) -> URL {
     var components = URLComponents(url: self, resolvingAgainstBaseURL: false)!
     var currentParams: URLQueryParams = components.queryItems?.map { ($0.name, $0.value) } ?? []
-    let overriddenNames = params.map { $0.name }
+    let overriddenNames = params.map(\.name)
     currentParams = currentParams.filter { !overriddenNames.contains($0.name) }
     let encodedQueryItems = (currentParams + params).map { name, value -> String in
       String(forQueryItemWithName: name, value: value)

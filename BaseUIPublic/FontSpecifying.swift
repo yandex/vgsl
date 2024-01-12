@@ -23,9 +23,9 @@ public final class FontSpecifiers {
   public func font(family: FontFamily, weight: FontWeight, size: CGFloat) -> Font {
     switch family {
     case .YSDisplay:
-      return display.font(weight: weight, size: size)
+      display.font(weight: weight, size: size)
     case .YSText:
-      return text.font(weight: weight, size: size)
+      text.font(weight: weight, size: size)
     }
   }
 }

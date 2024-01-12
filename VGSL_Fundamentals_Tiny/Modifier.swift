@@ -8,8 +8,8 @@ public func modified<T>(_ value: T, _ modificator: (inout T) throws -> Void) ret
 }
 
 @inlinable
-public func modifyError<T: Error, U: Error, R>(
-  _ modificator: (T) -> U,
+public func modifyError<T: Error, R>(
+  _ modificator: (T) -> some Error,
   _ block: () throws -> R
 ) throws -> R {
   do {

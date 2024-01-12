@@ -77,7 +77,11 @@ public func measureString(
 }
 
 private let sizeForString =
-  memoizeAClass { (string: NSAttributedString, maxTextSize: CGSize, maxNumberOfLines: Int) -> CGSize in
+  memoizeAClass { (
+    string: NSAttributedString,
+    maxTextSize: CGSize,
+    maxNumberOfLines: Int
+  ) -> CGSize in
     let layout = computeLayout(
       for: string,
       maxTextSize: maxTextSize,
@@ -143,7 +147,7 @@ struct TextLayout {
   private var sourceLength: Int
 
   var width: CGFloat {
-    lines.map { $0.bounds.width }.max() ?? 0
+    lines.map(\.bounds.width).max() ?? 0
   }
 
   var height: CGFloat {
@@ -458,7 +462,7 @@ extension NSAttributedString {
         y: rect.origin.y + lineOriginY - bounds.ascent
       )
 
-      if let context = context {
+      if let context {
         let lineRunsLayout = line.draw(
           at: textPosition,
           in: context,
@@ -634,8 +638,8 @@ extension NSAttributedString {
       needDrawTrailingPointer = false
     }
 
-    guard let leadingSelectionOffset = leadingSelectionOffset,
-          let trailingSelectionOffset = trailingSelectionOffset else {
+    guard let leadingSelectionOffset,
+          let trailingSelectionOffset else {
       return
     }
 
@@ -721,13 +725,13 @@ extension NSAttributedString {
   private func horizontalOffset(lineWidth: CGFloat, maxWidth: CGFloat) -> CGFloat {
     switch textAlignment {
     case .left, .natural, .justified:
-      return 0
+      0
     case .center:
-      return max(((maxWidth - lineWidth) / 2).roundedToScreenScale, 0)
+      max(((maxWidth - lineWidth) / 2).roundedToScreenScale, 0)
     case .right:
-      return max(maxWidth - lineWidth, 0)
+      max(maxWidth - lineWidth, 0)
     @unknown default:
-      return 0
+      0
     }
   }
 
@@ -768,7 +772,7 @@ extension NSAttributedString {
     let token: NSAttributedString
     if lineBreakMode == .byClipping {
       token = NSAttributedString()
-    } else if let truncationToken = truncationToken {
+    } else if let truncationToken {
       token = truncationToken
     } else {
       let allAttributes = attributes(at: range.endIndex - 1, effectiveRange: nil)
@@ -830,22 +834,22 @@ extension NSAttributedString {
   private var truncationType: CTLineTruncationType {
     switch lineBreakMode {
     case .byTruncatingHead:
-      return .start
+      .start
     case .byTruncatingMiddle:
-      return .middle
+      .middle
     default:
-      return .end
+      .end
     }
   }
 
   private var singleLineBreakMode: Bool {
     switch lineBreakMode {
     case .byTruncatingHead, .byTruncatingMiddle:
-      return true
+      true
     case .byClipping, .byCharWrapping, .byWordWrapping, .byTruncatingTail:
-      return false
+      false
     @unknown default:
-      return false
+      false
     }
   }
 
@@ -863,7 +867,7 @@ extension NSAttributedString {
     let hyphenOffsets = copy.string.utf16
       .enumerated()
       .filter { $0.element == softHyphen }
-      .map { $0.offset }
+      .map(\.offset)
 
     var deleteCount = 0
 
@@ -903,7 +907,7 @@ extension CTTypesetter {
       .enumerated()
       .first(where: { _, unit in unit.isWhitespace })?.offset
 
-    if let whitespaceOffsetFromEnd = whitespaceOffsetFromEnd {
+    if let whitespaceOffsetFromEnd {
       return lineLength - whitespaceOffsetFromEnd - 1
     }
 
@@ -935,9 +939,9 @@ extension CTLine {
     }
 
     return TypographicBounds(
-      ascent: runsBounds.map { $0.ascent }.max()!,
-      descent: runsBounds.map { $0.descent }.max()!,
-      width: runsBounds.map { $0.width }.reduce(0, +)
+      ascent: runsBounds.map(\.ascent).max()!,
+      descent: runsBounds.map(\.descent).max()!,
+      width: runsBounds.map(\.width).reduce(0, +)
     )
   }
 
@@ -1254,25 +1258,24 @@ extension Array {
 extension NSAttributedString.VerticalPosition {
   fileprivate func verticalOffset(forHeight height: CGFloat, availableHeight: CGFloat) -> CGFloat {
     switch self {
-    case .top: return 0
-    case .center: return (availableHeight - height) / 2
-    case .bottom: return availableHeight - height
+    case .top: 0
+    case .center: (availableHeight - height) / 2
+    case .bottom: availableHeight - height
     }
   }
 }
 
 extension CGContext {
   fileprivate func performDrawing(shadedWith shadow: SystemShadow?, _ drawing: () -> Void) {
-    guard let shadow = shadow, let color = shadow.cgColor else {
+    guard let shadow, let color = shadow.cgColor else {
       drawing()
       return
     }
     // fix for UIKit compatibility
-    let offsetToUse: CGSize
-    if #available(iOS 14, *) {
-      offsetToUse = shadow.shadowOffset
+    let offsetToUse: CGSize = if #available(iOS 14, *) {
+      shadow.shadowOffset
     } else {
-      offsetToUse = CGSize(
+      CGSize(
         width: shadow.shadowOffset.width,
         height: -shadow.shadowOffset.height
       )

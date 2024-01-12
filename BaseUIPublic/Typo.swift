@@ -64,7 +64,7 @@ private struct ParagraphStyle: Equatable {
   }
 
   init?(nsParagraphStyle style: NSParagraphStyle?) {
-    guard let style = style else {
+    guard let style else {
       return nil
     }
 
@@ -150,7 +150,7 @@ private struct ParagraphStyle: Equatable {
 }
 
 private func setOptional<T>(_ value: T?, _ setter: (T) -> Void) {
-  if let value = value {
+  if let value {
     setter(value)
   }
 }
@@ -213,7 +213,7 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
     result.fastNonResettingSetValue(shadow?.systemShadow, for: .shadow)
     result.fastNonResettingSetValue(heightOverrunAllowed, for: DKAllowHeightOverrunAttributeName)
 
-    if let linkColor = linkColor /* , result[ActionsAttribute.Key] != nil */ {
+    if let linkColor /* , result[ActionsAttribute.Key] != nil */ {
       result.fastNonResettingSetValue(linkColor.systemColor, for: .foregroundColor)
     } else {
       result.fastNonResettingSetValue(color?.systemColor, for: .foregroundColor)
@@ -321,6 +321,10 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
     self + Typo(writingDirection: writingDirection)
   }
 
+  public func with(paragraphSpacing: CGFloat) -> Typo {
+    self + Typo(paragraphSpacing: paragraphSpacing)
+  }
+
   public func hyphenated(_ hyphenationFactor: Float) -> Typo {
     self + Typo(hyphenationFactor: hyphenationFactor)
   }
@@ -367,8 +371,8 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
 
   #if INTERNAL_BUILD
   public var isHeightSufficient: Bool {
-    guard let font = font,
-          let paragraphStyle = paragraphStyle,
+    guard let font,
+          let paragraphStyle,
           let maxLineHeight = paragraphStyle.maximumLineHeight else {
       return true
     }
@@ -483,36 +487,36 @@ extension UnderlineStyle {
     func description(forNumberOfLines numberOfLines: NumberOfLines) -> String {
       switch (self, numberOfLines) {
       case (.solid, .single):
-        return "————————"
+        "————————"
       case (.solid, .double):
-        return " ̳ ̳ ̳ ̳ ̳ ̳ ̳ ̳"
+        " ̳ ̳ ̳ ̳ ̳ ̳ ̳ ̳"
       case (.dash, .single):
-        return "--------"
+        "--------"
       case (.dash, .double):
-        return "‗‗‗‗‗‗‗‗"
+        "‗‗‗‗‗‗‗‗"
       case (.dot, .single):
-        return "......"
+        "......"
       case (.dot, .double):
-        return "::::::"
+        "::::::"
       case (.dashDot, .single):
-        return "-‧-‧-‧-‧-"
+        "-‧-‧-‧-‧-"
       case (.dashDot, .double):
-        return "=﹕=﹕=﹕="
+        "=﹕=﹕=﹕="
       case (.dashDotDot, .single):
-        return "-‧‧-‧‧-‧‧-"
+        "-‧‧-‧‧-‧‧-"
       case (.dashDotDot, .double):
-        return "=﹕﹕=﹕﹕="
+        "=﹕﹕=﹕﹕="
       }
     }
   }
 
   private var numberOfLines: NumberOfLines? {
     if contains(.double) {
-      return .double
+      .double
     } else if contains(.single) {
-      return .single
+      .single
     } else {
-      return nil
+      nil
     }
   }
 
@@ -533,7 +537,7 @@ extension UnderlineStyle {
   }
 
   fileprivate var prettyDescription: String {
-    guard let numberOfLines = numberOfLines else {
+    guard let numberOfLines else {
       return "None"
     }
 
@@ -552,13 +556,13 @@ extension UnderlineStyle {
 extension TextAlignment {
   fileprivate var description: String {
     switch self {
-    case .left: return "Left"
-    case .center: return "Center"
-    case .right: return "Right"
-    case .justified: return "Justified"
-    case .natural: return "Natural"
+    case .left: "Left"
+    case .center: "Center"
+    case .right: "Right"
+    case .justified: "Justified"
+    case .natural: "Natural"
     @unknown default:
-      return "unknown"
+      "unknown"
     }
   }
 }
@@ -566,14 +570,14 @@ extension TextAlignment {
 extension LineBreakMode {
   fileprivate var description: String {
     switch self {
-    case .byCharWrapping: return "By Char"
-    case .byClipping: return "Clip"
-    case .byTruncatingHead: return "Truncating head"
-    case .byTruncatingMiddle: return "Truncating middle"
-    case .byTruncatingTail: return "Truncating tail"
-    case .byWordWrapping: return "Word wrap"
+    case .byCharWrapping: "By Char"
+    case .byClipping: "Clip"
+    case .byTruncatingHead: "Truncating head"
+    case .byTruncatingMiddle: "Truncating middle"
+    case .byTruncatingTail: "Truncating tail"
+    case .byWordWrapping: "Word wrap"
     @unknown default:
-      return "unknown"
+      "unknown"
     }
   }
 }
@@ -605,7 +609,7 @@ extension ParagraphStyle {
 }
 
 extension CFMutableAttributedString {
-  fileprivate func apply<T: AnyObject>(_ attribute: T?, at range: CFRange, name: CFString) {
+  fileprivate func apply(_ attribute: (some AnyObject)?, at range: CFRange, name: CFString) {
     if let value = attribute {
       CFAttributedStringSetAttribute(self, range, name, value)
     }
@@ -721,6 +725,10 @@ extension Typo {
     self.init(paragraphStyle: ParagraphStyle(tabStops: tabs, defaultTabInterval: defaultInterval))
   }
 
+  public init(paragraphSpacing: CGFloat) {
+    self.init(paragraphStyle: ParagraphStyle(paragraphSpacing: paragraphSpacing))
+  }
+
   public init(kern: Kern) {
     self.init(kern: kern.rawValue)
   }
@@ -781,9 +789,9 @@ extension Typo {
 extension CGSize {
   fileprivate var withInvertedHeightForIOS14: CGSize {
     if #available(iOS 14, *) {
-      return CGSize(width: width, height: -height)
+      CGSize(width: width, height: -height)
     } else {
-      return self
+      self
     }
   }
 }
@@ -806,7 +814,7 @@ extension SystemShadow {
 
 extension RGBAColor {
   fileprivate static func fromAttribute(_ value: Any?) -> RGBAColor? {
-    guard let value = value else {
+    guard let value else {
       return nil
     }
 
@@ -853,13 +861,13 @@ extension Typo {
   }
 }
 
-extension Optional where Wrapped == ParagraphStyle {
+extension ParagraphStyle? {
   fileprivate static func +(lhs: ParagraphStyle?, rhs: ParagraphStyle?) -> ParagraphStyle? {
     switch (lhs, rhs) {
-    case let (lhsPS?, rhsPS?): return lhsPS + rhsPS
-    case let (result?, nil): return result
-    case let (nil, result?): return result
-    case (nil, nil): return nil
+    case let (lhsPS?, rhsPS?): lhsPS + rhsPS
+    case let (result?, nil): result
+    case let (nil, result?): result
+    case (nil, nil): nil
     }
   }
 }
@@ -867,10 +875,10 @@ extension Optional where Wrapped == ParagraphStyle {
 extension Optional where Wrapped: Collection {
   fileprivate static func +(lhs: Wrapped?, rhs: Wrapped?) -> Wrapped? {
     switch (lhs, rhs) {
-    case let (lhsValue?, rhsValue?): return lhsValue + rhsValue
-    case let (result?, nil): return result
-    case let (nil, result?): return result
-    case (nil, nil): return nil
+    case let (lhsValue?, rhsValue?): lhsValue + rhsValue
+    case let (result?, nil): result
+    case let (nil, result?): result
+    case (nil, nil): nil
     }
   }
 }

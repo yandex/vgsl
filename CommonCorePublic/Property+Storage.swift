@@ -22,11 +22,10 @@ extension Property where T: Codable {
         if let currentValue = value {
           return currentValue
         }
-        let storedValue: T?
-        if fileManager.fileExists(atPath: fileURL.value.path) {
-          storedValue = read(url: fileURL.value, onError: onError)
+        let storedValue: T? = if fileManager.fileExists(atPath: fileURL.value.path) {
+          read(url: fileURL.value, onError: onError)
         } else {
-          storedValue = nil
+          nil
         }
         let currentValue = storedValue ?? initialValue
         value = currentValue
@@ -50,7 +49,7 @@ private func read<T: Decodable>(url: URL, onError: (Error) -> Void) -> T? {
   }
 }
 
-private func write<T: Encodable>(_ value: T, url: URL, onError: (Error) -> Void) {
+private func write(_ value: some Encodable, url: URL, onError: (Error) -> Void) {
   do {
     let newData = try JSONEncoder().encode(value)
     try newData.write(to: url, options: .atomicWrite)

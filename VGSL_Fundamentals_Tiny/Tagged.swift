@@ -41,7 +41,7 @@ extension Tagged: Encodable where RawValue: Encodable {
 
 extension Tagged: Decodable where RawValue: Decodable {
   public init(from decoder: Decoder) throws {
-    self.init(rawValue: try .init(from: decoder))
+    try self.init(rawValue: .init(from: decoder))
   }
 }
 
@@ -156,7 +156,7 @@ extension Tagged: Numeric where Tag: NumericTag, RawValue: Numeric {
   public typealias Magnitude = RawValue.Magnitude
 
   @inlinable
-  public init?<T>(exactly source: T) where T: BinaryInteger {
+  public init?(exactly source: some BinaryInteger) {
     guard let value = RawValue(exactly: source) else {
       return nil
     }

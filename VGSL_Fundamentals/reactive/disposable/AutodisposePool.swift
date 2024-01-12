@@ -28,7 +28,7 @@ extension Disposable {
   }
 }
 
-extension Sequence where Element == Disposable {
+extension Sequence<Disposable> {
   public func dispose(in pool: AutodisposePool) {
     forEach(pool.add)
   }

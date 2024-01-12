@@ -241,7 +241,7 @@ extension Lazy {
   }
 
   @inlinable
-  internal func traceMap<U>(toType: U.Type) {
+  internal func traceMap(toType: (some Any).Type) {
     #if DEBUG
     let isLoaded = future.isFulfilled
     if _LazyTraceLoggingEnabled {

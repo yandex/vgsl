@@ -10,11 +10,11 @@ extension UIImage.Orientation {
   public var sizeDimensionsAreFlippedInCGImage: Bool {
     switch self {
     case .left, .leftMirrored, .right, .rightMirrored:
-      return true
+      true
     case .up, .upMirrored, .down, .downMirrored:
-      return false
+      false
     @unknown default:
-      return false
+      false
     }
   }
 }
@@ -108,7 +108,7 @@ extension Image {
     redrawn(withSize: size, overlayDrawingHandler: { ctx, rect in
       guard let cgGradient = CGGradient(
         colorsSpace: CGColorSpaceCreateDeviceRGB(),
-        colors: gradient.colors.map { $0.cgColor } as CFArray,
+        colors: gradient.colors.map(\.cgColor) as CFArray,
         locations: gradient.locations
       ) else {
         return
@@ -176,7 +176,7 @@ extension Image {
 
     let selfData = binaryRepresentation()
     let anotherData = image.binaryRepresentation()
-    return (selfData == anotherData)
+    return selfData == anotherData
   }
 
   public func imageThatFills(_ newSize: CGSize) -> Image? {
@@ -329,9 +329,9 @@ extension Image {
 extension CGImage {
   fileprivate var isOpaque: Bool {
     switch alphaInfo {
-    case .none, .noneSkipLast, .noneSkipFirst: return true
-    case .alphaOnly, .first, .last, .premultipliedFirst, .premultipliedLast: return false
-    @unknown default: return false
+    case .none, .noneSkipLast, .noneSkipFirst: true
+    case .alphaOnly, .first, .last, .premultipliedFirst, .premultipliedLast: false
+    @unknown default: false
     }
   }
 }

@@ -78,7 +78,7 @@ public struct Resource<T> {
 }
 
 @inlinable
-public func URLForResource<T>(_ resource: Resource<T>, withBaseURL baseURL: URL) -> URL {
+public func URLForResource(_ resource: Resource<some Any>, withBaseURL baseURL: URL) -> URL {
   var absoluteURL = baseURL
   if let path = resource.path {
     absoluteURL = baseURL.appendingPathComponent(path)
@@ -98,8 +98,8 @@ public func URLForResource<T>(_ resource: Resource<T>, withBaseURL baseURL: URL)
 }
 
 @inlinable
-public func URLRequestForResource<T>(
-  _ resource: Resource<T>,
+public func URLRequestForResource(
+  _ resource: Resource<some Any>,
   withBaseURL baseURL: URL
 ) -> URLRequest {
   var request = URLRequest(url: URLForResource(resource, withBaseURL: baseURL))

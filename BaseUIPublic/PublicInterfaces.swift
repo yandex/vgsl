@@ -21,15 +21,15 @@ extension FontWeight {
   fileprivate func cast() -> Font.Weight {
     switch self {
     case .bold:
-      return .bold
+      .bold
     case .semibold:
-      return .semibold
+      .semibold
     case .medium:
-      return .medium
+      .medium
     case .regular:
-      return .regular
+      .regular
     case .light:
-      return .light
+      .light
     }
   }
 }

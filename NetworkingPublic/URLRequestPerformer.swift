@@ -104,9 +104,9 @@ public final class URLRequestPerformer: URLRequestPerforming {
   }
 }
 
-extension Optional where Wrapped == URLRequestPerformer.ChallengeHandler {
+extension URLRequestPerformer.ChallengeHandler? {
   public var preferredChallengeHandler: ChallengeHandling? {
-    guard let self = self else { return externalURLSessionChallengeHandler }
+    guard let self else { return externalURLSessionChallengeHandler }
 
     switch self {
     case let .preferred(challengeHandler): return challengeHandler

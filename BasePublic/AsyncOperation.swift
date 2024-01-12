@@ -2,18 +2,17 @@
 
 import Foundation
 
-@objc(YCAsyncOperation)
 open class AsyncOperation: Operation {
-  @objc private dynamic var _isExecuting = false
-  @objc private dynamic var _isFinished = false
-  private let lock = RWLock()
+  private var _isExecuting = false
+  private var _isFinished = false
+  private lazy var lock = NSRecursiveLock()
 
   open override func start() {
     guard !isCancelled else {
       return complete()
     }
 
-    lock.write { _isExecuting = true }
+    writeFlag(.executing, value: true)
     doStart()
   }
 
@@ -23,8 +22,8 @@ open class AsyncOperation: Operation {
   }
 
   open func complete() {
-    lock.write { _isExecuting = false }
-    lock.write { _isFinished = true }
+    writeFlag(.executing, value: false)
+    writeFlag(.finished, value: true)
   }
 
   open override var isAsynchronous: Bool {
@@ -32,18 +31,45 @@ open class AsyncOperation: Operation {
   }
 
   open override var isExecuting: Bool {
-    lock.read { _isExecuting }
+    readFlag(.executing)
   }
 
   open override var isFinished: Bool {
-    lock.read { _isFinished }
+    readFlag(.finished)
+  }
+}
+
+extension AsyncOperation {
+  fileprivate enum Flag: String {
+    case executing = "isExecuting"
+    case finished = "isFinished"
   }
 
-  @objc private class var keyPathsForValuesAffectingIsExecuting: Set<String> {
-    [#keyPath(_isExecuting)]
+  fileprivate func writeFlag(_ flag: Flag, value: Bool) {
+    willChangeValue(forKey: flag.rawValue)
+    lock.withLock {
+      switch flag {
+      case .executing: _isExecuting = value
+      case .finished: _isFinished = value
+      }
+    }
+    didChangeValue(forKey: flag.rawValue)
   }
 
-  @objc private class var keyPathsForValuesAffectingIsFinished: Set<String> {
-    [#keyPath(_isFinished)]
+  fileprivate func readFlag(_ flag: Flag) -> Bool {
+    lock.withLock {
+      switch flag {
+      case .executing: _isExecuting
+      case .finished: _isFinished
+      }
+    }
+  }
+}
+
+extension NSLocking {
+  fileprivate func withLock<T>(_ block: () -> T) -> T {
+    lock()
+    defer { unlock() }
+    return block()
   }
 }

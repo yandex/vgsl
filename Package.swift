@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
   name: "vgsl",
   platforms: [
-    .iOS(.v11),
+    .iOS(.v9),
   ],
   products: [
     .library(name: "VGSL_Fundamentals_Tiny", targets: ["VGSL_Fundamentals_Tiny"]),
@@ -73,6 +73,5 @@ let package = Package(
       name: "VGSL_Fundamentals_Tiny",
       path: "VGSL_Fundamentals_Tiny"
     ),
-
   ]
 )

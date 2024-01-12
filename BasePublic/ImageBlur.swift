@@ -8,14 +8,14 @@ public enum ImageBlurType: FilterProtocol {
   public var name: String {
     switch self {
     case .gaussian:
-      return "CIGaussianBlur"
+      "CIGaussianBlur"
     }
   }
 
   public var parameters: [String: Any] {
     switch self {
     case let .gaussian(radius):
-      return [kCIInputRadiusKey: radius]
+      [kCIInputRadiusKey: radius]
     }
   }
 

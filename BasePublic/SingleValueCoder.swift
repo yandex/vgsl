@@ -3,7 +3,7 @@
 import Foundation
 
 struct SingleValueEncoder {
-  func encode<T: Encodable>(_ value: T) throws -> Data {
+  func encode(_ value: some Encodable) throws -> Data {
     do {
       return try PropertyListEncoder().encode(value)
     } catch let EncodingError.invalidValue(v, context) {
@@ -71,11 +71,11 @@ private final class SingleValueEncodingContainerImpl: SingleValueEncodingContain
     data = value.bitPattern.data
   }
 
-  func encode<T: FixedWidthInteger & Encodable>(_ value: T) throws {
+  func encode(_ value: some FixedWidthInteger & Encodable) throws {
     data = value.data
   }
 
-  func encode<T>(_ value: T) throws where T: Encodable {
+  func encode(_ value: some Encodable) throws {
     let impl = SingleValueEncoderImpl()
     try value.encode(to: impl)
     data = impl.container.data
@@ -136,11 +136,11 @@ private struct SingleValueDecodingContainerImpl: SingleValueDecodingContainer {
   }
 
   func decode(_: Double.Type) throws -> Double {
-    Double(bitPattern: try UInt64(data: data))
+    try Double(bitPattern: UInt64(data: data))
   }
 
   func decode(_: Float.Type) throws -> Float {
-    Float(bitPattern: try UInt32(data: data))
+    try Float(bitPattern: UInt32(data: data))
   }
 
   func decode<T: FixedWidthInteger & Decodable>(_: T.Type) throws -> T {
@@ -162,11 +162,10 @@ extension FixedWidthInteger {
     var bytes: [Base] = []
     for i in 0..<(Self.bitWidth / Base.bitWidth) {
       let shifted = self >> (i * SignedBase.bitWidth)
-      let result: Base
-      if Self.isSigned, i == (Self.bitWidth / Base.bitWidth) - 1 {
-        result = Base(bitPattern: SignedBase(truncatingIfNeeded: shifted))
+      let result = if Self.isSigned, i == (Self.bitWidth / Base.bitWidth) - 1 {
+        Base(bitPattern: SignedBase(truncatingIfNeeded: shifted))
       } else {
-        result = Base(truncatingIfNeeded: shifted)
+        Base(truncatingIfNeeded: shifted)
       }
       bytes.append(result)
     }

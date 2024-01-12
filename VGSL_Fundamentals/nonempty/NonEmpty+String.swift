@@ -18,7 +18,7 @@ extension NonEmpty where C == String {
   }
 
   @inlinable
-  public init?<S: LosslessStringConvertible>(_ value: S) {
+  public init?(_ value: some LosslessStringConvertible) {
     let string = String(value)
     guard let head = string.first else {
       return nil

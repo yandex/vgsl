@@ -35,7 +35,7 @@ private final class ScrollViewWrapper: ScrollableContent, ScrollToDragContent {
   weak var scrollDelegate: ScrollDelegate? {
     didSet {
       guard scrollDelegate !== oldValue else { return }
-      if let oldValue = oldValue {
+      if let oldValue {
         adapter.remove(oldValue)
       }
       if let delegate = scrollDelegate {

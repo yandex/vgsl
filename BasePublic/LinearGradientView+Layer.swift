@@ -51,13 +51,13 @@ public final class LinearGradientLayer: CALayer {
   }
 
   public override func draw(in ctx: CGContext) {
-    guard let gradient = gradient else {
+    guard let gradient else {
       return
     }
 
     guard let cgGradient = CGGradient(
       colorsSpace: CGColorSpaceCreateDeviceRGB(),
-      colors: gradient.colors.map { $0.cgColor } as CFArray,
+      colors: gradient.colors.map(\.cgColor) as CFArray,
       locations: gradient.locations
     ) else {
       assertionFailure()

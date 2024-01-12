@@ -8,14 +8,14 @@ public enum ImageGeneratorType: FilterProtocol {
   public var name: String {
     switch self {
     case .constantColor:
-      return "CIConstantColorGenerator"
+      "CIConstantColorGenerator"
     }
   }
 
   public var parameters: [String: Any] {
     switch self {
     case let .constantColor(color):
-      return [kCIInputColorKey: color]
+      [kCIInputColorKey: color]
     }
   }
 

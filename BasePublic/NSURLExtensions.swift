@@ -108,8 +108,8 @@ extension URL {
   }
 
   public var hostAndPathString: String? {
-    guard !isFileURL, let host = host else { return nil }
-    return host + path
+    guard !isFileURL, let host else { return nil }
+    return host + (path == "/" ? "" : path)
   }
 
   public var sanitizedHost: URL? {

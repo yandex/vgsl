@@ -209,16 +209,16 @@ extension NSAttributedString {
       at: 0,
       effectiveRange: nil
     ) as? SystemColor {
-      return color.rgba
+      color.rgba
     } else {
-      return .black
+      .black
     }
   }
 }
 
 extension Typo {
   fileprivate mutating func append(_ other: Typo?) {
-    if let other = other {
+    if let other {
       self = self + other
     }
   }

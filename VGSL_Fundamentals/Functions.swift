@@ -3,19 +3,19 @@
 import Foundation
 
 @inlinable
-public func assertedCast<T, U>(_ value: T) -> U? {
+public func assertedCast<U>(_ value: some Any) -> U? {
   assert(value is U)
   return value as? U
 }
 
 @inlinable
-public func assertedCast<T, U>(_ value: T?) -> U? {
+public func assertedCast<U>(_ value: (some Any)?) -> U? {
   assert(value == nil || value is U)
   return value as? U
 }
 
 @inlinable
-public func assertedCast<T, U>(_ value: T?, fallback: U) -> U {
+public func assertedCast<U>(_ value: (some Any)?, fallback: U) -> U {
   assertedCast(value) ?? fallback
 }
 

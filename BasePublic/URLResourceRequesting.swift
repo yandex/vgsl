@@ -14,7 +14,7 @@ extension URLResourceRequesting {
 
   public func getData(from url: URL, completion: @escaping CompletionHandler) -> Cancellable? {
     getDataWithSource(from: url) { result in
-      completion(result.map { $0.data })
+      completion(result.map(\.data))
     }
   }
 }

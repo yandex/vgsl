@@ -4,7 +4,7 @@ import UIKit
 
 public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   private let contentsView = UIView()
-  private lazy var contentsLayer = { contentsView.layer }()
+  private lazy var contentsLayer = contentsView.layer
   private lazy var clipMask: CALayer = {
     let mask = CALayer()
     mask.backgroundColor = UIColor.white.cgColor
@@ -49,7 +49,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
 
   public func setImage(_ image: UIImage?, animated: Bool?) {
     self.image = image
-    if let appearanceAnimation = appearanceAnimation, animated == true {
+    if let appearanceAnimation, animated == true {
       self.alpha = appearanceAnimation.startAlpha
       updateContent()
       UIView.animate(
@@ -165,7 +165,7 @@ private enum Content {
   case template(Image, color: Color)
 
   init(image: Image?, imageRedrawingColor: Color?) {
-    if let image = image, let color = imageRedrawingColor {
+    if let image, let color = imageRedrawingColor {
       self = .template(image, color: color)
     } else {
       self = .plain(image)
@@ -176,8 +176,8 @@ private enum Content {
 extension URLRequestResult.Source {
   var shouldAnimate: Bool {
     switch self {
-    case .network: return true
-    case .cache: return false
+    case .network: true
+    case .cache: false
     }
   }
 }

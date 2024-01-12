@@ -17,7 +17,7 @@ extension UIImage {
     if delayObject == 0 {
       delayObject = gifProperties[kCGImagePropertyGIFDelayTime] as? Double
     }
-    if let delayObject = delayObject, delayObject > 0 {
+    if let delayObject, delayObject > 0 {
       return delayObject
     }
     return delay
@@ -79,7 +79,7 @@ extension UIImage {
   }
 }
 
-extension Array where Element == Int {
+extension [Int] {
   fileprivate var gcd: Int {
     guard !isEmpty else { return 0 }
     return reduce(0) { BaseUIPublic.gcd($0, $1) }

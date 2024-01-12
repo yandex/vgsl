@@ -64,9 +64,9 @@ extension UIScrollView: ScrollViewType {
   // Exported with minimal iOS version 9.0.
   public var adjustedInsetForContent: UIEdgeInsets {
     if #available(iOS 11, tvOS 11, *) {
-      return adjustedContentInset
+      adjustedContentInset
     } else {
-      return contentInset
+      contentInset
     }
   }
 }

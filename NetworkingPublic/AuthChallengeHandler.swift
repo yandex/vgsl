@@ -28,7 +28,7 @@ final class AuthChallengeHandler: ChallengeHandling {
     }
     #endif
 
-    if let nextHandler = nextHandler {
+    if let nextHandler {
       nextHandler.handleChallenge(
         with: protectionSpace,
         completionHandler: completionHandler

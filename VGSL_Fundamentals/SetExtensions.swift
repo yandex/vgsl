@@ -3,9 +3,9 @@
 // TODO(dmt021): @_spi(Extensions)
 extension Set {
   @inlinable
-  public static func union<T: Collection>(
-    _ sets: T
-  ) -> Set<Element> where T.Element == Set<Element> {
+  public static func union(
+    _ sets: some Collection<Set<Element>>
+  ) -> Set<Element> {
     sets.reduce(into: Set<Element>()) { $0.formUnion($1) }
   }
 }

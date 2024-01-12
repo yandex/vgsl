@@ -35,7 +35,11 @@ public final class CompletionAccumulator: CompletionAccumulating {
   public func getPartialCompletion() -> Completion {
     incrementGeneratedCounter()
     var performed = false
-    return { [incrementAndReturnCompletedCounter, getGeneratedCounter, performCumulativeCompletions] in
+    return { [
+      incrementAndReturnCompletedCounter,
+      getGeneratedCounter,
+      performCumulativeCompletions
+    ] in
       guard !performed else {
         return
       }

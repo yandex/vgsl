@@ -136,7 +136,7 @@ extension ObservableProperty {
     onNSObject object: Root
   ) -> ObservableProperty {
     let newValues = Signal.changesForKeyPath(keyPath, onNSObject: object, options: .new)
-      .compactMap { $0.change.newValue }
+      .compactMap(\.change.newValue)
     return ObservableProperty(
       getter: { object[keyPath: keyPath] },
       setter: { object[keyPath: keyPath] = $0 },
@@ -144,7 +144,7 @@ extension ObservableProperty {
     )
   }
 
-  public func retaining<U>(_ object: U) -> Self {
+  public func retaining(_ object: some Any) -> Self {
     Self(
       getter: {
         withExtendedLifetime(object) {

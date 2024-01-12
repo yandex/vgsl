@@ -10,17 +10,17 @@ public struct OSInfo {
     @inlinable
     public static var current: Self {
       #if os(macOS)
-        .macOS
+      .macOS
       #elseif os(iOS)
-        .iOS
+      .iOS
       #elseif os(watchOS)
-        .watchOS
+      .watchOS
       #elseif os(tvOS)
-        .tvOS
+      .tvOS
       #elseif os(Linux)
-        .linux
+      .linux
       #elseif os(Windows)
-        .windows
+      .windows
       #else
       #error("Unknown platform")
       #endif

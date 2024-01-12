@@ -106,7 +106,7 @@ public func performAsyncAction<T>(
   var completion: ((T) -> Void)? = completion
 
   func tryComplete() {
-    if let value = value, minimumDelayPassed || skipDelayPredicate(value) {
+    if let value, minimumDelayPassed || skipDelayPredicate(value) {
       completion?(value)
       completion = nil
     }

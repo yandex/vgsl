@@ -145,7 +145,7 @@ extension NetworkRetryStrategy: NetworkReachabilityObserverDelegate {
 
       if extendedRetryingLogic {
         // Retrying on network errors may occur before timeout timer fires.
-        if let timer = timer, timer.isValid {
+        if let timer, timer.isValid {
           timer.invalidate()
         }
       }

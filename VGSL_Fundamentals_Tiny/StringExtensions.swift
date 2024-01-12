@@ -28,6 +28,6 @@ extension String {
   }
 }
 
-public func dbgStr<T>(_ val: T?) -> String {
+public func dbgStr(_ val: (some Any)?) -> String {
   val.map { "\($0)" } ?? "nil"
 }

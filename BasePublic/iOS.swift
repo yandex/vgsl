@@ -4,8 +4,8 @@ import CoreGraphics
 import UIKit
 
 public typealias ViewType = UIView
-public typealias ScrollView = UIView & ScrollViewType
-public typealias ScrollToDragView = UIView & ScrollToDrag
+public typealias ScrollView = ScrollViewType & UIView
+public typealias ScrollToDragView = ScrollToDrag & UIView
 
 public typealias BezierPath = UIBezierPath
 
@@ -33,14 +33,14 @@ extension StatusBarStyle {
   public var value: UIStatusBarStyle {
     switch self {
     case .default:
-      return .default
+      .default
     case .light:
-      return .lightContent
+      .lightContent
     case .dark:
       if #available(iOS 13, tvOS 13, *) {
-        return .darkContent
+        .darkContent
       } else {
-        return .default
+        .default
       }
     }
   }
@@ -50,9 +50,9 @@ extension KeyboardAppearance {
   public var system: UIKeyboardAppearance {
     switch self {
     case .light:
-      return .light
+      .light
     case .dark:
-      return .dark
+      .dark
     }
   }
 }

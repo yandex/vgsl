@@ -14,9 +14,9 @@ extension Theme {
   public var userInterfaceStyle: UserInterfaceStyle {
     switch self {
     case .light:
-      return .light
+      .light
     case .dark:
-      return .dark
+      .dark
     }
   }
 
@@ -24,9 +24,9 @@ extension Theme {
   public var colorScheme: ColorScheme {
     switch self {
     case .light:
-      return .light
+      .light
     case .dark:
-      return .dark
+      .dark
     }
   }
 }
@@ -35,9 +35,9 @@ extension UserInterfaceStyle {
   public var theme: Theme {
     switch self {
     case .light:
-      return .light
+      .light
     case .dark:
-      return .dark
+      .dark
     }
   }
 }

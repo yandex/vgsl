@@ -13,8 +13,8 @@ extension View {
     self.accessibilitySortPriority(priorities(tag))
   }
 
-  public func accessibilityPriority<Tag: RawRepresentable<BinaryInteger>>(
-    for tag: Tag
+  public func accessibilityPriority(
+    for tag: some RawRepresentable<BinaryInteger>
   ) -> some View {
     self.accessibilitySortPriority(Double(tag.rawValue))
   }

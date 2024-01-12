@@ -30,11 +30,10 @@ public struct AlertButton {
     isEnabled: Bool = true,
     action customAction: Action.CustomAction?
   ) {
-    let action: Action
-    if let customAction = customAction {
-      action = .custom(customAction)
+    let action: Action = if let customAction {
+      .custom(customAction)
     } else {
-      action = .none
+      .none
     }
     self.init(
       title: title,
@@ -106,11 +105,11 @@ extension AlertButton.Action {
     case (.none, .none),
          (.custom, .custom),
          (.submitInput, .submitInput):
-      return true
+      true
     case (.none, _),
          (.custom, _),
          (.submitInput, _):
-      return false
+      false
     }
   }
 }

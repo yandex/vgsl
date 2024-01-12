@@ -41,7 +41,7 @@ private class Bag<T> {
     counter += 1
     items[key] = Container(payload: item)
     return Disposable { [weak self] in
-      guard let self = self else { return }
+      guard let self else { return }
       guard let value = self.items.removeValue(forKey: key) else { return }
 
       value.payload = nil
