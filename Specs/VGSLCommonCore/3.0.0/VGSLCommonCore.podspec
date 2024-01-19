@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.swift_version = '5.9'
   s.requires_arc = true
   s.prefix_header_file = false
-  s.platforms = { :ios => '9.0', :tvos => '9.0' }
+  s.platforms = { :ios => '9.0', :tvos => '12.0' }
 
   s.dependency 'VGSLBase', s.version.to_s
 
