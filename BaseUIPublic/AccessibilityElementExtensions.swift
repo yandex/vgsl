@@ -52,7 +52,7 @@ extension UIView {
 
     if element.isContainer {
       isAccessibilityElement = false
-      if #available(iOS 13, *) {
+      if #available(iOS 13, tvOS 13, *) {
         accessibilityContainerType = .semanticGroup
       }
     } else {
