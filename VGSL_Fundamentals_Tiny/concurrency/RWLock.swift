@@ -2,10 +2,55 @@
 
 import Foundation
 
-public final class RWLock {
-  private var lock = pthread_rwlock_t()
+public var _RWLockUsesAllocatedUnfairLock = false
+
+public struct RWLock {
+  private let impl: any _ReadWriteLock
 
   public init() {
+    self.impl = _RWLockUsesAllocatedUnfairLock
+      ? _AllocatedUnfairLockReadWriteLockAdapter()
+      : _RWLockDeprecated()
+  }
+
+  public func read<T>(_ block: () throws -> T) rethrows -> T {
+    try impl.read(block)
+  }
+
+  public func write<T>(_ block: () throws -> T) rethrows -> T {
+    try impl.write(block)
+  }
+}
+
+private protocol _ReadWriteLock {
+  func read<T>(_ block: () throws -> T) rethrows -> T
+  func write<T>(_ block: () throws -> T) rethrows -> T
+}
+
+private struct _AllocatedUnfairLockReadWriteLockAdapter: _ReadWriteLock {
+  var underlying: AllocatedUnfairLock<Void>
+
+  init(underlying: AllocatedUnfairLock<Void>) {
+    self.underlying = underlying
+  }
+
+  init() {
+    self.init(underlying: AllocatedUnfairLock())
+  }
+
+  func read<T>(_ block: () throws -> T) rethrows -> T {
+    try underlying.withLockUnchecked(block)
+  }
+
+  func write<T>(_ block: () throws -> T) rethrows -> T {
+    try underlying.withLockUnchecked(block)
+  }
+}
+
+private final class _RWLockDeprecated: _ReadWriteLock {
+  var lock = pthread_rwlock_t()
+
+  init() {
     pthread_rwlock_init(&lock, nil)
   }
 
@@ -13,13 +58,13 @@ public final class RWLock {
     pthread_rwlock_destroy(&lock)
   }
 
-  public func read<T>(_ block: () throws -> T) rethrows -> T {
+  func read<T>(_ block: () throws -> T) rethrows -> T {
     pthread_rwlock_rdlock(&lock)
     defer { pthread_rwlock_unlock(&lock) }
     return try block()
   }
 
-  public func write<T>(_ block: () throws -> T) rethrows -> T {
+  func write<T>(_ block: () throws -> T) rethrows -> T {
     pthread_rwlock_wrlock(&lock)
     defer { pthread_rwlock_unlock(&lock) }
     return try block()

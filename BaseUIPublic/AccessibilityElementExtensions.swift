@@ -48,6 +48,8 @@ extension UIView {
       return
     }
 
+    accessibilityElementsHidden = false
+
     let strings = element.strings
 
     if element.isContainer {

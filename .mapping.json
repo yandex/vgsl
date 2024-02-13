@@ -289,7 +289,6 @@
   "VGSL_Fundamentals/UnsignedIntegerExtenstions.swift":"mobile/vgsl/public/VGSL_Fundamentals/UnsignedIntegerExtenstions.swift",
   "VGSL_Fundamentals/VGSL_Fundamentals_Exports.swift":"mobile/vgsl/public/VGSL_Fundamentals/VGSL_Fundamentals_Exports.swift",
   "VGSL_Fundamentals/WeakCollection.swift":"mobile/vgsl/public/VGSL_Fundamentals/WeakCollection.swift",
-  "VGSL_Fundamentals/concurrency/AllocatedUnfairLock.swift":"mobile/vgsl/public/VGSL_Fundamentals/concurrency/AllocatedUnfairLock.swift",
   "VGSL_Fundamentals/concurrency/GCD.swift":"mobile/vgsl/public/VGSL_Fundamentals/concurrency/GCD.swift",
   "VGSL_Fundamentals/concurrency/ThreadExtensions.swift":"mobile/vgsl/public/VGSL_Fundamentals/concurrency/ThreadExtensions.swift",
   "VGSL_Fundamentals/nonempty/NonEmpty+Array.swift":"mobile/vgsl/public/VGSL_Fundamentals/nonempty/NonEmpty+Array.swift",
@@ -327,6 +326,7 @@
   "VGSL_Fundamentals_Tiny/StringExtensions.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/StringExtensions.swift",
   "VGSL_Fundamentals_Tiny/Tagged.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/Tagged.swift",
   "VGSL_Fundamentals_Tiny/Zip3.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/Zip3.swift",
+  "VGSL_Fundamentals_Tiny/concurrency/AllocatedUnfairLock.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/concurrency/AllocatedUnfairLock.swift",
   "VGSL_Fundamentals_Tiny/concurrency/Atomic.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/concurrency/Atomic.swift",
   "VGSL_Fundamentals_Tiny/concurrency/RWLock.swift":"mobile/vgsl/public/VGSL_Fundamentals_Tiny/concurrency/RWLock.swift"
 }
