@@ -50,6 +50,7 @@ public final class RemoteImageViewContainer: UIView {
   public override func layoutSubviews() {
     super.layoutSubviews()
     contentView.frame = bounds
+    backgroundModel?.view?.frame = bounds
   }
 
   deinit {

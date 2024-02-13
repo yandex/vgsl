@@ -25,14 +25,13 @@ extension ImageViewBackgroundModel? {
     view.subviews.filter { $0 == oldValue?.view }.forEach { $0.removeFromSuperview() }
     view.backgroundColor = self?.color
     if let backgroundView = self?.view {
-      backgroundView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
       view.addSubview(backgroundView)
     }
   }
 }
 
 extension ImageViewBackgroundModel {
-  fileprivate var view: UIView? {
+  internal var view: UIView? {
     switch self {
     case .color:
       nil
