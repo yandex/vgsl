@@ -2,7 +2,7 @@
 
 import Foundation
 
-public func memoize<A: Hashable, B: SizedItem>(
+public func memoize<A, B: SizedItem>(
   sizeLimit: UInt,
   keyMapper: @escaping (A) -> String,
   _ f: @escaping (A) -> B
@@ -17,7 +17,7 @@ public func memoize<A: Hashable, B: SizedItem>(
   }
 }
 
-public func memoize<A: Hashable, B>(
+public func memoize<A, B>(
   sizeLimit: UInt,
   keyMapper: @escaping (A) -> String,
   size: @escaping (B) -> Int,
@@ -34,7 +34,7 @@ public func memoize<A: Hashable, B>(
   )
 }
 
-public func memoize<A: Hashable, B>(
+public func memoize<A, B>(
   sizeLimit: UInt,
   keyMapper: @escaping (A) -> String,
   sizeByKey: @escaping (A) -> Int,

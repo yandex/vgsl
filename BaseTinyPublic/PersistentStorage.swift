@@ -91,4 +91,9 @@ extension SyncPersistentStorage {
     get { self[key, NSDate.self] as Date? }
     set { self[key, NSDate.self] = newValue as NSDate? }
   }
+
+  public subscript(key: String) -> Data? {
+    get { self[key, NSData.self] as Data? }
+    set { self[key, NSData.self] = newValue as NSData? }
+  }
 }

@@ -54,6 +54,7 @@
   "BasePublic/LinearGradientView+Layer.swift":"mobile/vgsl/public/BasePublic/LinearGradientView+Layer.swift",
   "BasePublic/LinkedListOrderedDictionary.swift":"mobile/vgsl/public/BasePublic/LinkedListOrderedDictionary.swift",
   "BasePublic/LocalResourceURLProviding.swift":"mobile/vgsl/public/BasePublic/LocalResourceURLProviding.swift",
+  "BasePublic/LoginWithSourcePerformer.swift":"mobile/vgsl/public/BasePublic/LoginWithSourcePerformer.swift",
   "BasePublic/MainQueue.swift":"mobile/vgsl/public/BasePublic/MainQueue.swift",
   "BasePublic/NSArrayExtensions.swift":"mobile/vgsl/public/BasePublic/NSArrayExtensions.swift",
   "BasePublic/NSURLExtensions.swift":"mobile/vgsl/public/BasePublic/NSURLExtensions.swift",

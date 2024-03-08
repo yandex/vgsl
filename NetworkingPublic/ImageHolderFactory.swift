@@ -66,4 +66,22 @@ public struct ImageHolderFactory {
       }
     )
   }
+
+  public func withMutableInMemoryCache(cachedImageHolders: Property<[ImageHolder]>)
+    -> ImageHolderFactory {
+    guard !cachedImageHolders.value.isEmpty else { return self }
+    return ImageHolderFactory(
+      make: { url, image in
+        if let cached = cachedImageHolders.value.first(where: { $0.reused(
+          with: image,
+          remoteImageURL: url
+        ) != nil }) {
+          return cached
+        }
+        let holder = self.make(url, image)
+        cachedImageHolders.value.append(holder)
+        return holder
+      }
+    )
+  }
 }

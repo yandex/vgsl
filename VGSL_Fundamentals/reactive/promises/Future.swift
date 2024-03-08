@@ -2,34 +2,50 @@
 
 import Foundation
 
+/// `Future<T>` represents an asynchronous operation that can produce *single* value of type `T`
+/// at some point in the future.
+/// It provides mechanisms to attach callbacks that will be executed once the value is available.
 public final class Future<T> {
+  /// The type of callback to be executed when the future is resolved with a value.
   public typealias Callback = (T) -> Void
 
+  /// Represents the state of the future, which can either be pending with a list of callbacks to
+  /// execute upon fulfillment, or already fulfilled with a value.
   private enum State {
     case pending([Callback])
     case fulfilled(T)
 
+    /// Provides an initial state for a future, indicating that it's pending without any callbacks
+    /// attached yet.
     static var initial: State {
       .pending([])
     }
   }
 
+  /// Stores the state of the future, ensuring thread-safe access and modification.
   private let state: AllocatedUnfairLock<State>
 
+  /// Initializes a `Future` that is already fulfilled with a given value.
+  /// - Parameter payload: The value to fulfill the future with.
   public init(payload: T) {
     state = AllocatedUnfairLock(initialState: .fulfilled(payload))
   }
 
+  /// Private initializer for creating a future in its initial, pending state.
   private init() {
     state = AllocatedUnfairLock(initialState: .initial)
   }
 
-  // swiftlint:disable:next use_make_instead_of_create
+  /// Creates a new, pending `Future` along with a closure to feed (resolve) it with a value.
+  /// - Returns: A tuple containing the future and a closure to resolve it with a value.
   static func create() -> (Future<T>, feed: (T) -> Void) {
     let future = Future<T>()
     return (future, future.accept)
   }
 
+  /// Attaches a callback to be executed when the future is resolved.
+  /// If the future is already fulfilled, the callback is executed immediately.
+  /// - Parameter callback: The closure to execute when the future is resolved.
   public func resolved(_ callback: @escaping Callback) {
     let immediateResult = state.withLock { state -> T? in
       switch state {
@@ -47,6 +63,8 @@ public final class Future<T> {
     }
   }
 
+  /// Attempts to unwrap the future's value if it's already fulfilled.
+  /// - Returns: The future's value if available; otherwise, `nil`.
   public func unwrap() -> T? {
     state.withLock { state in
       switch state {
@@ -56,6 +74,8 @@ public final class Future<T> {
     }
   }
 
+  /// Resolves the future with a value and executes any pending callbacks.
+  /// - Parameter result: The value to fulfill the future with.
   private func accept(_ result: T) {
     let callbacks = state.withLock { state -> [Callback] in
       switch state {
@@ -78,13 +98,16 @@ public final class Future<T> {
 }
 
 extension Future: Cancellable where T: Cancellable {
+  /// Cancels the task associated with the future. If the future's value (`T`) is a task that
+  /// conforms to `Cancellable`, this method calls `cancel` on that task.
   public func cancel() {
     self.resolved { $0.cancel() }
   }
 }
 
 extension Future where T == Void {
-  @inlinable public convenience init() {
+  @inlinable
+  public convenience init() {
     self.init(payload: ())
   }
 }
@@ -97,6 +120,11 @@ extension Future: ExpressibleByBooleanLiteral where T == Bool {
 }
 
 extension Future {
+  /// Transforms the result of this future to a new future with a different type.
+  ///
+  /// - Parameter transform: A closure that takes the current future's payload and returns a new
+  /// value.
+  /// - Returns: A new `Future<U>` containing the transformed value.
   public func map<U>(_ transform: @escaping (T) -> U) -> Future<U> {
     let (future, feed) = Future<U>.create()
     resolved { payload in
@@ -105,6 +133,12 @@ extension Future {
     return future
   }
 
+  /// Transforms the result of this future to a new future with a different type, where the
+  /// transformation itself is asynchronous and returns another future.
+  ///
+  /// - Parameter transform: A closure that takes the current future's payload and returns a new
+  /// `Future<U>`.
+  /// - Returns: A new `Future<U>` resulting from the transformation.
   public func flatMap<U>(_ transform: @escaping (T) -> Future<U>) -> Future<U> {
     let (future, feed) = Future<U>.create()
     resolved { payload in
@@ -114,30 +148,67 @@ extension Future {
     return future
   }
 
+  /// Performs an action after this future is resolved, regardless of its value, and returns a new
+  /// future containing the result of the action.
+  ///
+  /// - Parameter continuation: A closure that returns a new value.
+  /// - Returns: A new `Future<U>` containing the result of the continuation action.
   @inlinable public func after<U>(_ continuation: @escaping () -> U) -> Future<U> {
     map { _ in continuation() }
   }
 
+  /// Similar to `after`, but the continuation itself returns a future.
+  ///
+  /// - Parameter continuation: A closure that returns a new `Future<U>`.
+  /// - Returns: A new `Future<U>` resulting from the continuation.
   @inlinable public func after<U>(_ continuation: @escaping () -> Future<U>) -> Future<U> {
     flatMap { _ in continuation() }
   }
 }
 
 extension Future {
+  /// Transforms the future into one that resolves with a Void type, effectively ignoring or
+  /// dropping the original payload.
+  /// This is useful in scenarios where the completion of an asynchronous operation is important,
+  /// but the result itself is not.
+  ///
+  /// - Returns: A new `Future<Void>` that resolves when the original future resolves, discarding
+  /// its payload.
   @inlinable public func dropPayload() -> Future<Void> {
     after { () }
   }
 
+  /// Forwards the result of the future to a given `Promise<T>`, resolving it with the future's
+  /// payload.
+  /// This is particularly useful for converting a `Future` into a `Promise`, or when you want to
+  /// chain multiple asynchronous operations.
+  ///
+  /// - Parameter promise: The `Promise<T>` to be resolved with the future's result.
   @inlinable public func forward(to promise: Promise<T>) {
     resolved(promise.resolve)
   }
 
+  /// Forwards the result of the future to a given `Promise<T>` on a specific dispatch queue.
+  /// This allows for thread-safe resolution of promises in environments where the execution context
+  /// matters.
+  ///
+  /// - Parameters:
+  ///   - promise: The `Promise<T>` to be resolved with the future's result.
+  ///   - queue: The `DispatchQueue` on which to resolve the promise.
   @inlinable public func forward(to promise: Promise<T>, on queue: DispatchQueue) {
     resolved { payload in queue.async { promise.resolve(payload) } }
   }
 }
 
 extension Future {
+  /// Creates a new future that resolves after a specified time interval, effectively delaying the
+  /// resolution.
+  ///
+  /// - Parameters:
+  ///   - timeInterval: The delay, in seconds, before the future resolves.
+  ///   - queue: The dispatch queue on which to schedule the delay.
+  /// - Returns: A new `Future` that will resolve with the original future's payload after the
+  /// specified delay.
   public func after(timeInterval: Double, on queue: DispatchQueue) -> Future {
     let (future, feed) = Future<T>.create()
     func forward(_ result: T) {
@@ -151,6 +222,9 @@ extension Future {
 }
 
 extension Future {
+  /// Checks whether the future has been fulfilled.
+  ///
+  /// - Returns: `true` if the future has been resolved with a payload, `false` otherwise.
   public var isFulfilled: Bool {
     guard let _ = unwrap() else { return false }
     return true
@@ -158,6 +232,10 @@ extension Future {
 }
 
 extension Future {
+  /// Transfers the resolution of the future to a specified dispatch queue.
+  ///
+  /// - Parameter queue: The dispatch queue to which the future's resolution should be transferred.
+  /// - Returns: A new `Future` that will resolve on the specified queue.
   public func transfer(to queue: DispatchQueue) -> Future<T> {
     let (future, feed) = Future<T>.create()
     resolved { payload in
@@ -170,6 +248,17 @@ extension Future {
 }
 
 extension Future {
+  /// Creates a `Future` that executes a non-future-returning asynchronous task after a specified
+  /// time interval.
+  ///
+  /// This method is useful for deferring the execution of a task and wrapping its result in a
+  /// `Future`.
+  ///
+  /// - Parameters:
+  ///   - task: The task to execute, returning a value of type `T`.
+  ///   - interval: The delay, in seconds, before the task is executed.
+  ///   - queue: The dispatch queue on which the task will be executed.
+  /// - Returns: A `Future<T>` representing the result of the asynchronous task.
   @inlinable public static func fromAsyncTask(
     _ task: @escaping () -> T,
     after interval: TimeInterval,
@@ -178,6 +267,17 @@ extension Future {
     Future<Void>().after(timeInterval: interval, on: queue).after(task)
   }
 
+  /// Creates a `Future` that executes a future-returning asynchronous task after a specified time
+  /// interval.
+  ///
+  /// This variant is designed for tasks that themselves return a `Future<T>`, allowing for easy
+  /// chaining of asynchronous operations that are initiated after a delay.
+  ///
+  /// - Parameters:
+  ///   - task: The task to execute, returning a `Future<T>`.
+  ///   - interval: The delay, in seconds, before the task is executed.
+  ///   - queue: The dispatch queue on which the task will be executed.
+  /// - Returns: A `Future<T>` representing the result of the asynchronous task.
   @inlinable public static func fromAsyncTask(
     _ task: @escaping () -> Future<T>,
     after interval: TimeInterval,
@@ -188,12 +288,24 @@ extension Future {
 }
 
 extension Future {
+  /// Creates a future from an asynchronous task.
+  ///
+  /// - Parameter task: The asynchronous task that accepts a completion handler.
+  /// - Returns: A `Future` representing the result of the asynchronous task.
   public static func fromAsyncTask(_ task: (@escaping (T) -> Void) -> Void) -> Future {
     let (future, feed) = Future<T>.create()
     task(feed)
     return future
   }
 
+  /// Creates a future that executes an asynchronous task on a specified background queue and
+  /// resolves on another queue.
+  ///
+  /// - Parameters:
+  ///   - task: The asynchronous task returning a future.
+  ///   - executeQueue: The queue on which the task is executed.
+  ///   - resolveQueue: The queue on which the future is resolved.
+  /// - Returns: A `Future<T>` that will be resolved with the task's result.
   public static func fromAsyncBackgroundTask(
     _ task: @escaping () -> Future<T>,
     executeOn executeQueue: DispatchQueue,
@@ -207,6 +319,14 @@ extension Future {
     return future
   }
 
+  /// Creates a future that executes a synchronous task on a specified background queue and resolves
+  /// on another queue.
+  ///
+  /// - Parameters:
+  ///   - task: The synchronous task to be executed.
+  ///   - executeQueue: The queue on which the task will be executed.
+  ///   - resolveQueue: The queue on which the future will be resolved.
+  /// - Returns: A `Future<T>` that will be resolved with the task's result.
   public static func fromBackgroundTask(
     _ task: @escaping () -> T,
     executingOn executeQueue: DispatchQueue,
@@ -222,6 +342,17 @@ extension Future {
     return future
   }
 
+  /// Creates a future that executes a synchronous task with an argument on a specified background
+  /// queue and resolves the result on another queue.
+  /// This method is useful for operations that require an input parameter and need to be executed
+  /// asynchronously to prevent blocking the main thread.
+  ///
+  /// - Parameters:
+  ///   - task: The synchronous task to be executed, which takes an argument of type `U`.
+  ///   - argument: The argument to pass to the task.
+  ///   - executeQueue: The queue on which the task will be executed.
+  ///   - resolveQueue: The queue on which the future will be resolved.
+  /// - Returns: A `Future<T>` that will be resolved with the task's result.
   public static func fromBackgroundTask<U>(
     _ task: @escaping (U) -> T,
     _ argument: U,
@@ -238,12 +369,25 @@ extension Future {
     return future
   }
 
+  /// Wraps an asynchronous task into a future.
+  ///
+  /// - Parameter task: A closure representing an asynchronous task that accepts a completion
+  /// handler.
+  /// - Returns: A `Future<T>` that will be resolved with the task's result.
   public static func wrap(_ task: (@escaping (T) -> Void) -> Void) -> Future<T> {
     let (future, feed) = Future<T>.create()
     task { feed($0) }
     return future
   }
 
+  /// Wraps an asynchronous task with parameters into a future.
+  ///
+  /// - Parameters:
+  ///   - task: A closure representing an asynchronous task that takes parameters and a completion
+  /// handler.
+  ///   - p1: The first parameter for the task.
+  ///   - p2: The second parameter for the task.
+  /// - Returns: A `Future<T>` that will be resolved with the task's result.
   public static func wrap<T1, T2>(
     _ task: (T1, T2, @escaping (T) -> Void) -> Void,
     _ p1: T1,
@@ -254,12 +398,25 @@ extension Future {
     return future
   }
 
+  /// Immediately creates a resolved future with a given payload.
+  ///
+  /// - Parameter payload: The value with which to resolve the future.
+  /// - Returns: A `Future<T>` that is already resolved with the given payload.
   public static func resolved(_ payload: T) -> Future<T> {
     let (future, feed) = Future<T>.create()
     feed(payload)
     return future
   }
 
+  /// Creates a future that times out after a specified interval, providing a fallback value if the
+  /// original future doesn't resolve in time.
+  ///
+  /// - Parameters:
+  ///   - timeout: The timeout interval in seconds.
+  ///   - queue: The dispatch queue to schedule the timeout on.
+  ///   - value: The fallback value if the timeout occurs.
+  /// - Returns: A `Future` that either resolves with the original future's result or the fallback
+  /// value after the timeout.
   public func timingOut(
     after timeout: TimeInterval,
     on queue: DispatchQueue,
@@ -271,6 +428,9 @@ extension Future {
 }
 
 extension Either where T == U {
+  /// A computed property that returns the value contained in the `Either` instance, regardless of
+  /// whether it's in the `left` or `right` case. This property simplifies the usage of `Either`
+  /// when both cases hold the same type, making it straightforward to access the underlying value.
   fileprivate var value: T {
     switch self {
     case let .left(value):

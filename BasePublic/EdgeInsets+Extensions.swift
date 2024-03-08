@@ -64,6 +64,11 @@ extension EdgeInsets: YCEdgeInsets {
   }
 
   @inlinable
+  public static func left(_ left: CGFloat) -> Self {
+    Self(top: 0, left: left, bottom: 0, right: 0)
+  }
+
+  @inlinable
   public static func all(_ value: CGFloat) -> Self {
     Self(top: value, left: value, bottom: value, right: value)
   }

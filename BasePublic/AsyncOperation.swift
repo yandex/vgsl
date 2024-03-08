@@ -2,6 +2,7 @@
 
 import Foundation
 
+@objc(YXAsyncOperation)
 open class AsyncOperation: Operation {
   private var _isExecuting = false
   private var _isFinished = false

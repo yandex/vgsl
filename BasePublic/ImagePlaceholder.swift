@@ -80,7 +80,7 @@ extension ImagePlaceholder? {
   }
 }
 
-public struct ImageData: Equatable {
+public struct ImageData: Hashable {
   private let base64: String
   private let highPriority: Bool
 
