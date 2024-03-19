@@ -3,12 +3,12 @@
 import Foundation
 
 public final class ViewImageHolder: ImageHolder {
-  private let view: ViewType
+  private let viewProvider: ViewProvider
   public var image: Image? { nil }
-  public var placeholder: ImagePlaceholder? { .view(view) }
+  public var placeholder: ImagePlaceholder? { .view(viewProvider) }
 
-  public init(view: ViewType) {
-    self.view = view
+  public init(viewProvider: ViewProvider) {
+    self.viewProvider = viewProvider
   }
 
   public func requestImageWithCompletion(_: @escaping ((Image?) -> Void)) -> Cancellable? {
@@ -20,10 +20,13 @@ public final class ViewImageHolder: ImageHolder {
   }
 
   public func equals(_ other: ImageHolder) -> Bool {
-    (other as? ViewImageHolder)?.view === view
+    guard let other = other as? ViewImageHolder else {
+      return false
+    }
+    return viewProvider.equals(other: other.viewProvider)
   }
 
   public var debugDescription: String {
-    "ViewImageHolder(" + view.debugDescription + ")"
+    "ViewImageHolder()"
   }
 }

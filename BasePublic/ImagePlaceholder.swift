@@ -7,7 +7,7 @@ public enum ImagePlaceholder: Equatable, CustomDebugStringConvertible {
   case image(Image)
   case imageData(ImageData)
   case color(Color)
-  case view(ViewType)
+  case view(ViewProvider)
 }
 
 extension ImagePlaceholder {
@@ -19,8 +19,8 @@ extension ImagePlaceholder {
       ImageDataHolder(imageData: imageData)
     case let .color(color):
       ColorHolder(color: color)
-    case let .view(view):
-      ViewImageHolder(view: view)
+    case let .view(viewProvider):
+      ViewImageHolder(viewProvider: viewProvider)
     }
   }
 
@@ -32,12 +32,8 @@ extension ImagePlaceholder {
       return "Image data"
     case let .color(color):
       return "Color(" + color.debugDescription + ")"
-    case let .view(view):
-      #if canImport(UIKit)
-      return "View(" + view.debugDescription + ")"
-      #else
-      return "View()"
-      #endif
+    case .view:
+      return "ViewProvider()"
     }
   }
 
@@ -50,11 +46,7 @@ extension ImagePlaceholder {
     case let (.color(lColor), .color(rColor)):
       return lColor == rColor
     case let (.view(lView), .view(rView)):
-      #if canImport(UIKit)
-      return lView == rView
-      #else
-      return lView === rView
-      #endif
+      return lView.equals(other: rView)
     case (.image, _), (.color, _), (.view, _), (.imageData, _):
       return false
     }
@@ -71,7 +63,7 @@ extension ImagePlaceholder? {
     case let (.color(lColor)?, .color(rColor)?):
       lColor == rColor
     case let (.view(lView)?, .view(rView)?):
-      lView === rView
+      lView.equals(other: rView)
     case (.none, .none):
       true
     case (.image?, _), (.color?, _), (.view?, _), (.imageData?, _), (.none, _):

@@ -2,9 +2,11 @@
 
 import UIKit
 
+import BasePublic
+
 public enum ImageViewBackgroundModel {
   case color(Color)
-  case view(UIView)
+  case view(ViewProvider)
 }
 
 extension ImageViewBackgroundModel {
@@ -12,8 +14,8 @@ extension ImageViewBackgroundModel {
     switch placeholder {
     case let .color(color):
       self = .color(color)
-    case let .view(view):
-      self = .view(view)
+    case let .view(viewProvider):
+      self = .view(viewProvider)
     case .image, .imageData:
       return nil
     }
@@ -35,8 +37,8 @@ extension ImageViewBackgroundModel {
     switch self {
     case .color:
       nil
-    case let .view(view):
-      view
+    case let .view(viewProvider):
+      viewProvider.loadView()
     }
   }
 }

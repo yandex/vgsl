@@ -86,6 +86,7 @@
   "BasePublic/URLResourceRequesting.swift":"mobile/vgsl/public/BasePublic/URLResourceRequesting.swift",
   "BasePublic/UrlOpener.swift":"mobile/vgsl/public/BasePublic/UrlOpener.swift",
   "BasePublic/ViewImageHolder.swift":"mobile/vgsl/public/BasePublic/ViewImageHolder.swift",
+  "BasePublic/ViewProvider.swift":"mobile/vgsl/public/BasePublic/ViewProvider.swift",
   "BasePublic/iOS.swift":"mobile/vgsl/public/BasePublic/iOS.swift",
   "BaseTinyPublic/Archivable.swift":"mobile/vgsl/public/BaseTinyPublic/Archivable.swift",
   "BaseTinyPublic/BaseTinyPublicExports.swift":"mobile/vgsl/public/BaseTinyPublic/BaseTinyPublicExports.swift",
