@@ -61,11 +61,12 @@ public final class LinkedListOrderedDictionary<T>: OrderedDictionary {
         keyToNode: [key: newNode]
       )
     case let .nonEmpty(head: head, tail: tail, keyToNode: keyToNode):
-      let newTail = if newNode.key == tail.key {
-        tail.previous ?? tail
-      } else {
-        tail
-      }
+      let newTail =
+        if newNode.key == tail.key {
+          tail.previous ?? tail
+        } else {
+          tail
+        }
       if newNode.key != head.key {
         newNode.previous?.next = newNode.next
         newNode.next?.previous = newNode.previous

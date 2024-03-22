@@ -46,18 +46,20 @@ public final class RadialGradientView: UIView {
   }
 
   private var startPoint: CGPoint {
-    let centerX: CGFloat = switch gradient.centerX {
-    case let .relative(x):
-      x
-    case let .absolute(x):
-      CGFloat(x) / bounds.width
-    }
-    let centerY: CGFloat = switch gradient.centerY {
-    case let .relative(y):
-      y
-    case let .absolute(y):
-      CGFloat(y) / bounds.height
-    }
+    let centerX: CGFloat =
+      switch gradient.centerX {
+      case let .relative(x):
+        x
+      case let .absolute(x):
+        CGFloat(x) / bounds.width
+      }
+    let centerY: CGFloat =
+      switch gradient.centerY {
+      case let .relative(y):
+        y
+      case let .absolute(y):
+        CGFloat(y) / bounds.height
+      }
     return CGPoint(x: centerX, y: centerY)
   }
 

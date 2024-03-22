@@ -137,11 +137,12 @@ private func makeDecodedImage(data: Data) -> Image? {
   }
 
   let imageOptions = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
-  let index = if #available(iOS 12.0, *) {
-    CGImageSourceGetPrimaryImageIndex(imageSource)
-  } else {
-    0
-  }
+  let index =
+    if #available(iOS 12.0, *) {
+      CGImageSourceGetPrimaryImageIndex(imageSource)
+    } else {
+      0
+    }
   guard let image = CGImageSourceCreateImageAtIndex(imageSource, index, imageOptions) else {
     return nil
   }

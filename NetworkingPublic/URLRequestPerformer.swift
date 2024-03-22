@@ -14,6 +14,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
   private let URLSessionDelegate: URLSessionDelegateImpl
   private let activeRequestsTracker: ActiveRequestsTracker?
   private let challengeHandler: ChallengeHandler?
+  private let redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)?
   private let trustedHosts: [String]
   private let urlTransform: URLTransform?
 
@@ -22,6 +23,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
     URLSessionDelegate: URLSessionDelegateImpl,
     activeRequestsTracker: ActiveRequestsTracker? = nil,
     challengeHandler: ChallengeHandler? = nil,
+    redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,
     trustedHosts: [String],
     urlTransform: URLTransform?
   ) {
@@ -29,6 +31,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
     self.URLSessionDelegate = URLSessionDelegate
     self.activeRequestsTracker = activeRequestsTracker
     self.challengeHandler = challengeHandler
+    self.redirectHandler = redirectHandler
     self.trustedHosts = trustedHosts
     self.urlTransform = urlTransform
   }
@@ -38,6 +41,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
     URLSessionDelegate: URLSessionDelegateImpl,
     activeRequestsTracker: ActiveRequestsTracker? = nil,
     challengeHandler: ChallengeHandler? = nil,
+    redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,
     urlTransform: URLTransform?
   ) {
     self.init(
@@ -45,15 +49,24 @@ public final class URLRequestPerformer: URLRequestPerforming {
       URLSessionDelegate: URLSessionDelegate,
       activeRequestsTracker: activeRequestsTracker,
       challengeHandler: challengeHandler,
+      redirectHandler: redirectHandler,
       trustedHosts: [],
       urlTransform: urlTransform
     )
   }
 
-  public convenience init(urlTransform: URLTransform?) {
-    let delegate = URLSessionDelegateImpl()
+  public convenience init(
+    urlTransform: URLTransform?,
+    redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,
+    delegate: URLSessionDelegateImpl = URLSessionDelegateImpl()
+  ) {
     let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: .main)
-    self.init(urlSession: session, URLSessionDelegate: delegate, urlTransform: urlTransform)
+    self.init(
+      urlSession: session,
+      URLSessionDelegate: delegate,
+      redirectHandler: redirectHandler,
+      urlTransform: urlTransform
+    )
   }
 
   #if INTERNAL_BUILD
@@ -96,6 +109,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
         trustedHosts: trustedHosts,
         request: request
       ),
+      redirectHandler: redirectHandler,
       completion: delegateCompletion,
       forTask: task
     )

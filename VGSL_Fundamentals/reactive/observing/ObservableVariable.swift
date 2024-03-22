@@ -126,7 +126,11 @@ extension ObservableVariable {
       pipe.send(current)
     }
     return ObservableVariable<U>(
-      getter: { current },
+      getter: {
+        withExtendedLifetime(token) {
+          current
+        }
+      },
       newValues: Signal(addObserver: { observer in
         let outerToken = pipe.signal.addObserver(observer)
         return Disposable {

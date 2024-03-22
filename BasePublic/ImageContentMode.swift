@@ -128,11 +128,12 @@ extension ImageContentMode {
 
 extension ImageContentMode: CustomDebugStringConvertible {
   public var debugDescription: String {
-    let alignmentDescription = if verticalAlignment == .center, horizontalAlignment == .center {
-      "\(verticalAlignment)"
-    } else {
-      "\(verticalAlignment)-\(horizontalAlignment)"
-    }
+    let alignmentDescription =
+      if verticalAlignment == .center, horizontalAlignment == .center {
+        "\(verticalAlignment)"
+      } else {
+        "\(verticalAlignment)-\(horizontalAlignment)"
+      }
     return "Scale: \(scale), Alignment: \(alignmentDescription)"
   }
 }

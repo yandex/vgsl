@@ -114,23 +114,25 @@ private func makeOrigin(
   contentSize: CGSize,
   bounds: CGSize
 ) -> CGPoint {
-  let x: CGFloat = switch contentMode.horizontalAlignment {
-  case .left:
-    0
-  case .center:
-    (bounds.width - contentSize.width) / 2
-  case .right:
-    bounds.width - contentSize.width
-  }
+  let x: CGFloat =
+    switch contentMode.horizontalAlignment {
+    case .left:
+      0
+    case .center:
+      (bounds.width - contentSize.width) / 2
+    case .right:
+      bounds.width - contentSize.width
+    }
 
-  let y: CGFloat = switch contentMode.verticalAlignment {
-  case .top:
-    0
-  case .center:
-    (bounds.height - contentSize.height) / 2
-  case .bottom:
-    bounds.height - contentSize.height
-  }
+  let y: CGFloat =
+    switch contentMode.verticalAlignment {
+    case .top:
+      0
+    case .center:
+      (bounds.height - contentSize.height) / 2
+    case .bottom:
+      bounds.height - contentSize.height
+    }
 
   return CGPoint(x: x, y: y)
 }

@@ -162,11 +162,12 @@ extension FixedWidthInteger {
     var bytes: [Base] = []
     for i in 0..<(Self.bitWidth / Base.bitWidth) {
       let shifted = self >> (i * SignedBase.bitWidth)
-      let result = if Self.isSigned, i == (Self.bitWidth / Base.bitWidth) - 1 {
-        Base(bitPattern: SignedBase(truncatingIfNeeded: shifted))
-      } else {
-        Base(truncatingIfNeeded: shifted)
-      }
+      let result =
+        if Self.isSigned, i == (Self.bitWidth / Base.bitWidth) - 1 {
+          Base(bitPattern: SignedBase(truncatingIfNeeded: shifted))
+        } else {
+          Base(truncatingIfNeeded: shifted)
+        }
       bytes.append(result)
     }
     return Data(bytes)

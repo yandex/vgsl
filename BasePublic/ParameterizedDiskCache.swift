@@ -183,7 +183,6 @@ private enum State<Storage> {
   case loaded(storage: Storage)
 }
 
-
 enum ParameterizedDiskCacheErrors: Error {
   case keyNotFound
 }

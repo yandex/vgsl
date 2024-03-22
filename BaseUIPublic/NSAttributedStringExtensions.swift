@@ -1026,6 +1026,7 @@ extension CTLine {
         }
 
         let borderWidth = border?.width ?? 0
+        let padding = background?.padding ?? .zero
 
         let scaleX = (run.typographicBounds.width - borderWidth) / run.typographicBounds.width
         let scaleY = (run.typographicBounds.height - borderWidth) / run.typographicBounds.height
@@ -1034,8 +1035,8 @@ extension CTLine {
           roundedRect: CGRect(
             origin: .zero,
             size: CGSize(
-              width: run.typographicBounds.width,
-              height: run.typographicBounds.height
+              width: run.typographicBounds.width + padding.horizontalInsets.sum,
+              height: run.typographicBounds.height + padding.verticalInsets.sum
             )
           ),
           byRoundingCorners: corners,
@@ -1043,8 +1044,8 @@ extension CTLine {
         )
         path.apply(CGAffineTransform(scaleX: scaleX, y: scaleY))
         path.apply(CGAffineTransform(
-          translationX: runPosition.x + borderWidth / 2,
-          y: runPosition.y + borderWidth / 2 - run.typographicBounds.descent
+          translationX: runPosition.x + borderWidth / 2 - padding.left,
+          y: runPosition.y + borderWidth / 2 - run.typographicBounds.descent - padding.bottom
         ))
 
         context.saveGState()
@@ -1272,14 +1273,15 @@ extension CGContext {
       return
     }
     // fix for UIKit compatibility
-    let offsetToUse: CGSize = if #available(iOS 14, *) {
-      shadow.shadowOffset
-    } else {
-      CGSize(
-        width: shadow.shadowOffset.width,
-        height: -shadow.shadowOffset.height
-      )
-    }
+    let offsetToUse: CGSize =
+      if #available(iOS 14, *) {
+        shadow.shadowOffset
+      } else {
+        CGSize(
+          width: shadow.shadowOffset.width,
+          height: -shadow.shadowOffset.height
+        )
+      }
     setShadow(
       offset: offsetToUse,
       blur: shadow.shadowBlurRadius,

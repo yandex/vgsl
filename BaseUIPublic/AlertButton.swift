@@ -30,11 +30,12 @@ public struct AlertButton {
     isEnabled: Bool = true,
     action customAction: Action.CustomAction?
   ) {
-    let action: Action = if let customAction {
-      .custom(customAction)
-    } else {
-      .none
-    }
+    let action: Action =
+      if let customAction {
+        .custom(customAction)
+      } else {
+        .none
+      }
     self.init(
       title: title,
       actionStyle: actionStyle,

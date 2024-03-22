@@ -178,8 +178,8 @@ public final class Label: UIView {
       inContext: context,
       rect: rect,
       actionKey: .link,
-      backgroundKey: nil,
-      borderKey: nil,
+      backgroundKey: BackgroundAttribute.Key,
+      borderKey: BorderAttribute.Key,
       selectedRange: nil
     )
   }

@@ -1,19 +1,29 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
-public enum HTTPCode: CaseIterable {
+public enum HTTPCode: Int, RawRepresentable, CaseIterable {
   case ok
   case noContent
+  case unauthorized
   case forbidden
   case notFound
   case conflict
-  case unknown
+  case other
 
-  public init(value: Int) {
-    switch value {
+  public typealias RawValue = Int
+
+  public init(rawValue: Int?) {
+    guard let rawValue else {
+      self = .other
+      return
+    }
+
+    switch rawValue {
     case 200:
       self = .ok
     case 204:
       self = .noContent
+    case 401:
+      self = .unauthorized
     case 403:
       self = .forbidden
     case 404:
@@ -21,7 +31,19 @@ public enum HTTPCode: CaseIterable {
     case 409:
       self = .conflict
     default:
-      self = .unknown
+      self = .other
+    }
+  }
+
+  public var rawValue: RawValue {
+    switch self {
+    case .ok: 200
+    case .noContent: 204
+    case .unauthorized: 401
+    case .forbidden: 403
+    case .notFound: 404
+    case .conflict: 409
+    case .other: -1
     }
   }
 }

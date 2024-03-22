@@ -24,16 +24,17 @@ extension RGBAColor {
     let colorValue = hexString.dropFirst()
     guard let format = HexStringFormat(rawValue: colorValue.count) else { return nil }
     do {
-      let argb: UInt32 = switch format {
-      case .rgb:
-        try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
-      case .argb:
-        try colorValueForShortFormat(colorValue)
-      case .rrggbb:
-        try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
-      case .aarrggbb:
-        try colorValueForFullFormat(colorValue)
-      }
+      let argb: UInt32 =
+        switch format {
+        case .rgb:
+          try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
+        case .argb:
+          try colorValueForShortFormat(colorValue)
+        case .rrggbb:
+          try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
+        case .aarrggbb:
+          try colorValueForFullFormat(colorValue)
+        }
       return colorWithARGBHexCode(argb)
     } catch {
       return nil

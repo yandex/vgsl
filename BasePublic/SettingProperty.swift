@@ -67,16 +67,17 @@ extension SettingProperty where T: Archivable {
     }, setter: {
       if let newValue = $0 {
         // Exported with minimal iOS version 9.0.
-        let encodedValue = if #available(iOS 11, tvOS 11, *) {
-          try? NSKeyedArchiver.archivedData(
-            withRootObject: newValue,
-            requiringSecureCoding: false
-          )
-        } else {
-          NSKeyedArchiver.archivedData(
-            withRootObject: newValue
-          )
-        }
+        let encodedValue =
+          if #available(iOS 11, tvOS 11, *) {
+            try? NSKeyedArchiver.archivedData(
+              withRootObject: newValue,
+              requiringSecureCoding: false
+            )
+          } else {
+            NSKeyedArchiver.archivedData(
+              withRootObject: newValue
+            )
+          }
         storage.set(encodedValue, forKey: key)
       } else {
         storage.removeObject(forKey: key)

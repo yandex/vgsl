@@ -9,25 +9,34 @@ private func isExpectedBytesCountToTransferValid(_ expectedBytesToTransfer: Int6
   expectedBytesToTransfer != NSURLSessionTransferSizeUnknown && expectedBytesToTransfer != 0
 }
 
+@objc(YXURLSessionDelegateImpl)
 public final class URLSessionDelegateImpl: NSObject {
   public typealias ProgressChangeHandler = (Double) -> Void
   public typealias CompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
+  public typealias RedirectHandler = (HTTPURLResponse, URLRequest) -> URLRequest
 
   private struct TaskState {
     let downloadProgressChangeHandler: ProgressChangeHandler?
     let uploadProgressChangeHandler: ProgressChangeHandler?
     let challengeHandler: ChallengeHandling?
+    let redirectHandler: RedirectHandler?
     let completionHandler: CompletionHandler
     var receivedData: Data
   }
 
   private var stateByTask = [URLSessionTask: TaskState]()
   private var challengeHandler: ChallengeHandling?
+  private let errorInferrer: (URLSessionTask, Error?, Data) -> NSError?
+
+  public init(errorInferrer: @escaping (URLSessionTask, Error?, Data) -> NSError? = inferError) {
+    self.errorInferrer = errorInferrer
+  }
 
   public func setHandlers(
     downloadProgressChange: ProgressChangeHandler? = nil,
     uploadProgressChange: ProgressChangeHandler? = nil,
     challengeHandler: ChallengeHandling? = nil,
+    redirectHandler: RedirectHandler? = nil,
     completion: @escaping CompletionHandler,
     forTask task: URLSessionDataTask
   ) {
@@ -37,6 +46,7 @@ public final class URLSessionDelegateImpl: NSObject {
       downloadProgressChangeHandler: downloadProgressChange,
       uploadProgressChangeHandler: uploadProgressChange,
       challengeHandler: challengeHandler,
+      redirectHandler: redirectHandler,
       completionHandler: completion,
       receivedData: Data()
     )
@@ -80,11 +90,7 @@ extension URLSessionDelegateImpl: URLSessionDataDelegate {
       return
     }
     let result: Result<(Data, HTTPURLResponse), NSError>
-    if let error = inferError(
-      fromTask: task,
-      sessionError: error,
-      receivedData: taskState.receivedData
-    ) {
+    if let error = errorInferrer(task, error, taskState.receivedData) {
       result = .failure(error)
     } else {
       let response = task.response as! HTTPURLResponse
@@ -115,7 +121,23 @@ extension URLSessionDelegateImpl: URLSessionDataDelegate {
   }
 }
 
-private func inferError(
+extension URLSessionDelegateImpl: URLSessionTaskDelegate {
+  public func urlSession(
+    _: URLSession,
+    task: URLSessionTask,
+    willPerformHTTPRedirection response: HTTPURLResponse,
+    newRequest request: URLRequest,
+    completionHandler: @escaping (URLRequest?) -> Void
+  ) {
+    Thread.assertIsMain()
+    guard let redirectHandler = stateByTask[task]?.redirectHandler else {
+      return completionHandler(request)
+    }
+    completionHandler(redirectHandler(response, request))
+  }
+}
+
+public func inferError(
   fromTask task: URLSessionTask,
   sessionError: Error?,
   receivedData: Data

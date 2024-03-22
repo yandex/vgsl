@@ -22,11 +22,12 @@ extension Property where T: Codable {
         if let currentValue = value {
           return currentValue
         }
-        let storedValue: T? = if fileManager.fileExists(atPath: fileURL.value.path) {
-          read(url: fileURL.value, onError: onError)
-        } else {
-          nil
-        }
+        let storedValue: T? =
+          if fileManager.fileExists(atPath: fileURL.value.path) {
+            read(url: fileURL.value, onError: onError)
+          } else {
+            nil
+          }
         let currentValue = storedValue ?? initialValue
         value = currentValue
         return currentValue
