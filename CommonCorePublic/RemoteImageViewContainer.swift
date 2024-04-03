@@ -18,21 +18,37 @@ public final class RemoteImageViewContainer: UIView {
 
   var imageRequest: Cancellable?
   public var imageHolder: ImageHolder? {
-    didSet {
-      imageRequest?.cancel()
-      contentView.setImage(nil, animated: false)
-      backgroundModel = imageHolder?.placeholder.flatMap(ImageViewBackgroundModel.init)
+    set {
+      setImageHolder(newValue) {}
+    }
+    get {
+      _imageHolder
+    }
+  }
 
-      let newValue = imageHolder
-      imageRequest = imageHolder?.requestImageWithSource { [weak self] result in
-        guard let self,
-              newValue === self.imageHolder else {
-          return
-        }
+  public func setImageHolder(_ imageHolder: ImageHolder?, completion: @escaping Action) {
+    _imageHolder = imageHolder
+    imageHolderUpdated(completion: completion)
+  }
 
-        self.contentView.setImage(result?.0, animated: result?.1.shouldAnimate)
-        self.backgroundModel = nil
+  private var _imageHolder: ImageHolder?
+
+  private func imageHolderUpdated(completion: @escaping Action) {
+    imageRequest?.cancel()
+    contentView.setImage(nil, animated: false)
+    backgroundModel = imageHolder?.placeholder.flatMap(ImageViewBackgroundModel.init)
+
+    let newValue = imageHolder
+    imageRequest = imageHolder?.requestImageWithSource { [weak self] result in
+      guard let self,
+            newValue === self.imageHolder else {
+        completion()
+        return
       }
+
+      self.contentView.setImage(result?.0, animated: result?.1.shouldAnimate)
+      self.backgroundModel = nil
+      completion()
     }
   }
 

@@ -45,8 +45,8 @@ extension ImagePlaceholder {
       return lData == rData
     case let (.color(lColor), .color(rColor)):
       return lColor == rColor
-    case let (.view(lView), .view(rView)):
-      return lView.equals(other: rView)
+    case let (.view(lViewProvider), .view(rViewProvider)):
+      return lViewProvider.equals(other: rViewProvider)
     case (.image, _), (.color, _), (.view, _), (.imageData, _):
       return false
     }
@@ -62,8 +62,8 @@ extension ImagePlaceholder? {
       lData == rData
     case let (.color(lColor)?, .color(rColor)?):
       lColor == rColor
-    case let (.view(lView)?, .view(rView)?):
-      lView.equals(other: rView)
+    case let (.view(lViewProvider)?, .view(rViewProvider)?):
+      lViewProvider.equals(other: rViewProvider)
     case (.none, .none):
       true
     case (.image?, _), (.color?, _), (.view?, _), (.imageData?, _), (.none, _):
