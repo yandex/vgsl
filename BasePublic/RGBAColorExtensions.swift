@@ -19,26 +19,30 @@ extension RGBAColor {
   }
 
   public static func color(withHexString hexString: String) -> RGBAColor? {
-    guard hexString.hasPrefix("#") else { return nil }
+    try? colorWithHexStringThrowing(hexString)
+  }
+  
+  private static func colorWithHexStringThrowing(_ hexString: String) throws -> RGBAColor {
+    guard hexString.hasPrefix("#") else {
+      throw ColorError.missingPrefix
+    }
     // exclude hash
     let colorValue = hexString.dropFirst()
-    guard let format = HexStringFormat(rawValue: colorValue.count) else { return nil }
-    do {
-      let argb: UInt32 =
-        switch format {
-        case .rgb:
-          try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
-        case .argb:
-          try colorValueForShortFormat(colorValue)
-        case .rrggbb:
-          try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
-        case .aarrggbb:
-          try colorValueForFullFormat(colorValue)
-        }
-      return colorWithARGBHexCode(argb)
-    } catch {
-      return nil
+    guard let format = HexStringFormat(rawValue: colorValue.count) else {
+      throw ColorError.unknownFormat
     }
+    let argb: UInt32 =
+      switch format {
+      case .rgb:
+        try colorValueForShortFormat(colorValue) | 0xFF_00_00_00
+      case .argb:
+        try colorValueForShortFormat(colorValue)
+      case .rrggbb:
+        try colorValueForFullFormat(colorValue) | 0xFF_00_00_00
+      case .aarrggbb:
+        try colorValueForFullFormat(colorValue)
+      }
+    return colorWithARGBHexCode(argb)
   }
 
   public func opaqueColor(forBackgroundColor backgroundColor: RGBAColor) -> RGBAColor {
@@ -77,7 +81,7 @@ extension RGBAColor: Codable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     let colorString = try container.decode(String.self)
-    self = RGBAColor.color(withHexString: colorString)!
+    self = try RGBAColor.colorWithHexStringThrowing(colorString)
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -120,5 +124,7 @@ private func colorValueForFullFormat(_ string: some StringProtocol) throws -> UI
 }
 
 private enum ColorError: Error {
+  case missingPrefix
+  case unknownFormat
   case unexpectedCharacter
 }
