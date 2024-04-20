@@ -64,6 +64,7 @@
   "BasePublic/OrderedDictionary.swift":"mobile/vgsl/public/BasePublic/OrderedDictionary.swift",
   "BasePublic/ParameterizedDiskCache.swift":"mobile/vgsl/public/BasePublic/ParameterizedDiskCache.swift",
   "BasePublic/PhysicalFeedbackGenerator.swift":"mobile/vgsl/public/BasePublic/PhysicalFeedbackGenerator.swift",
+  "BasePublic/PrivacyInfo.xcprivacy":"mobile/vgsl/public/BasePublic/PrivacyInfo.xcprivacy",
   "BasePublic/RGBAColorExtensions.swift":"mobile/vgsl/public/BasePublic/RGBAColorExtensions.swift",
   "BasePublic/RadialGradientView.swift":"mobile/vgsl/public/BasePublic/RadialGradientView.swift",
   "BasePublic/RelativePoint.swift":"mobile/vgsl/public/BasePublic/RelativePoint.swift",
