@@ -169,7 +169,7 @@ extension MetalImageView: MTKViewDelegate {
     ciContext = self.ciContext
     #endif
 
-    if #available(iOS 11, *) {
+    if #available(iOS 11, tvOS 11, *) {
       let destination = CIRenderDestination(
         width: Int(drawableSize.width),
         height: Int(drawableSize.height),

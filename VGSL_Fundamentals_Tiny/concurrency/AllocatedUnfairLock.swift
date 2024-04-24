@@ -130,7 +130,7 @@ typealias LowLevelLock = UInt32
 @inlinable
 func ll_lock_init(_ lock: UnsafeMutablePointer<LowLevelLock>) {
   let initValue: LowLevelLock
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     initValue = os_unfair_lock_s()._os_unfair_lock_opaque
   } else {
     initValue = LowLevelLock(bitPattern: OSSpinLock())
@@ -140,7 +140,7 @@ func ll_lock_init(_ lock: UnsafeMutablePointer<LowLevelLock>) {
 
 @inlinable
 func ll_lock_lock(_ lock: UnsafeMutablePointer<LowLevelLock>) {
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     os_unfair_lock_lock(
       UnsafeMutableRawPointer(lock)
         .assumingMemoryBound(to: os_unfair_lock_s.self)
@@ -152,7 +152,7 @@ func ll_lock_lock(_ lock: UnsafeMutablePointer<LowLevelLock>) {
 
 @inlinable
 func ll_lock_unlock(_ lock: UnsafeMutablePointer<LowLevelLock>) {
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     os_unfair_lock_unlock(
       UnsafeMutableRawPointer(lock)
         .assumingMemoryBound(to: os_unfair_lock_s.self)
@@ -164,7 +164,7 @@ func ll_lock_unlock(_ lock: UnsafeMutablePointer<LowLevelLock>) {
 
 @inlinable
 func ll_lock_trylock(_ lock: UnsafeMutablePointer<LowLevelLock>) -> Bool {
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     return os_unfair_lock_trylock(
       UnsafeMutableRawPointer(lock)
         .assumingMemoryBound(to: os_unfair_lock_s.self)
@@ -176,7 +176,7 @@ func ll_lock_trylock(_ lock: UnsafeMutablePointer<LowLevelLock>) -> Bool {
 
 @inlinable
 func ll_lock_assert_owner(_ lock: UnsafeMutablePointer<LowLevelLock>) {
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     os_unfair_lock_assert_owner(
       UnsafeMutableRawPointer(lock)
         .assumingMemoryBound(to: os_unfair_lock_s.self)
@@ -188,7 +188,7 @@ func ll_lock_assert_owner(_ lock: UnsafeMutablePointer<LowLevelLock>) {
 
 @inlinable
 func ll_lock_assert_not_owner(_ lock: UnsafeMutablePointer<LowLevelLock>) {
-  if #available(iOS 10, *) {
+  if #available(iOS 10, tvOS 10, *) {
     os_unfair_lock_assert_not_owner(
       UnsafeMutableRawPointer(lock)
         .assumingMemoryBound(to: os_unfair_lock_s.self)

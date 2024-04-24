@@ -6,7 +6,7 @@ let package = Package(
   name: "vgsl",
   platforms: [
     .iOS(.v9),
-    .tvOS(.v11),
+    .tvOS(.v9),
   ],
   products: [
     .library(name: "VGSL_Fundamentals_Tiny", targets: ["VGSL_Fundamentals_Tiny"]),

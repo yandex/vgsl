@@ -108,7 +108,7 @@ extension UIView {
   ) -> Image? {
     let targetRect = CGRect(origin: .zero, size: bounds.size)
     var screenshot: UIImage?
-    if #available(iOS 10.0, *) {
+    if #available(iOS 10.0, tvOS 10.0, *) {
       screenshot = UIGraphicsImageRenderer(
         size: targetRect.size,
         format: modified(UIGraphicsImageRendererFormat()) {

@@ -54,7 +54,7 @@ extension SettingProperty where T: Archivable {
         assertionFailure()
         return nil
       }
-      if #available(iOS 11, *) {
+      if #available(iOS 11, tvOS 11, *) {
         do {
           return try NSKeyedUnarchiver.unarchivedObject(ofClass: T.self, from: data)
         } catch let e as NSError {
