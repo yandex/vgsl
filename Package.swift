@@ -40,8 +40,7 @@ let package = Package(
         "BaseUIPublic",
         "VGSL_Fundamentals",
       ],
-      path: "BasePublic",
-      resources: [.copy("PrivacyInfo.xcprivacy")]
+      path: "BasePublic"
     ),
     .target(
       name: "CommonCorePublic",
