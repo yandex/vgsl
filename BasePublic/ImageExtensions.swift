@@ -293,11 +293,8 @@ extension Image: ImageHolder {
   }
 
   public func equals(_ other: ImageHolder) -> Bool {
-    guard let other = other as? Image else {
-      return false
-    }
-
-    return imagesDataAreEqual(self, other)
+    guard let otherImage = other as? Image else { return false }
+    return isEqual(otherImage)
   }
 }
 

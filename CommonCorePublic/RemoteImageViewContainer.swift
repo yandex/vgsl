@@ -11,6 +11,7 @@ public final class RemoteImageViewContainer: UIView {
 
   public var contentView: RemoteImageViewContentProtocol {
     didSet {
+      guard contentView !== oldValue else { return }
       oldValue.removeFromSuperview()
       addSubview(contentView)
     }
