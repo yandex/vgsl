@@ -9,8 +9,8 @@ let package = Package(
     .tvOS(.v9),
   ],
   products: [
-    .library(name: "VGSL_Fundamentals_Tiny", targets: ["VGSL_Fundamentals_Tiny"]),
-    .library(name: "VGSL_Fundamentals", targets: ["VGSL_Fundamentals"]),
+    .library(name: "VGSL-Fundamentals-Tiny", targets: ["VGSL_Fundamentals_Tiny"]),
+    .library(name: "VGSL-Fundamentals", targets: ["VGSL_Fundamentals"]),
     .library(name: "VGSL", targets: ["VGSL"]),
     .library(name: "BaseTinyPublic", targets: ["BaseTinyPublic"]),
     .library(name: "BaseUIPublic", targets: ["BaseUIPublic"]),
