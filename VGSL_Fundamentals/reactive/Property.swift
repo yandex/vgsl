@@ -69,14 +69,34 @@ public struct Property<T> {
   @inlinable
   public var projectedValue: Variable<T> { asVariable() }
 
+  #if DEBUG
+  @usableFromInline
+  let debugInfo: DebugInfo
+  #else
+  @inlinable
+  var debugInfo: DebugInfo { DebugInfo() }
+  #endif
+
   /// Initializes a `Property` with custom getter and setter closures.
   ///
   /// - Parameters:
   ///   - getter: A closure that returns the current value of the property.
   ///   - setter: A closure that is invoked with a new value to set the property.
   public init(getter: @escaping () -> T, setter: @escaping (T) -> Void) {
+    self.init(getter: getter, setter: setter, ancestors: [])
+  }
+
+  @usableFromInline
+  init(
+    getter: @escaping () -> T,
+    setter: @escaping (T) -> Void,
+    ancestors: [DebugInfo]
+  ) {
     self.getter = getter
     self.setter = setter
+    #if DEBUG
+    self.debugInfo = DebugInfo(callStack: Thread.callStackReturnAddresses, ancestors: ancestors)
+    #endif
   }
 
   /// Convenience initializer that sets up a `Property` with an initial value.
@@ -104,7 +124,8 @@ extension Property {
   public subscript<U>(dynamicMember path: WritableKeyPath<T, U>) -> Property<U> {
     Property<U>(
       getter: { self.value[keyPath: path] },
-      setter: { self.value[keyPath: path] = $0 }
+      setter: { self.value[keyPath: path] = $0 },
+      ancestors: [debugInfo]
     )
   }
 
@@ -116,7 +137,8 @@ extension Property {
   ) -> Property<ValueType?> where T == UnderlyingType? {
     Property<ValueType?>(
       getter: { self.value?[keyPath: path] },
-      setter: { self.value?[keyPath: path] = $0 }
+      setter: { self.value?[keyPath: path] = $0 },
+      ancestors: [debugInfo]
     )
   }
 
@@ -124,7 +146,7 @@ extension Property {
   /// This is useful for scenarios where observation or reactive bindings are required without
   /// exposing write access.
   public func asVariable() -> Variable<T> {
-    Variable(getter)
+    Variable(getter, ancestors: [debugInfo])
   }
 
   /// Initializes a `Property` with an initial value. This is a convenience initializer that
@@ -173,7 +195,8 @@ extension Property {
   public func bimap<U>(get: @escaping (T) -> U, set: @escaping (U) -> T) -> Property<U> {
     Property<U>(
       getter: compose(get, after: getter),
-      setter: compose(setter, after: set)
+      setter: compose(setter, after: set),
+      ancestors: [debugInfo]
     )
   }
 
@@ -190,7 +213,8 @@ extension Property {
   ) -> Property<U> {
     Property<U>(
       getter: compose(get, after: getter),
-      setter: { [getter, setter] value in setter(modified(getter()) { modify(&$0, value) }) }
+      setter: { [getter, setter] value in setter(modified(getter()) { modify(&$0, value) }) },
+      ancestors: [debugInfo]
     )
   }
 
@@ -208,7 +232,11 @@ extension Property {
   /// This method is marked unsafe because it bypasses the safety checks typically provided by
   /// `ObservableProperty`.
   public func unsafeMakeObservable() -> ObservableProperty<T> {
-    ObservableProperty(getter: getter, privateSetter: setter)
+    ObservableProperty(
+      getter: getter,
+      privateSetter: setter,
+      ancestors: [debugInfo]
+    )
   }
 }
 
@@ -227,7 +255,8 @@ extension Property {
       setter: { [setter] value in
         Thread.assertIsMain()
         setter(value)
-      }
+      },
+      ancestors: [debugInfo]
     )
   }
 
@@ -264,7 +293,8 @@ extension Property {
     where Key: Hashable, T == [Key: Value] {
     Property<Value?>(
       getter: { self.value[key] },
-      setter: { self.value[key] = $0 }
+      setter: { self.value[key] = $0 },
+      ancestors: [debugInfo]
     )
   }
 }

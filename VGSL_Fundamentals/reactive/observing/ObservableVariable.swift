@@ -1,4 +1,5 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
+
 import Foundation
 
 /// A property wrapper that enables observation of value changes. It is designed for use in reactive
@@ -16,6 +17,14 @@ public struct ObservableVariable<T> {
   /// react to value changes in real time.
   public let newValues: Signal<T>
 
+  #if DEBUG
+  @usableFromInline
+  let debugInfo: DebugInfo
+  #else
+  @inlinable
+  var debugInfo: DebugInfo { DebugInfo() }
+  #endif
+
   // Obsolete. Do not use in new code.
   // For class variables consider:
   //    private let observableXXXXStorage = ObservableProperty<T>
@@ -29,9 +38,24 @@ public struct ObservableVariable<T> {
   /// - Parameters:
   ///   - getter: A closure that returns the current value of the variable.
   ///   - newValues: A signal that emits when the value changes.
-  public init(getter: @escaping () -> T, newValues: Signal<T>) {
+  public init(
+    getter: @escaping () -> T,
+    newValues: Signal<T>
+  ) {
+    self.init(getter: getter, newValues: newValues, ancestors: [])
+  }
+
+  @usableFromInline
+  init(
+    getter: @escaping () -> T,
+    newValues: Signal<T>,
+    ancestors: [DebugInfo]
+  ) {
     self.getter = getter
     self.newValues = newValues
+    #if DEBUG
+    self.debugInfo = DebugInfo(callStack: Thread.callStackReturnAddresses, ancestors: ancestors)
+    #endif
   }
 
   /// Accessor for the current value of the variable. Reading this property will invoke the getter.
@@ -74,7 +98,7 @@ extension ObservableVariable {
 
   /// Converts this `ObservableVariable` into a non-observable `Variable<T>`.
   public func asVariable() -> Variable<T> {
-    Variable(getter)
+    Variable(getter, ancestors: [debugInfo])
   }
 
   /// Creates an `ObservableVariable` that always emits the same value.
@@ -108,7 +132,8 @@ extension ObservableVariable {
   public func map<U>(_ transform: @escaping (T) -> U) -> ObservableVariable<U> {
     ObservableVariable<U>(
       getter: compose(transform, after: getter),
-      newValues: newValues.map(transform)
+      newValues: newValues.map(transform),
+      ancestors: [debugInfo]
     )
   }
 
@@ -136,7 +161,8 @@ extension ObservableVariable {
         return Disposable {
           withExtendedLifetime(token) { outerToken.dispose() }
         }
-      })
+      }),
+      ancestors: [debugInfo]
     )
   }
 
@@ -151,7 +177,8 @@ extension ObservableVariable {
       .flatMap { $0 }
     return ObservableVariable<U>(
       getter: { [getter] in transform(getter()).getter() },
-      newValues: newValues
+      newValues: newValues,
+      ancestors: [debugInfo]
     )
   }
 
@@ -174,7 +201,8 @@ extension ObservableVariable {
   ) -> ObservableVariable<U> {
     ObservableVariable<U>(
       initialValue: transform(value) ?? valueIfNil(),
-      newValues: newValues.compactMap(transform)
+      newValues: newValues.compactMap(transform),
+      ancestors: [debugInfo]
     )
   }
 
@@ -183,7 +211,8 @@ extension ObservableVariable {
   public func skipRepeats(areEqual: @escaping (T, T) -> Bool) -> ObservableVariable {
     ObservableVariable(
       getter: getter,
-      newValues: newValues.skipRepeats(areEqual: areEqual, initialValue: getter)
+      newValues: newValues.skipRepeats(areEqual: areEqual, initialValue: getter),
+      ancestors: [debugInfo]
     )
   }
 
@@ -193,7 +222,8 @@ extension ObservableVariable {
   public var lazy: ObservableVariable<Lazy<T>> {
     ObservableVariable<Lazy<T>>(
       getter: { Lazy(getter: { self.value }) },
-      newValues: newValues.map { Lazy(value: $0) }
+      newValues: newValues.map { Lazy(value: $0) },
+      ancestors: [debugInfo]
     )
   }
 
@@ -210,7 +240,11 @@ extension ObservableVariable {
   /// - Parameter signals: An array of `Signal<T>` to combine with this observable.
   @inlinable
   public func involving(_ signals: [Signal<T>]) -> Self {
-    Self(initialValue: value, newValues: .merge([newValues] + signals))
+    ObservableVariable(
+      initialValue: value,
+      newValues: .merge([newValues] + signals),
+      ancestors: [debugInfo]
+    )
   }
 }
 
@@ -234,7 +268,8 @@ extension ObservableVariable {
         Thread.assertIsMain()
         return getter()
       },
-      newValues: newValues.assertingMainThread()
+      newValues: newValues.assertingMainThread(),
+      ancestors: [debugInfo]
     )
   }
 
@@ -284,7 +319,19 @@ extension ObservableVariable {
   /// `newValues: Signal<T>` is not retained
   /// `Disposable` of `newValues.addObserver()` is retained
   @inlinable
-  public init(initialValue: T, newValues: Signal<T>) {
+  public init(
+    initialValue: T,
+    newValues: Signal<T>
+  ) {
+    self.init(initialValue: initialValue, newValues: newValues, ancestors: [])
+  }
+
+  @usableFromInline
+  init(
+    initialValue: T,
+    newValues: Signal<T>,
+    ancestors: [DebugInfo]
+  ) {
     var value = initialValue
     let pipe = SignalPipe<T>()
     let subscription = newValues.addObserver {
@@ -306,7 +353,8 @@ extension ObservableVariable {
 
     self.init(
       getter: getter,
-      newValues: newValues
+      newValues: newValues,
+      ancestors: ancestors
     )
   }
 }
@@ -320,7 +368,11 @@ extension ObservableVariable {
   /// - Returns: An `ObservableVariable` that retains the specified object.
   @inlinable
   public func retaining(_ object: some Any) -> Self {
-    Self(initialValue: value, newValues: newValues.retaining(object: object))
+    ObservableVariable(
+      initialValue: value,
+      newValues: newValues.retaining(object: object),
+      ancestors: [debugInfo]
+    )
   }
 
   /// Transforms an `ObservableVariable` of optional values into an `ObservableVariable` of
@@ -355,7 +407,10 @@ extension ObservableVariable {
       if let inner {
         inner.value = state
       } else {
-        let localInner = ObservableProperty(initialValue: state)
+        let localInner = ObservableProperty(
+          initialValue: state,
+          ancestors: [debugInfo]
+        )
         _outer.wrappedValue = localInner.asObservableVariable()
         inner = localInner
       }
@@ -390,7 +445,11 @@ extension ObservableVariable {
       afterUpdatePipe.send($0)
     }
 
-    let modelVariable = ObservableVariable(initialValue: value, newValues: pipe.signal)
+    let modelVariable = ObservableVariable(
+      initialValue: value,
+      newValues: pipe.signal,
+      ancestors: [debugInfo]
+    )
     return (
       variable: modelVariable.retaining(subscription),
       afterUpdateSignal: afterUpdatePipe.signal.retaining(object: subscription)

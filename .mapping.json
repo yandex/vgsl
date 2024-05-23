@@ -363,6 +363,7 @@
   "VGSL_Fundamentals/nonempty/NonEmpty+String.swift":"mobile/vgsl/public/VGSL_Fundamentals/nonempty/NonEmpty+String.swift",
   "VGSL_Fundamentals/nonempty/NonEmpty.swift":"mobile/vgsl/public/VGSL_Fundamentals/nonempty/NonEmpty.swift",
   "VGSL_Fundamentals/reactive/Cancellable.swift":"mobile/vgsl/public/VGSL_Fundamentals/reactive/Cancellable.swift",
+  "VGSL_Fundamentals/reactive/DebugInfo.swift":"mobile/vgsl/public/VGSL_Fundamentals/reactive/DebugInfo.swift",
   "VGSL_Fundamentals/reactive/Lazy.swift":"mobile/vgsl/public/VGSL_Fundamentals/reactive/Lazy.swift",
   "VGSL_Fundamentals/reactive/Property.swift":"mobile/vgsl/public/VGSL_Fundamentals/reactive/Property.swift",
   "VGSL_Fundamentals/reactive/Result.swift":"mobile/vgsl/public/VGSL_Fundamentals/reactive/Result.swift",

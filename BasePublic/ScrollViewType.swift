@@ -123,7 +123,7 @@ extension ScrollViewType {
   public var maxContentOffsetXBeforeBounce: CGFloat {
     maxContentOffset(
       forContentSize: contentSize.width,
-      scrollInsets: contentInset.horizontalInsets,
+      scrollInsets: contentInset.horizontal,
       bound: boundsSize.width
     )
   }
@@ -131,7 +131,7 @@ extension ScrollViewType {
   public var maxContentOffsetYBeforeBounce: CGFloat {
     maxContentOffset(
       forContentSize: contentSize.height,
-      scrollInsets: contentInset.verticalInsets,
+      scrollInsets: contentInset.vertical,
       bound: boundsSize.height
     )
   }

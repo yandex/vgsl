@@ -13,6 +13,14 @@ public struct ObservableVariableConnection<T> {
   private let impl: ObservableProperty<Signal<T>>
   public let target: ObservableVariable<T>
 
+  #if DEBUG
+  @usableFromInline
+  let debugInfo: DebugInfo
+  #else
+  @inlinable
+  var debugInfo: DebugInfo { DebugInfo() }
+  #endif
+
   public var source: Signal<T> {
     @available(*, unavailable, message: "source is set only, use target")
     get { impl.value }
@@ -28,11 +36,21 @@ public struct ObservableVariableConnection<T> {
   @inlinable
   public var value: T { target.value }
 
-  public init(initialValue: T, newValues: ObservableProperty<Signal<T>>) {
+  public init(
+    initialValue: T,
+    newValues: ObservableProperty<Signal<T>>
+  ) {
+    #if DEBUG
+    self.debugInfo = DebugInfo(
+      callStack: Thread.callStackReturnAddresses,
+      ancestors: [newValues.debugInfo]
+    )
+    #endif
     self.impl = newValues
     self.target = ObservableVariable(
       initialValue: initialValue,
-      newValues: newValues.currentAndNewValues.flatMap { $0 }
+      newValues: newValues.currentAndNewValues.flatMap { $0 },
+      ancestors: [newValues.debugInfo]
     )
   }
 
@@ -40,7 +58,10 @@ public struct ObservableVariableConnection<T> {
   public init(initial: ObservableVariable<T>) {
     self.init(
       initialValue: initial.value,
-      newValues: ObservableProperty(initialValue: initial.newValues)
+      newValues: ObservableProperty(
+        initialValue: initial.newValues,
+        ancestors: [initial.debugInfo]
+      )
     )
   }
 

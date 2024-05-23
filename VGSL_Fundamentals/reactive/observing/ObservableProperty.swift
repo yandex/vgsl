@@ -18,6 +18,14 @@ public struct ObservableProperty<T> {
   /// reactive responses.
   public let newValues: Signal<T>
 
+  #if DEBUG
+  @usableFromInline
+  let debugInfo: DebugInfo
+  #else
+  @inlinable
+  var debugInfo: DebugInfo { DebugInfo() }
+  #endif
+
   /// Initializes an observable property with specified getter and setter closures, along with a
   /// signal for observing changes.
   /// This constructor is intentionally private to ensure controlled creation of observable
@@ -31,11 +39,15 @@ public struct ObservableProperty<T> {
   private init(
     getter: @escaping () -> T,
     setter: @escaping (T) -> Void,
-    newValues: Signal<T>
+    newValues: Signal<T>,
+    ancestors: [DebugInfo]
   ) {
     self.getter = getter
     self.setter = setter
     self.newValues = newValues
+    #if DEBUG
+    self.debugInfo = DebugInfo(callStack: Thread.callStackReturnAddresses, ancestors: ancestors)
+    #endif
   }
 
   /// Accesses the current value of the property, invoking the getter on read
@@ -60,7 +72,8 @@ public struct ObservableProperty<T> {
     ObservableProperty<U>(
       getter: { self.value[keyPath: path] },
       setter: { self.value[keyPath: path] = $0 },
-      newValues: newValues.map { $0[keyPath: path] }
+      newValues: newValues.map { $0[keyPath: path] },
+      ancestors: [debugInfo]
     )
   }
 
@@ -72,7 +85,8 @@ public struct ObservableProperty<T> {
     ObservableProperty<ValueType?>(
       getter: { self.value?[keyPath: path] },
       setter: { self.value?[keyPath: path] = $0 },
-      newValues: newValues.map { $0?[keyPath: path] }
+      newValues: newValues.map { $0?[keyPath: path] },
+      ancestors: [debugInfo]
     )
   }
 }
@@ -91,19 +105,23 @@ extension ObservableProperty {
   /// This can be useful when you want to expose the value for reading and observing is not
   /// required.
   public func asVariable() -> Variable<T> {
-    Variable(getter)
+    Variable(getter, ancestors: [debugInfo])
   }
 
   /// Provides a read-only observable interface for the enclosed `value`.
   public func asObservableVariable() -> ObservableVariable<T> {
-    ObservableVariable(getter: getter, newValues: newValues)
+    ObservableVariable(
+      getter: getter,
+      newValues: newValues,
+      ancestors: [debugInfo]
+    )
   }
 
   /// Converts this `ObservableProperty` into a `Property<T>`, essentially providing a
   /// non-observable interface that still allows for custom getter and setter logic.
   /// This can be useful when observability is not required, but custom access patterns are.
   public func asProperty() -> Property<T> {
-    Property(getter: getter, setter: setter)
+    Property(getter: getter, setter: setter, ancestors: [debugInfo])
   }
 
   /// Initializes the property with an initial value. This initializer creates an observable
@@ -111,10 +129,16 @@ extension ObservableProperty {
   ///
   /// - Parameter initialValue: The initial value of the property.
   public init(initialValue: T) {
+    self.init(initialValue: initialValue, ancestors: [])
+  }
+
+  @usableFromInline
+  init(initialValue: T, ancestors: [DebugInfo]) {
     var value = initialValue
     self.init(
       getter: { value },
-      privateSetter: { value = $0 }
+      privateSetter: { value = $0 },
+      ancestors: ancestors
     )
   }
 
@@ -151,7 +175,8 @@ extension ObservableProperty {
     ObservableProperty<U>(
       getter: compose(get, after: getter),
       setter: compose(setter, after: set),
-      newValues: newValues.map(get)
+      newValues: newValues.map(get),
+      ancestors: [debugInfo]
     )
   }
 
@@ -182,13 +207,19 @@ extension ObservableProperty {
   /// The closure is marked `private` to emphasize its encapsulated role.
   init(
     getter: @escaping () -> T,
-    privateSetter: @escaping (T) -> Void
+    privateSetter: @escaping (T) -> Void,
+    ancestors: [DebugInfo]
   ) {
     let pipe = SignalPipe<T>()
-    self.init(getter: getter, setter: {
-      privateSetter($0)
-      pipe.send($0)
-    }, newValues: pipe.signal)
+    self.init(
+      getter: getter,
+      setter: {
+        privateSetter($0)
+        pipe.send($0)
+      },
+      newValues: pipe.signal,
+      ancestors: ancestors
+    )
   }
 }
 
@@ -209,7 +240,8 @@ extension ObservableProperty {
         Thread.assertIsMain()
         setter($0)
       },
-      newValues: newValues.assertingMainThread()
+      newValues: newValues.assertingMainThread(),
+      ancestors: [debugInfo]
     )
   }
 
@@ -229,7 +261,8 @@ extension ObservableProperty {
     return ObservableProperty(
       getter: { object[keyPath: keyPath] },
       setter: { object[keyPath: keyPath] = $0 },
-      newValues: newValues
+      newValues: newValues,
+      ancestors: []
     )
   }
 
@@ -242,7 +275,7 @@ extension ObservableProperty {
   /// - Returns: An `ObservableProperty` that retains the specified object, ensuring it remains
   /// allocated as long as the property exists and is in use.
   public func retaining(_ object: some Any) -> Self {
-    Self(
+    ObservableProperty(
       getter: {
         withExtendedLifetime(object) {
           self.getter()
@@ -253,7 +286,8 @@ extension ObservableProperty {
           self.setter(newValue)
         }
       },
-      newValues: newValues.retaining(object: object)
+      newValues: newValues.retaining(object: object),
+      ancestors: [debugInfo]
     )
   }
 }
@@ -273,7 +307,8 @@ extension ObservableProperty {
     ObservableProperty<Value?>(
       getter: { self.value[key] },
       setter: { self.value[key] = $0 },
-      newValues: newValues.map { $0[key] }
+      newValues: newValues.map { $0[key] },
+      ancestors: [debugInfo]
     )
   }
 }
@@ -287,10 +322,11 @@ extension ObservableProperty where T: Equatable {
   ///
   /// - Returns: An `ObservableProperty` instance with the `skipRepeats` behavior applied.
   public func skipRepeats() -> Self {
-    Self(
+    ObservableProperty(
       getter: getter,
       setter: setter,
-      newValues: newValues.skipRepeats(initialValue: getter)
+      newValues: newValues.skipRepeats(initialValue: getter),
+      ancestors: [debugInfo]
     )
   }
 
@@ -310,7 +346,7 @@ extension ObservableProperty where T: Equatable {
   ///   - mods: An array of `Modification` specifying which modifications to apply.
   @inlinable
   public init(initialValue: T, _ mods: [Modification]) {
-    var property = Self(initialValue: initialValue)
+    var property = ObservableProperty(initialValue: initialValue)
     mods.forEach { mod in
       switch mod {
       case .skipRepeats:

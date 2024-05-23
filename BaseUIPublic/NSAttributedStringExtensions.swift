@@ -1035,8 +1035,8 @@ extension CTLine {
           roundedRect: CGRect(
             origin: .zero,
             size: CGSize(
-              width: run.typographicBounds.width + padding.horizontalInsets.sum,
-              height: run.typographicBounds.height + padding.verticalInsets.sum
+              width: run.typographicBounds.width + padding.horizontal.sum,
+              height: run.typographicBounds.height + padding.vertical.sum
             )
           ),
           byRoundingCorners: corners,

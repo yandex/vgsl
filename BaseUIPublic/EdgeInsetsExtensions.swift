@@ -32,11 +32,23 @@ extension EdgeInsets {
     EdgeInsets(top: top + value, left: left, bottom: bottom, right: right)
   }
 
-  public var horizontalInsets: SideInsets {
+  public var horizontal: SideInsets {
     SideInsets(leading: left, trailing: right)
   }
 
-  public var verticalInsets: SideInsets {
+  public var vertical: SideInsets {
     SideInsets(leading: top, trailing: bottom)
+  }
+
+  // VGSL-34: Remove in major release
+  @inlinable
+  public var horizontalInsets: SideInsets {
+    horizontal
+  }
+
+  // VGSL-34: Remove in major release
+  @inlinable
+  public var verticalInsets: SideInsets {
+    vertical
   }
 }

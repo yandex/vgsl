@@ -27,8 +27,8 @@ extension CGSize {
 
   public func inset(by insets: EdgeInsets) -> CGSize {
     CGSize(
-      width: width - insets.horizontalInsets.sum,
-      height: height - insets.verticalInsets.sum
+      width: width - insets.horizontal.sum,
+      height: height - insets.vertical.sum
     )
   }
 
@@ -41,7 +41,7 @@ extension CGSize {
   }
 
   public func expanded(by insets: EdgeInsets) -> CGSize {
-    CGSize(width: width + insets.horizontalInsets.sum, height: height + insets.verticalInsets.sum)
+    CGSize(width: width + insets.horizontal.sum, height: height + insets.vertical.sum)
   }
 
   public func swapDimensions() -> CGSize {
