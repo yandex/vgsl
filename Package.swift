@@ -9,70 +9,39 @@ let package = Package(
     .tvOS(.v9),
   ],
   products: [
-    .library(name: "VGSL-Fundamentals-Tiny", targets: ["VGSL_Fundamentals_Tiny"]),
-    .library(name: "VGSL-Fundamentals", targets: ["VGSL_Fundamentals"]),
+    .library(name: "VGSLFundamentals", targets: ["VGSLFundamentals"]),
+    .library(name: "VGSLUI", targets: ["VGSLUI"]),
+    .library(name: "VGSLNetworking", targets: ["VGSLNetworking"]),
     .library(name: "VGSL", targets: ["VGSL"]),
-    .library(name: "BaseTinyPublic", targets: ["BaseTinyPublic"]),
-    .library(name: "BaseUIPublic", targets: ["BaseUIPublic"]),
-    .library(name: "BasePublic", targets: ["BasePublic"]),
-    .library(name: "CommonCorePublic", targets: ["CommonCorePublic"]),
-    .library(name: "NetworkingPublic", targets: ["NetworkingPublic"]),
   ],
   targets: [
     .target(
-      name: "BaseTinyPublic",
-      dependencies: [
-        "VGSL_Fundamentals_Tiny",
-      ],
-      path: "BaseTinyPublic"
+      name: "VGSLFundamentals",
+      path: "VGSLFundamentals"
     ),
     .target(
-      name: "BaseUIPublic",
+      name: "VGSLUI",
       dependencies: [
-        "BaseTinyPublic",
+        "VGSLFundamentals",
       ],
-      path: "BaseUIPublic"
+      path: "VGSLUI"
     ),
     .target(
-      name: "BasePublic",
+      name: "VGSLNetworking",
       dependencies: [
-        "BaseTinyPublic",
-        "BaseUIPublic",
-        "VGSL_Fundamentals",
+        "VGSLFundamentals",
+        "VGSLUI"
       ],
-      path: "BasePublic"
-    ),
-    .target(
-      name: "CommonCorePublic",
-      dependencies: [
-        "BasePublic",
-      ],
-      path: "CommonCorePublic"
-    ),
-    .target(
-      name: "NetworkingPublic",
-      dependencies: [
-        "BasePublic",
-      ],
-      path: "NetworkingPublic"
+      path: "VGSLNetworking"
     ),
     .target(
       name: "VGSL",
       dependencies: [
-        "VGSL_Fundamentals",
+        "VGSLFundamentals",
+        "VGSLNetworking",
+        "VGSLUI"
       ],
       path: "VGSL"
-    ),
-    .target(
-      name: "VGSL_Fundamentals",
-      dependencies: [
-        "VGSL_Fundamentals_Tiny",
-      ],
-      path: "VGSL_Fundamentals"
-    ),
-    .target(
-      name: "VGSL_Fundamentals_Tiny",
-      path: "VGSL_Fundamentals_Tiny"
     ),
   ]
 )
