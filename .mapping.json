@@ -166,6 +166,7 @@
   "VGSLFundamentals/ObjectsReusability.swift":"mobile/vgsl/public/VGSLFundamentals/ObjectsReusability.swift",
   "VGSLFundamentals/OptionalExtensions.swift":"mobile/vgsl/public/VGSLFundamentals/OptionalExtensions.swift",
   "VGSLFundamentals/PersistentStorage.swift":"mobile/vgsl/public/VGSLFundamentals/PersistentStorage.swift",
+  "VGSLFundamentals/PrivacyInfo.xcprivacy":"mobile/vgsl/public/VGSLFundamentals/PrivacyInfo.xcprivacy",
   "VGSLFundamentals/Property+Storage.swift":"mobile/vgsl/public/VGSLFundamentals/Property+Storage.swift",
   "VGSLFundamentals/Radix.swift":"mobile/vgsl/public/VGSLFundamentals/Radix.swift",
   "VGSLFundamentals/RangeExtensions.swift":"mobile/vgsl/public/VGSLFundamentals/RangeExtensions.swift",
