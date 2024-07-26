@@ -2,7 +2,7 @@
 
 import UIKit
 
-@_implementationOnly  import AudioToolbox
+internal import AudioToolbox
 
 public protocol PhysicalFeedbackGenerator {
   func prepare()

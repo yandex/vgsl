@@ -26,6 +26,7 @@ public struct FontSize: RawRepresentable {
   public static let buttonL = FontSize(rawValue: 15)
   public static let textL = FontSize(rawValue: 16)
   public static let textXL = FontSize(rawValue: 17)
+  public static let textXXL = FontSize(rawValue: 18)
   public static let title = FontSize(rawValue: 20)
   public static let titleL = FontSize(rawValue: 24)
 

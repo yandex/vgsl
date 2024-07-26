@@ -208,3 +208,6 @@ extension KeyboardAppearance {
     }
   }
 }
+
+/// Line width of one rendered pixel
+public let minimalLineWidth: CGFloat = 1 / UIScreen.main.scale

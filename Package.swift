@@ -1,6 +1,10 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.9
 
 import PackageDescription
+
+let swiftSettings: [SwiftSetting] = [
+  .enableExperimentalFeature("AccessLevelOnImport")
+]
 
 let compatibilityShims: (products: [PackageDescription.Product], targets: [PackageDescription.Target]) = (
   products: [
@@ -16,37 +20,44 @@ let compatibilityShims: (products: [PackageDescription.Product], targets: [Packa
     .target(
       name: "BasePublic",
       dependencies: ["VGSL", "BaseUIPublic", "NetworkingPublic"],
-      path: "CompatibilityShims/BasePublic"
+      path: "CompatibilityShims/BasePublic",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "BaseTinyPublic",
       dependencies: ["VGSL"],
-      path: "CompatibilityShims/BaseTinyPublic"
+      path: "CompatibilityShims/BaseTinyPublic",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "BaseUIPublic",
       dependencies: ["VGSL"],
-      path: "CompatibilityShims/BaseUIPublic"
+      path: "CompatibilityShims/BaseUIPublic",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "CommonCorePublic",
       dependencies: ["VGSL", "BaseUIPublic"],
-      path: "CompatibilityShims/CommonCorePublic"
+      path: "CompatibilityShims/CommonCorePublic",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "NetworkingPublic",
       dependencies: ["VGSL", "BaseUIPublic"],
-      path: "CompatibilityShims/NetworkingPublic"
+      path: "CompatibilityShims/NetworkingPublic",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "VGSL_Fundamentals",
       dependencies: ["VGSL"],
-      path: "CompatibilityShims/VGSL_Fundamentals"
+      path: "CompatibilityShims/VGSL_Fundamentals",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "VGSL_Fundamentals_Tiny",
       dependencies: ["VGSL"],
-      path: "CompatibilityShims/VGSL_Fundamentals_Tiny"
+      path: "CompatibilityShims/VGSL_Fundamentals_Tiny",
+      swiftSettings: swiftSettings
     ),
   ]
 )
@@ -54,8 +65,8 @@ let compatibilityShims: (products: [PackageDescription.Product], targets: [Packa
 let package = Package(
   name: "vgsl",
   platforms: [
-    .iOS(.v9),
-    .tvOS(.v9),
+    .iOS(.v12),
+    .tvOS(.v12),
   ],
   products: [
     .library(name: "VGSLFundamentals", targets: ["VGSLFundamentals"]),
@@ -66,14 +77,16 @@ let package = Package(
   targets: [
     .target(
       name: "VGSLFundamentals",
-      path: "VGSLFundamentals"
+      path: "VGSLFundamentals",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "VGSLUI",
       dependencies: [
         "VGSLFundamentals",
       ],
-      path: "VGSLUI"
+      path: "VGSLUI",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "VGSLNetworking",
@@ -81,7 +94,8 @@ let package = Package(
         "VGSLFundamentals",
         "VGSLUI"
       ],
-      path: "VGSLNetworking"
+      path: "VGSLNetworking",
+      swiftSettings: swiftSettings
     ),
     .target(
       name: "VGSL",
@@ -90,7 +104,8 @@ let package = Package(
         "VGSLNetworking",
         "VGSLUI"
       ],
-      path: "VGSL"
+      path: "VGSL",
+      swiftSettings: swiftSettings
     ),
   ] + compatibilityShims.targets
 )

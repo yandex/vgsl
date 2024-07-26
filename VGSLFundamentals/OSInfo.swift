@@ -1,6 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
-@_implementationOnly  import SwiftShims
+internal import SwiftShims
 
 public struct OSInfo {
   public enum Platform: Equatable {

@@ -95,12 +95,19 @@ extension AccessibilityElement {
 
   public static func button(
     strings: Strings?,
+    enabled: Bool = true,
+    selected: Bool = false,
     startsMediaSession: Bool = false
   ) -> AccessibilityElement? {
-    strings
-      .map {
-        AccessibilityElement(traits: .button, strings: $0, startsMediaSession: startsMediaSession)
-      }
+    strings.map {
+      AccessibilityElement(
+        traits: .button,
+        strings: $0,
+        enabled: enabled,
+        selected: selected,
+        startsMediaSession: startsMediaSession
+      )
+    }
   }
 
   public static func button(

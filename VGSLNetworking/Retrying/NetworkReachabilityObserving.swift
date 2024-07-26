@@ -2,7 +2,7 @@
 
 import Foundation
 
-@_implementationOnly  import SystemConfiguration
+internal import SystemConfiguration
 
 public protocol NetworkReachabilityObserverDelegate: AnyObject {
   func reachabilityObserver(
