@@ -7,6 +7,7 @@ import Foundation
 public protocol FileManaging {
   var applicationSupportDirectory: URL { get }
   var documentDirectory: URL { get }
+  var libraryDirectory: URL { get }
 
   func fileExists(at url: URL) -> Bool
   func createFile(at url: URL, contents data: Data) throws
@@ -19,38 +20,15 @@ public protocol FileManaging {
 
 extension FileManager: FileManaging {
   public var applicationSupportDirectory: URL {
-    guard
-      let applicationSupportDirectory =
-      urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-    else {
-      assertionFailure("Unable to access application supportdirectory")
-      // CommonCore is exported with minimal iOS version 9.0.
-      // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
-      if #available(iOS 10, tvOS 10, *) {
-        return temporaryDirectory
-      } else {
-        return URL(fileURLWithPath: NSTemporaryDirectory())
-      }
-    }
-
-    return applicationSupportDirectory
+    getSystemDirectoryURL(.applicationSupportDirectory)
   }
 
   public var documentDirectory: URL {
-    guard
-      let dir = urls(for: .documentDirectory, in: .userDomainMask).first
-    else {
-      assertionFailure("Unable to access documentDirectory")
-      // CommonCore is exported with minimal iOS version 9.0.
-      // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
-      if #available(iOS 10, tvOS 10, *) {
-        return temporaryDirectory
-      } else {
-        return URL(fileURLWithPath: NSTemporaryDirectory())
-      }
-    }
+    getSystemDirectoryURL(.documentDirectory)
+  }
 
-    return dir
+  public var libraryDirectory: URL {
+    getSystemDirectoryURL(.libraryDirectory)
   }
 
   public func fileExists(at url: URL) -> Bool {
@@ -75,6 +53,23 @@ extension FileManager: FileManaging {
       withIntermediateDirectories: intermediates,
       attributes: nil
     )
+  }
+
+  private func getSystemDirectoryURL(_ directory: FileManager.SearchPathDirectory) -> URL {
+    guard
+      let dir = urls(for: directory, in: .userDomainMask).first
+    else {
+      assertionFailure("Unable to access \(directory)")
+      // CommonCore is exported with minimal iOS version 9.0.
+      // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
+      if #available(iOS 10, tvOS 10, *) {
+        return temporaryDirectory
+      } else {
+        return URL(fileURLWithPath: NSTemporaryDirectory())
+      }
+    }
+
+    return dir
   }
 }
 

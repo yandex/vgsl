@@ -10,7 +10,19 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   typealias DeserializeRecords = (Data) throws -> [CacheRecord]
   typealias EncodeKey = (String) -> String
 
-  private let cacheUrl: Lazy<URL>
+  private let lazyCacheURL: Lazy<URL>
+  private var _cacheURL: URL?
+  private var cacheURL: URL {
+    if let _cacheURL {
+      return _cacheURL
+    }
+
+    Thread.assertIsMain()
+    let result = lazyCacheURL.value
+    _cacheURL = result
+    return result
+  }
+
   private let ioQueue: SerialOperationQueue
   private let mainThreadRunner: MainThreadRunner
   private let fileManager: FileManaging
@@ -34,7 +46,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     encodeKey: @escaping EncodeKey,
     reportError: ((Error) -> Void)?
   ) {
-    self.cacheUrl = cacheUrl
+    lazyCacheURL = cacheUrl
     self.ioQueue = ioQueue
     self.mainThreadRunner = mainThreadRunner
     self.fileManager = fileManager
@@ -48,6 +60,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
 
   func retriveResource(forKey key: String, completion: @escaping (Result<Data, Error>) -> Void) {
     Thread.assertIsMain()
+    loadCacheURL()
     ioQueue.addOperation {
       let result: Result<Data, Error>
       switch self.state {
@@ -88,7 +101,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
       updateIndex(storage: storage)
       return .success(data)
     case .notLoaded:
-      let url = self.url(forKey: key)
+      let url = url(forKey: key)
       do {
         let data = try fileManager.contents(at: url)
         try add(key: key, value: .loaded(data), in: storage)
@@ -117,6 +130,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     completion: ((Result<Void, Error>) -> Void)?
   ) {
     Thread.assertIsMain()
+    loadCacheURL()
     ioQueue.addOperation {
       let result: Result<Void, Error>
       switch self.state {
@@ -138,12 +152,11 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     data: Data,
     in storage: Storage
   ) -> Result<Void, Error> {
-    let cacheUrl = self.cacheUrl.value
     do {
-      if !fileManager.fileExists(at: cacheUrl) {
-        try fileManager.createDirectory(at: cacheUrl, withIntermediateDirectories: true)
+      if !fileManager.fileExists(at: cacheURL) {
+        try fileManager.createDirectory(at: cacheURL, withIntermediateDirectories: true)
       }
-      let url = self.url(forKey: key)
+      let url = url(forKey: key)
       try fileManager.createFile(at: url, contents: data)
       try add(key: key, value: .loaded(data), in: storage)
       updateIndex(storage: storage)
@@ -152,6 +165,11 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
       reportError?(error)
       return .failure(error as Error)
     }
+  }
+
+  private func loadCacheURL() {
+    Thread.assertIsMain()
+    _ = cacheURL
   }
 
   private func add(key: String, value: CacheContent, in storage: Storage) throws {
@@ -163,18 +181,22 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   }
 
   func getResourceURL(forKey key: String) -> URL? {
+    Thread.assertIsMain()
+    loadCacheURL()
     let targetURL = url(forKey: key)
     return fileManager.fileExists(at: targetURL) ? targetURL : nil
   }
 
   private func url(forKey key: String) -> URL {
+    assert(_cacheURL != nil)
     let filename = "file_\(encodeKey(key))"
-    return cacheUrl.value.appendingPathComponent(filename)
+    return cacheURL.appendingPathComponent(filename)
   }
 
   private var cacheIndexURL: URL {
+    assert(_cacheURL != nil)
     let index = "index"
-    return cacheUrl.value.appendingPathComponent(index)
+    return cacheURL.appendingPathComponent(index)
   }
 }
 

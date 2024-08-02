@@ -9,21 +9,27 @@ public protocol FontSpecifying: AnyObject {
 public final class FontSpecifiers {
   public let text: FontSpecifying
   public let display: FontSpecifying
+  public let wide: FontSpecifying?
 
   public init(
     text: FontSpecifying,
-    display: FontSpecifying
+    display: FontSpecifying,
+    wide: FontSpecifying? = nil
   ) {
     self.text = text
     self.display = display
+    self.wide = wide
   }
 
   public func font(family: FontFamily, weight: FontWeight, size: CGFloat) -> Font {
     switch family {
+    case .YSTextWide:
+      guard let font = wide?.font(weight: weight, size: size) else { fallthrough }
+      return font
     case .YSDisplay:
-      display.font(weight: weight, size: size)
+      return display.font(weight: weight, size: size)
     case .YSText:
-      text.font(weight: weight, size: size)
+      return text.font(weight: weight, size: size)
     }
   }
 }

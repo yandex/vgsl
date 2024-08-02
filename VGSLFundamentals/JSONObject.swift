@@ -4,7 +4,7 @@ import Foundation
 
 public typealias JSONDictionary = JSONObject.Object
 
-public enum JSONObject: Codable, Equatable {
+public enum JSONObject: Codable, Equatable, Sendable {
   public enum Error: Swift.Error {
     case invalidPathComponent(String)
     case noValueFound(subpath: String)
@@ -390,7 +390,7 @@ extension [String: JSONObject] {
 }
 
 extension JSONObject {
-  public struct Path: Codable, CustomDebugStringConvertible, ExpressibleByStringLiteral, Hashable {
+  public struct Path: Codable, CustomDebugStringConvertible, ExpressibleByStringLiteral, Hashable, Sendable {
     public typealias Component = JSONPathComponent
 
     public private(set) var components: [Component]
@@ -527,7 +527,7 @@ private struct StringCodingKey: CodingKey {
   public init?(intValue _: Int) { nil }
 }
 
-public enum JSONPathComponent: Hashable {
+public enum JSONPathComponent: Hashable, Sendable {
   case key(String)
   case index(Int)
 

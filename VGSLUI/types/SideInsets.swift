@@ -3,8 +3,8 @@
 import CoreGraphics
 
 public struct SideInsets: Equatable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
-  public let leading: CGFloat
-  public let trailing: CGFloat
+  public var leading: CGFloat
+  public var trailing: CGFloat
 
   public init(floatLiteral value: Double) {
     self.init(uniform: CGFloat(value))

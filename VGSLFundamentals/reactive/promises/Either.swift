@@ -29,3 +29,4 @@ public enum Either<T, U> {
 }
 
 extension Either: Equatable where T: Equatable, U: Equatable {}
+extension Either: Sendable where T: Sendable, U: Sendable {}

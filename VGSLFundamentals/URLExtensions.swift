@@ -63,8 +63,36 @@ extension URL {
   }
 }
 
+extension URL {
+  /// Creates a relative link with specified base URL and relative part calculated by removing
+  /// base URL components from the front.
+  /// If specified URL is not prefixed by base URL - it is simply ignored.
+  public static func resolveFileURL(_ url: URL, againstURL baseURL: URL) throws -> URL {
+    guard url.isFileURL, baseURL.isFileURL else {
+      throw FileURLError.notAFileURL
+    }
+
+    // ensure base url is a directory url
+    let basePath = modified(baseURL.path) {
+      if !$0.hasSuffix("/") { $0 += "/" }
+    }
+    let baseDirURL = URL(fileURLWithPath: basePath, isDirectory: true)
+
+    guard url != baseURL else { return URL(fileURLWithPath: ".", relativeTo: baseDirURL) }
+
+    guard url.path.hasPrefix(basePath) else { return url }
+
+    let relativePath = String(url.path[basePath.endIndex...])
+    return URL(fileURLWithPath: relativePath, relativeTo: baseDirURL)
+  }
+}
+
 extension URLQueryParams {
   public func filteringNilValues() -> URLQueryParams {
     filter { $0.value != nil }
   }
+}
+
+public enum FileURLError: Swift.Error {
+  case notAFileURL
 }

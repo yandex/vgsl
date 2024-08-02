@@ -120,10 +120,11 @@ extension Tagged {
   }
 }
 
+extension Tagged: Sendable where RawValue: Sendable {}
+
 // Conforming to ExpressibleByArrayLiteral & ExpressibleByDictionaryLiteral is impossible
 // due to https://bugs.swift.org/browse/SR-128
 
-#if compiler(>=5)
 extension Tagged: AdditiveArithmetic where Tag: NumericTag, RawValue: AdditiveArithmetic {
   @inlinable
   public static func +(lhs: Tagged, rhs: Tagged) -> Tagged {
@@ -150,7 +151,6 @@ extension Tagged: AdditiveArithmetic where Tag: NumericTag, RawValue: AdditiveAr
     .init(rawValue: RawValue.zero)
   }
 }
-#endif // compiler(>=5)
 
 extension Tagged: Numeric where Tag: NumericTag, RawValue: Numeric {
   public typealias Magnitude = RawValue.Magnitude
@@ -166,29 +166,6 @@ extension Tagged: Numeric where Tag: NumericTag, RawValue: Numeric {
   public var magnitude: Magnitude {
     rawValue.magnitude
   }
-
-  #if compiler(>=5)
-  #else
-  @inlinable
-  public static func +(lhs: Tagged, rhs: Tagged) -> Tagged {
-    .init(rawValue: lhs.rawValue + rhs.rawValue)
-  }
-
-  @inlinable
-  public static func +=(lhs: inout Tagged, rhs: Tagged) {
-    lhs = lhs + rhs
-  }
-
-  @inlinable
-  public static func -(lhs: Tagged, rhs: Tagged) -> Tagged {
-    .init(rawValue: lhs.rawValue - rhs.rawValue)
-  }
-
-  @inlinable
-  public static func -=(lhs: inout Tagged, rhs: Tagged) {
-    lhs = lhs - rhs
-  }
-  #endif // compiler(>=5)
 
   @inlinable
   public static func *(lhs: Tagged, rhs: Tagged) -> Tagged {

@@ -5,6 +5,7 @@ import Foundation
 
 public enum FontFamily: Hashable {
   case YSText
+  case YSTextWide
   case YSDisplay
 }
 

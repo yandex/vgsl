@@ -169,8 +169,9 @@ extension ObservableVariable {
   /// Transforms the `ObservableVariable` to another `ObservableVariable` of a different type by
   /// applying a transformation that itself returns an `ObservableVariable`.
   /// - Parameter transform: A function that converts `T` to `ObservableVariable<U>`.
-  public func flatMap<U>(_ transform: @escaping (T) -> ObservableVariable<U>)
-    -> ObservableVariable<U> {
+  public func flatMap<U>(
+    _ transform: @escaping (T) -> ObservableVariable<U>
+  ) -> ObservableVariable<U> {
     let newValues = self.newValues
       .map { transform($0).currentAndNewValues }
       .startWith { [getter] in transform(getter()).newValues }
