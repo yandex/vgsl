@@ -418,3 +418,10 @@ extension Lazy {
     }
   }
 }
+
+extension Signal {
+  @inlinable
+  public func dropPayload() -> Signal<Void> {
+    map { _ in () }
+  }
+}
