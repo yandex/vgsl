@@ -32,6 +32,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
     let content = Content(
       image: image,
       imageRedrawingColor: imageRedrawingStyle?.tintColor,
+      imageRedrawingTintMode: imageRedrawingStyle?.tintMode,
       effects: imageRedrawingStyle?.effects ?? []
     )
 
@@ -205,7 +206,7 @@ private enum Content {
 
   var needsVisualEffectView: Bool {
     switch self {
-    case .effects(_, let effects):
+    case let .effects(_, effects):
       for effect in effects {
         switch effect {
         case .blur: return true
@@ -218,11 +219,20 @@ private enum Content {
     }
   }
 
-  init(image: Image?, imageRedrawingColor: Color?, effects: [ImageEffect]) {
+  init(
+    image: Image?,
+    imageRedrawingColor: Color?,
+    imageRedrawingTintMode: TintMode?,
+    effects: [ImageEffect]
+  ) {
     if let image, effects.count > 0 {
       self = .effects(image, effects: effects)
     } else if let image, let color = imageRedrawingColor {
-      self = .template(image, color: color)
+      if let tintMode = imageRedrawingTintMode, tintMode != .sourceIn {
+        self = .effects(image, effects: [.tint(color: color, mode: tintMode)])
+      } else {
+        self = .template(image, color: color)
+      }
     } else {
       self = .plain(image)
     }
@@ -238,11 +248,15 @@ extension URLRequestResult.Source {
   }
 }
 
-private extension UIImage {
+extension UIImage {
   ///
   /// be careful with scale - it can n^2 memory usage
   ///
-  func withColorBlend(_ color: UIColor, mode: TintMode, scale: CGFloat = 1.0) -> UIImage? {
+  fileprivate func withColorBlend(
+    _ color: UIColor,
+    mode: TintMode,
+    scale: CGFloat = 1.0
+  ) -> UIImage? {
     let drawRect = CGRect(origin: .zero, size: size)
     UIGraphicsBeginImageContextWithOptions(drawRect.size, true, scale)
     color.setFill()
@@ -254,21 +268,21 @@ private extension UIImage {
   }
 }
 
-private extension TintMode {
-  var cgBlendMode: CGBlendMode {
+extension TintMode {
+  fileprivate var cgBlendMode: CGBlendMode {
     switch self {
     case .sourceIn:
-        .sourceIn
+      .sourceIn
     case .sourceAtop:
-        .sourceAtop
+      .sourceAtop
     case .darken:
-        .darken
+      .darken
     case .lighten:
-        .lighten
+      .lighten
     case .multiply:
-        .multiply
+      .multiply
     case .screen:
-        .screen
+      .screen
     }
   }
 }

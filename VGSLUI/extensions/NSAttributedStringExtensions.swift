@@ -140,7 +140,13 @@ struct TypographicBounds {
   }
 }
 
-typealias LineLayout = (line: CTLine, bounds: TypographicBounds, range: NSRange, isTruncated: Bool)
+typealias LineLayout = (
+  line: CTLine,
+  bounds: TypographicBounds,
+  range: NSRange,
+  isTruncated: Bool,
+  headIndent: CGFloat
+)
 
 struct TextLayout {
   var lines: [LineLayout]
@@ -196,6 +202,24 @@ extension NSAttributedString {
     string.utf16.contains(softHyphen)
   }
 
+  private func firstLineHeadIndent(at offset: Int) -> CGFloat {
+    let paragraphStyle = attribute(
+      .paragraphStyle,
+      at: offset,
+      effectiveRange: nil
+    ) as? NSParagraphStyle
+    return paragraphStyle?.firstLineHeadIndent ?? 0
+  }
+
+  private func headIndent(at offset: Int) -> CGFloat {
+    let paragraphStyle = attribute(
+      .paragraphStyle,
+      at: offset,
+      effectiveRange: nil
+    ) as? NSParagraphStyle
+    return paragraphStyle?.headIndent ?? 0
+  }
+
   func makeTextLayout(
     in size: CGSize,
     maxNumberOfLines: Int = .max,
@@ -206,11 +230,26 @@ extension NSAttributedString {
     var offset = 0
     var lines = [LineLayout]()
     var textHeight: CGFloat = 0
+    var isNewline = true
+    var savedHeadIndent: CGFloat = 0
 
     while offset < length, lines.count < maxNumberOfLines {
+      let currentLineHeadIndent: CGFloat
+      if isNewline {
+        currentLineHeadIndent = firstLineHeadIndent(at: offset)
+        savedHeadIndent = headIndent(at: offset)
+      } else {
+        currentLineHeadIndent = savedHeadIndent
+      }
+
+      let availableWidth = size.width - currentLineHeadIndent
       let lineLength = breakWords ?
-        typesetter.lineLength(from: offset, constrainedTo: size.width) :
-        typesetter.lineLengthByWordBoundary(for: string, from: offset, constrainedTo: size.width)
+        typesetter.lineLength(from: offset, constrainedTo: availableWidth) :
+        typesetter.lineLengthByWordBoundary(
+          for: string,
+          from: offset,
+          constrainedTo: availableWidth
+        )
 
       guard lineLength > 0 else {
         break
@@ -224,16 +263,19 @@ extension NSAttributedString {
         layout = layoutHyphenatedLine(
           typesetter: typesetter,
           range: suggestedRange,
-          availableWidth: size.width
+          availableWidth: availableWidth,
+          headIndent: currentLineHeadIndent
         )
       } else {
         layout = layoutLine(
           typesetter: typesetter,
-          range: suggestedRange
+          range: suggestedRange,
+          headIndent: currentLineHeadIndent
         )
       }
 
       textHeight += layout.bounds.height
+      isNewline = string.utf16.prefix(layout.range.endIndex).last?.isNewline ?? false
       let fitsByHeight = textHeight.isApproximatelyLessOrEqualThan(size.height)
       let nextLineFitsByLineNumber = (lines.count < maxNumberOfLines - 1 && !singleLineBreakMode) ||
         suggestedRange.nsRange.endIndex == length
@@ -244,22 +286,35 @@ extension NSAttributedString {
       } else if !nextLineFitsByLineNumber {
         if let lastLine = makeTruncatedLine(
           from: suggestedRange.nsRange,
-          constrainedTo: size.width,
+          constrainedTo: availableWidth,
           truncationToken: truncationToken
         ) {
-          lines.append((lastLine, lastLine.typographicBounds, suggestedRange.nsRange, true))
+          lines.append((
+            lastLine,
+            lastLine.typographicBounds,
+            suggestedRange.nsRange,
+            true,
+            currentLineHeadIndent
+          ))
         }
         break
       } else {
         let wholeRange = NSRange(location: 0, length: length)
         let remainingRange = lines.last?.range ?? wholeRange
+        let lastLineHeadIndent = lines.last?.headIndent ?? 0
         if let lastLine = makeTruncatedLine(
           from: remainingRange,
-          constrainedTo: size.width,
+          constrainedTo: size.width - lastLineHeadIndent,
           truncationToken: truncationToken
         ) {
           lines.removeLastIfExists()
-          lines.append((lastLine, lastLine.typographicBounds, suggestedRange.nsRange, true))
+          lines.append((
+            lastLine,
+            lastLine.typographicBounds,
+            suggestedRange.nsRange,
+            true,
+            lastLineHeadIndent
+          ))
         }
         break
       }
@@ -268,7 +323,8 @@ extension NSAttributedString {
     if string.last?.isNewline == true {
       let layout = layoutLine(
         typesetter: typesetter,
-        range: CFRange(location: offset - 1, length: 1)
+        range: CFRange(location: offset - 1, length: 1),
+        headIndent: 0
       )
       textHeight += layout.bounds.height
       let fitsByHeight = textHeight.isApproximatelyLessOrEqualThan(size.height)
@@ -284,7 +340,8 @@ extension NSAttributedString {
   private func layoutHyphenatedLine(
     typesetter: CTTypesetter,
     range: CFRange,
-    availableWidth: CGFloat
+    availableWidth: CGFloat,
+    headIndent: CGFloat
   ) -> LineLayout {
     let line = makeHyphenatedLine(from: range.nsRange)
     let extent = line.typographicBounds.width - availableWidth
@@ -297,28 +354,36 @@ extension NSAttributedString {
         let correctedRange = CFRange(location: range.location, length: correctedLength)
         if subrangeEndsWithSoftHyphen(correctedRange.nsRange) {
           let correctedLine = makeHyphenatedLine(from: correctedRange.nsRange)
-          return (correctedLine, correctedLine.typographicBounds, correctedRange.nsRange, false)
+          return (
+            correctedLine,
+            correctedLine.typographicBounds,
+            correctedRange.nsRange,
+            false,
+            headIndent
+          )
         } else {
           return layoutLine(
             typesetter: typesetter,
-            range: correctedRange
+            range: correctedRange,
+            headIndent: headIndent
           )
         }
       }
     }
-    return (line, line.typographicBounds, range.nsRange, false)
+    return (line, line.typographicBounds, range.nsRange, false, headIndent)
   }
 
   private func layoutLine(
     typesetter: CTTypesetter,
-    range: CFRange
+    range: CFRange,
+    headIndent: CGFloat
   ) -> LineLayout {
     let lineLength = range.length - trailingSymbolsTrimCount(range.nsRange)
     let line = CTTypesetterCreateLine(
       typesetter,
       CFRange(location: range.location, length: lineLength)
     )
-    return (line, line.typographicBounds, range.nsRange, false)
+    return (line, line.typographicBounds, range.nsRange, false, headIndent)
   }
 
   private func makeHyphenatedLine(from range: NSRange) -> CTLine {
@@ -449,10 +514,11 @@ extension NSAttributedString {
     var firstLineOriginX: CGFloat?
 
     var lines: [AttributedStringLineLayout] = []
-    for (line, bounds, range, isTruncated) in layout.lines {
+    for (line, bounds, range, isTruncated, headIndent) in layout.lines {
       let lineOriginX = horizontalOffset(
         lineWidth: bounds.width,
-        maxWidth: rect.width
+        maxWidth: rect.width,
+        headIndent: headIndent
       )
       if firstLineOriginX == nil {
         firstLineOriginX = lineOriginX + rect.origin.x
@@ -722,14 +788,18 @@ extension NSAttributedString {
     isTruncated ? index - range.lowerBound : index
   }
 
-  private func horizontalOffset(lineWidth: CGFloat, maxWidth: CGFloat) -> CGFloat {
+  private func horizontalOffset(
+    lineWidth: CGFloat,
+    maxWidth: CGFloat,
+    headIndent: CGFloat
+  ) -> CGFloat {
     switch textAlignment {
     case .left, .natural, .justified:
-      0
+      headIndent
     case .center:
       max(((maxWidth - lineWidth) / 2).roundedToScreenScale, 0)
     case .right:
-      max(maxWidth - lineWidth, 0)
+      max(maxWidth - lineWidth + headIndent, 0)
     @unknown default:
       0
     }

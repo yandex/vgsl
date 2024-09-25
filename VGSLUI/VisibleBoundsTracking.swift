@@ -39,3 +39,35 @@ extension VisibleBoundsTrackingLeaf {
 }
 
 public typealias VisibleBoundsTrackingView = UIView & VisibleBoundsTracking
+
+public final class VisibileBoundsTrackingRoot: UIView {
+  public var content: (VisibleBoundsTracking & UIView)? {
+    didSet {
+      if window != nil, let oldValue {
+        oldValue.onVisibleBoundsChanged(from: oldValue.bounds, to: .zero)
+      }
+      oldValue?.removeFromSuperview()
+      addSubviews(content.asArray())
+      setNeedsLayout()
+    }
+  }
+
+  public override func layoutSubviews() {
+    super.layoutSubviews()
+    guard let content else { return }
+    let oldBounds = content.bounds
+    content.frame = bounds
+    content.onVisibleBoundsChanged(from: oldBounds, to: content.bounds)
+  }
+
+  public override func didMoveToWindow() {
+    super.didMoveToWindow()
+    guard let content else { return }
+
+    if window == nil {
+      content.onVisibleBoundsChanged(from: content.bounds, to: .zero)
+    } else {
+      content.onVisibleBoundsChanged(from: .zero, to: content.bounds)
+    }
+  }
+}
