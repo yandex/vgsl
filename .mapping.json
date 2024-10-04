@@ -435,6 +435,7 @@
   "VGSLUI/extensions/UIImageExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIImageExtensions.swift",
   "VGSLUI/extensions/UIImageViewExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIImageViewExtensions.swift",
   "VGSLUI/extensions/UIMenuControllerExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIMenuControllerExtensions.swift",
+  "VGSLUI/filters/EquatableImageFilter.swift":"mobile/vgsl/public/VGSLUI/filters/EquatableImageFilter.swift",
   "VGSLUI/filters/FilterProtocol.swift":"mobile/vgsl/public/VGSLUI/filters/FilterProtocol.swift",
   "VGSLUI/filters/ImageBlur.swift":"mobile/vgsl/public/VGSLUI/filters/ImageBlur.swift",
   "VGSLUI/filters/ImageComposer.swift":"mobile/vgsl/public/VGSLUI/filters/ImageComposer.swift",

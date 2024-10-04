@@ -1,10 +1,19 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+import CoreImage
+import CoreImage.CIFilterBuiltins
 import UIKit
 
 import VGSLFundamentals
 
 public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
+  public var filter: AnyEquatableImageFilter? {
+    didSet {
+      guard oldValue != filter, image != nil else { return }
+      updateContent()
+    }
+  }
+
   private let contentsView = UIView()
   private lazy var contentsLayer = contentsView.layer
   private lazy var clipMask: CALayer = {
@@ -18,7 +27,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
       if let visualEffectView, visualEffectView.superview == nil {
         addSubview(visualEffectView)
       }
-      if visualEffectView !== oldValue {
+      if oldValue !== visualEffectView {
         oldValue?.removeFromSuperview()
       }
     }
@@ -40,8 +49,16 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
       .contentsGravity(isGeometryFlipped: contentsLayer.contentsAreFlipped())
 
     CATransaction.performWithoutAnimations {
+      var needsVisualEffectView = content.needsVisualEffectView
       switch content {
       case let .plain(image):
+        if #available(iOS 14.0, tvOS 14.0, *), let image, let filter {
+          applyAsyncFilter(filter, imageToUpdate: image)
+          let effectView = visualEffectView ?? UIVisualEffectView()
+          effectView.effect = UIBlurEffect(style: .light)
+          visualEffectView = effectView
+          needsVisualEffectView = true
+        }
         contentsLayer.setContents(image)
         contentsLayer.contentsGravity = gravity
         contentsLayer.backgroundColor = nil
@@ -76,7 +93,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
         contentsLayer.mask = nil
         templateLayer = nil
       }
-      if !content.needsVisualEffectView {
+      if !needsVisualEffectView {
         visualEffectView = nil
       }
     }
@@ -105,12 +122,26 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
 
   private var image: UIImage?
 
+  public override var frame: CGRect {
+    didSet {
+      if oldValue.size != frame.size, filter != nil, image != nil {
+        updateContent()
+      }
+    }
+  }
+
   public var imageRedrawingStyle: ImageRedrawingStyle? {
-    didSet { updateContent() }
+    didSet {
+      guard oldValue != imageRedrawingStyle else { return }
+      updateContent()
+    }
   }
 
   public var imageContentMode = ImageContentMode.default {
-    didSet { updateContent() }
+    didSet {
+      guard oldValue != imageContentMode else { return }
+      updateContent()
+    }
   }
 
   public override init(frame: CGRect) {
@@ -144,6 +175,36 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
     visualEffectView?.frame = bounds
 
     updateMask()
+  }
+
+  @available(iOS 14.0, tvOS 14.0, *)
+  private func applyAsyncFilter(_ filter: AnyEquatableImageFilter, imageToUpdate: UIImage) {
+    let imageRect = bounds
+    let resultHandler: (CGImage?) -> Void = { cgImage in
+      onMainThreadAsync { [weak self] in
+        guard let self,
+              self.image === imageToUpdate,
+              self.bounds == imageRect,
+              self.filter == filter else {
+          return
+        }
+        if let cgImage {
+          self.contentsLayer.contents = cgImage
+          self.visualEffectView = nil
+        } else if filter.value.showOriginalImageIfFailed {
+          self.visualEffectView = nil
+        }
+      }
+    }
+    onBackgroundThread(qos: .userInitiated)({
+      if let ciImage = imageToUpdate.cropped(to: imageRect),
+         let filteredCIImage = filter.value.apply(to: ciImage),
+         let cgImage = CIContext().createCGImage(filteredCIImage, from: filteredCIImage.extent) {
+        resultHandler(cgImage)
+      } else {
+        resultHandler(nil)
+      }
+    })
   }
 
   private func updateMask() {
@@ -265,6 +326,18 @@ extension UIImage {
     let image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     return image
+  }
+
+  @available(iOS 14.0, tvOS 14.0, *)
+  fileprivate func cropped(to rect: CGRect) -> CIImage? {
+    guard !rect.isEmpty else { return nil }
+    guard let ciImage = CIImage(image: self) else { return nil }
+    let cropFilter = CIFilter.stretchCrop()
+    cropFilter.inputImage = ciImage
+    cropFilter.size = CGPoint(x: scale * rect.width, y: scale * rect.height)
+    cropFilter.cropAmount = 1
+    cropFilter.centerStretchAmount = 0
+    return cropFilter.outputImage
   }
 }
 

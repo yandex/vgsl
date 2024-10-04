@@ -6,6 +6,16 @@ public protocol ImageViewProtocol {
   var appearanceAnimation: ImageViewAnimation? { get set }
   var imageRedrawingStyle: ImageRedrawingStyle? { get set }
   var imageContentMode: ImageContentMode { get set }
+  var filter: AnyEquatableImageFilter? { get set }
+}
+
+extension ImageViewProtocol {
+  public var filter: AnyEquatableImageFilter? {
+    get {
+      nil
+    }
+    set {}
+  }
 }
 
 public struct ImageViewAnimation {

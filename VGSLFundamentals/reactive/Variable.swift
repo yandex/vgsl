@@ -42,6 +42,9 @@ public struct Variable<T> {
   @inlinable
   public var wrappedValue: T { getter() }
 
+  /// Provides access to the observable variable itself, useful for binding and chaining operations.
+  public var projectedValue: Self { self }
+
   #if DEBUG
   @usableFromInline
   let debugInfo: DebugInfo
