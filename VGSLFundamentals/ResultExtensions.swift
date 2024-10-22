@@ -17,6 +17,16 @@ extension Result {
   }
 
   @inlinable
+  public func map<U>(_ transform: (Success) -> U) -> Result<U, Failure> {
+    switch self {
+    case let .success(value):
+      return .success(transform(value))
+    case let .failure(error):
+      return .failure(error)
+    }
+  }
+
+  @inlinable
   public func bimap<U>(
     _ transformValue: (Success) throws -> U,
     transfromError: (Failure) throws -> U

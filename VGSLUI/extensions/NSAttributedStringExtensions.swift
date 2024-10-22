@@ -145,7 +145,7 @@ typealias LineLayout = (
   bounds: TypographicBounds,
   range: NSRange,
   isTruncated: Bool,
-  headIndent: CGFloat
+  paragraphAttributes: ParagraphAttributes
 )
 
 struct TextLayout {
@@ -153,11 +153,11 @@ struct TextLayout {
   private var sourceLength: Int
 
   var width: CGFloat {
-    lines.map(\.bounds.width).max() ?? 0
+    lines.map { $0.bounds.width + $0.paragraphAttributes.headIndent }.max() ?? 0
   }
 
   var height: CGFloat {
-    lines.reduce(0) { $0 + $1.bounds.height }
+    lines.reduce(0) { $0 + $1.bounds.height + $1.paragraphAttributes.spacingBefore }
   }
 
   var size: CGSize {
@@ -192,6 +192,11 @@ struct TextLayout {
   }
 }
 
+struct ParagraphAttributes {
+  let headIndent: CGFloat
+  let spacingBefore: CGFloat
+}
+
 private let ellipsis = "\u{2026}"
 private let softHyphen: UTF16.CodeUnit = 0x00_AD
 private let lineFeed: UTF16.CodeUnit = 0x00_0A
@@ -220,6 +225,24 @@ extension NSAttributedString {
     return paragraphStyle?.headIndent ?? 0
   }
 
+  private func paragraphSpacing(at offset: Int) -> CGFloat {
+    let paragraphStyle = attribute(
+      .paragraphStyle,
+      at: offset,
+      effectiveRange: nil
+    ) as? NSParagraphStyle
+    return paragraphStyle?.paragraphSpacing ?? 0
+  }
+
+  private func paragraphSpacingBefore(at offset: Int) -> CGFloat {
+    let paragraphStyle = attribute(
+      .paragraphStyle,
+      at: offset,
+      effectiveRange: nil
+    ) as? NSParagraphStyle
+    return paragraphStyle?.paragraphSpacingBefore ?? 0
+  }
+
   func makeTextLayout(
     in size: CGSize,
     maxNumberOfLines: Int = .max,
@@ -232,17 +255,25 @@ extension NSAttributedString {
     var textHeight: CGFloat = 0
     var isNewline = true
     var savedHeadIndent: CGFloat = 0
+    var savedParagraphSpacing: CGFloat = 0
 
     while offset < length, lines.count < maxNumberOfLines {
-      let currentLineHeadIndent: CGFloat
+      let paragraphAttributes: ParagraphAttributes
       if isNewline {
-        currentLineHeadIndent = firstLineHeadIndent(at: offset)
+        paragraphAttributes = ParagraphAttributes(
+          headIndent: firstLineHeadIndent(at: offset),
+          spacingBefore: paragraphSpacingBefore(at: offset) + savedParagraphSpacing
+        )
         savedHeadIndent = headIndent(at: offset)
+        savedParagraphSpacing = paragraphSpacing(at: offset)
       } else {
-        currentLineHeadIndent = savedHeadIndent
+        paragraphAttributes = ParagraphAttributes(
+          headIndent: savedHeadIndent,
+          spacingBefore: 0
+        )
       }
 
-      let availableWidth = size.width - currentLineHeadIndent
+      let availableWidth = size.width - paragraphAttributes.headIndent
       let lineLength = breakWords ?
         typesetter.lineLength(from: offset, constrainedTo: availableWidth) :
         typesetter.lineLengthByWordBoundary(
@@ -264,17 +295,17 @@ extension NSAttributedString {
           typesetter: typesetter,
           range: suggestedRange,
           availableWidth: availableWidth,
-          headIndent: currentLineHeadIndent
+          paragraphAttributes: paragraphAttributes
         )
       } else {
         layout = layoutLine(
           typesetter: typesetter,
           range: suggestedRange,
-          headIndent: currentLineHeadIndent
+          paragraphAttributes: paragraphAttributes
         )
       }
 
-      textHeight += layout.bounds.height
+      textHeight += layout.bounds.height + paragraphAttributes.spacingBefore
       isNewline = string.utf16.prefix(layout.range.endIndex).last?.isNewline ?? false
       let fitsByHeight = textHeight.isApproximatelyLessOrEqualThan(size.height)
       let nextLineFitsByLineNumber = (lines.count < maxNumberOfLines - 1 && !singleLineBreakMode) ||
@@ -294,17 +325,20 @@ extension NSAttributedString {
             lastLine.typographicBounds,
             suggestedRange.nsRange,
             true,
-            currentLineHeadIndent
+            paragraphAttributes
           ))
         }
         break
       } else {
         let wholeRange = NSRange(location: 0, length: length)
         let remainingRange = lines.last?.range ?? wholeRange
-        let lastLineHeadIndent = lines.last?.headIndent ?? 0
+        let lastParagraphAttributes = lines.last?.paragraphAttributes ?? ParagraphAttributes(
+          headIndent: 0,
+          spacingBefore: 0
+        )
         if let lastLine = makeTruncatedLine(
           from: remainingRange,
-          constrainedTo: size.width - lastLineHeadIndent,
+          constrainedTo: size.width - lastParagraphAttributes.headIndent,
           truncationToken: truncationToken
         ) {
           lines.removeLastIfExists()
@@ -313,7 +347,7 @@ extension NSAttributedString {
             lastLine.typographicBounds,
             suggestedRange.nsRange,
             true,
-            lastLineHeadIndent
+            lastParagraphAttributes
           ))
         }
         break
@@ -324,9 +358,12 @@ extension NSAttributedString {
       let layout = layoutLine(
         typesetter: typesetter,
         range: CFRange(location: offset - 1, length: 1),
-        headIndent: 0
+        paragraphAttributes: ParagraphAttributes(
+          headIndent: 0,
+          spacingBefore: savedParagraphSpacing
+        )
       )
-      textHeight += layout.bounds.height
+      textHeight += layout.bounds.height + savedParagraphSpacing
       let fitsByHeight = textHeight.isApproximatelyLessOrEqualThan(size.height)
       let nextLineFitsByLineNumber = lines.count < maxNumberOfLines - 1 && !singleLineBreakMode
       if fitsByHeight, nextLineFitsByLineNumber {
@@ -341,7 +378,7 @@ extension NSAttributedString {
     typesetter: CTTypesetter,
     range: CFRange,
     availableWidth: CGFloat,
-    headIndent: CGFloat
+    paragraphAttributes: ParagraphAttributes
   ) -> LineLayout {
     let line = makeHyphenatedLine(from: range.nsRange)
     let extent = line.typographicBounds.width - availableWidth
@@ -359,31 +396,31 @@ extension NSAttributedString {
             correctedLine.typographicBounds,
             correctedRange.nsRange,
             false,
-            headIndent
+            paragraphAttributes
           )
         } else {
           return layoutLine(
             typesetter: typesetter,
             range: correctedRange,
-            headIndent: headIndent
+            paragraphAttributes: paragraphAttributes
           )
         }
       }
     }
-    return (line, line.typographicBounds, range.nsRange, false, headIndent)
+    return (line, line.typographicBounds, range.nsRange, false, paragraphAttributes)
   }
 
   private func layoutLine(
     typesetter: CTTypesetter,
     range: CFRange,
-    headIndent: CGFloat
+    paragraphAttributes: ParagraphAttributes
   ) -> LineLayout {
     let lineLength = range.length - trailingSymbolsTrimCount(range.nsRange)
     let line = CTTypesetterCreateLine(
       typesetter,
       CFRange(location: range.location, length: lineLength)
     )
-    return (line, line.typographicBounds, range.nsRange, false, headIndent)
+    return (line, line.typographicBounds, range.nsRange, false, paragraphAttributes)
   }
 
   private func makeHyphenatedLine(from range: NSRange) -> CTLine {
@@ -514,15 +551,16 @@ extension NSAttributedString {
     var firstLineOriginX: CGFloat?
 
     var lines: [AttributedStringLineLayout] = []
-    for (line, bounds, range, isTruncated, headIndent) in layout.lines {
+    for (line, bounds, range, isTruncated, paragraphAttributes) in layout.lines {
       let lineOriginX = horizontalOffset(
         lineWidth: bounds.width,
         maxWidth: rect.width,
-        headIndent: headIndent
+        headIndent: paragraphAttributes.headIndent
       )
       if firstLineOriginX == nil {
         firstLineOriginX = lineOriginX + rect.origin.x
       }
+      lineOriginY -= paragraphAttributes.spacingBefore
       let textPosition = CGPoint(
         x: rect.origin.x + lineOriginX,
         y: rect.origin.y + lineOriginY - bounds.ascent

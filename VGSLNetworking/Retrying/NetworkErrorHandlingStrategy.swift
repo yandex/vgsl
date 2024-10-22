@@ -12,3 +12,5 @@ public protocol NetworkErrorHandlingStrategy: AnyObject {
     from url: URL
   ) -> NetworkErrorHandlingPolicy
 }
+
+public typealias NetworkErrorHandlingStrategyFactory = () -> NetworkErrorHandlingStrategy

@@ -325,6 +325,10 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
     self + Typo(paragraphSpacing: paragraphSpacing)
   }
 
+  public func with(paragraphSpacingBefore: CGFloat) -> Typo {
+    self + Typo(paragraphSpacingBefore: paragraphSpacingBefore)
+  }
+
   public func hyphenated(_ hyphenationFactor: Float) -> Typo {
     self + Typo(hyphenationFactor: hyphenationFactor)
   }
@@ -727,6 +731,10 @@ extension Typo {
 
   public init(paragraphSpacing: CGFloat) {
     self.init(paragraphStyle: ParagraphStyle(paragraphSpacing: paragraphSpacing))
+  }
+
+  public init(paragraphSpacingBefore: CGFloat) {
+    self.init(paragraphStyle: ParagraphStyle(paragraphSpacingBefore: paragraphSpacingBefore))
   }
 
   public init(kern: Kern) {

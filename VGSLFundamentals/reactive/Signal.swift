@@ -425,3 +425,15 @@ extension Signal {
     map { _ in () }
   }
 }
+
+extension Signal {
+  @inlinable
+  public func firstAsFuture(shouldAssertOnMainThread: Bool = false) -> Future<T> {
+    let promise = Promise<T>(shouldAssertOnMainThread: shouldAssertOnMainThread)
+    let subscription = takeFirst().addObserver(promise.resolve)
+    promise.future.resolved { _ in
+      withExtendedLifetime(subscription) {}
+    }
+    return promise.future
+  }
+}
