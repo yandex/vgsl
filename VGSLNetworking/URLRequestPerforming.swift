@@ -9,7 +9,7 @@ public protocol NetworkTask: AnyObject, Cancellable {
   func resume()
 }
 
-extension URLSessionTask: NetworkTask {}
+extension Foundation.URLSessionTask: VGSLNetworking.NetworkTask {}
 
 public typealias URLRequestCompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
 

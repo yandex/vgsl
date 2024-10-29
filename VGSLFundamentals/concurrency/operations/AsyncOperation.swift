@@ -3,7 +3,7 @@
 import Foundation
 
 @objc(YXAsyncOperation)
-open class AsyncOperation: Operation {
+open class AsyncOperation: Operation, @unchecked Sendable {
   private var _isExecuting = false
   private var _isFinished = false
   private lazy var lock = NSRecursiveLock()

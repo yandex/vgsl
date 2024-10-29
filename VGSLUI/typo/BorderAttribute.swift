@@ -3,7 +3,7 @@
 import CoreGraphics
 import Foundation
 
-public final class BorderAttribute {
+public final class BorderAttribute: StringAttribute {
   public static let Key = NSAttributedString.Key("RangeBorder")
 
   public let color: CGColor?

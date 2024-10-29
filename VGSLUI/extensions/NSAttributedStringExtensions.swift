@@ -4,7 +4,7 @@ import CoreGraphics
 import CoreText
 import Foundation
 
-#if os(iOS)
+#if os(iOS) || os(tvOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -415,12 +415,15 @@ extension NSAttributedString {
     range: CFRange,
     paragraphAttributes: ParagraphAttributes
   ) -> LineLayout {
-    let lineLength = range.length - trailingSymbolsTrimCount(range.nsRange)
+    let range = range.nsRange
+    let trimCharsNumber = string.utf16.count == range
+      .upperBound ? 0 : trailingSymbolsTrimCount(range)
+    let lineLength = range.length - trimCharsNumber
     let line = CTTypesetterCreateLine(
       typesetter,
       CFRange(location: range.location, length: lineLength)
     )
-    return (line, line.typographicBounds, range.nsRange, false, paragraphAttributes)
+    return (line, line.typographicBounds, range, false, paragraphAttributes)
   }
 
   private func makeHyphenatedLine(from range: NSRange) -> CTLine {
@@ -432,12 +435,14 @@ extension NSAttributedString {
   public func draw(
     inContext context: CGContext,
     verticalPosition: VerticalPosition = .center,
-    rect: CGRect
+    rect: CGRect,
+    textInsets: EdgeInsets = .zero
   ) {
     _ = drawAndGetLayout(
       inContext: context,
       verticalPosition: verticalPosition,
       rect: rect,
+      textInsets: textInsets,
       actionKey: nil,
       backgroundKey: nil,
       borderKey: nil,
@@ -449,12 +454,14 @@ extension NSAttributedString {
     inContext context: CGContext?,
     verticalPosition: VerticalPosition = .center,
     rect: CGRect,
+    textInsets: EdgeInsets = .zero,
     truncationToken: NSAttributedString? = nil
   ) -> AttributedStringLayout<Void> {
     drawAndGetLayout(
       inContext: context,
       verticalPosition: verticalPosition,
       rect: rect,
+      textInsets: textInsets,
       truncationToken: truncationToken,
       actionKey: nil,
       backgroundKey: nil,
@@ -467,6 +474,7 @@ extension NSAttributedString {
     inContext context: CGContext?,
     verticalPosition: VerticalPosition = .center,
     rect: CGRect,
+    textInsets: EdgeInsets = .zero,
     truncationToken: NSAttributedString? = nil,
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
@@ -497,6 +505,7 @@ extension NSAttributedString {
           inContext: context,
           verticalPosition: verticalPosition,
           rect: transformedRect,
+          textInsets: textInsets,
           truncationToken: truncationToken,
           actionKey: actionKey,
           backgroundKey: backgroundKey,
@@ -509,6 +518,7 @@ extension NSAttributedString {
       inContext: context,
       verticalPosition: verticalPosition,
       rect: transformedRect,
+      textInsets: textInsets,
       truncationToken: truncationToken,
       actionKey: actionKey,
       backgroundKey: backgroundKey,
@@ -521,6 +531,7 @@ extension NSAttributedString {
     inContext context: CGContext?,
     verticalPosition: VerticalPosition,
     rect: CGRect,
+    textInsets: EdgeInsets,
     truncationToken: NSAttributedString?,
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
@@ -528,7 +539,7 @@ extension NSAttributedString {
     selectedRange _: Range<Int>?
   ) -> AttributedStringLayout<ActionType> {
     let layout = makeTextLayout(
-      in: rect.size,
+      in: rect.size.inset(by: textInsets),
       breakWords: true,
       truncationToken: truncationToken
     )
@@ -551,6 +562,7 @@ extension NSAttributedString {
     var firstLineOriginX: CGFloat?
 
     var lines: [AttributedStringLineLayout] = []
+    var clouds: [CloudBackgroundAttribute: [CGRect]] = [:]
     for (line, bounds, range, isTruncated, paragraphAttributes) in layout.lines {
       let lineOriginX = horizontalOffset(
         lineWidth: bounds.width,
@@ -562,20 +574,21 @@ extension NSAttributedString {
       }
       lineOriginY -= paragraphAttributes.spacingBefore
       let textPosition = CGPoint(
-        x: rect.origin.x + lineOriginX,
-        y: rect.origin.y + lineOriginY - bounds.ascent
+        x: rect.origin.x + lineOriginX + textInsets.left,
+        y: rect.origin.y + lineOriginY - bounds.ascent - textInsets.top
       )
 
       if let context {
-        let lineRunsLayout = line.draw(
+        let layoutResult: CTLine.LayoutResult<ActionType> = line.draw(
           at: textPosition,
           in: context,
           layoutY: rect.maxY - lineOriginY,
           actionKey: actionKey,
           backgroundKey: backgroundKey,
           borderKey: borderKey
-        ) as [AttributedStringLayout<ActionType>.Run]
-        runsLayout += lineRunsLayout
+        )
+        clouds.append(cloudBackgrounds: layoutResult.runsWithCloudBackground)
+        runsLayout += layoutResult.runsWithAction
       } else {
         break
       }
@@ -590,11 +603,62 @@ extension NSAttributedString {
       lineOriginY -= bounds.height
     }
 
+    for (info, cloudsRects) in clouds {
+      draw(context: context, info: info, cloudsRects: cloudsRects)
+    }
+
     return AttributedStringLayout(
       firstLineOriginX: firstLineOriginX,
       runsWithAction: runsLayout,
       lines: lines
     )
+  }
+
+  func draw(
+    context: CGContext?,
+    info: CloudBackgroundAttribute,
+    cloudsRects: [CGRect]
+  ) {
+    guard let context, !cloudsRects.isEmpty else { return }
+    var leftPoints: [CGPoint] = []
+    var rightPoints: [CGPoint] = []
+    let paddings = info.insets ?? .init(vertical: 0, horizontal: 0)
+
+    func appendRect(_ rect: CGRect) {
+      rightPoints.append(rect.coordinate(ofCorner: .bottomRight))
+      rightPoints.append(rect.coordinate(ofCorner: .topRight))
+      leftPoints.append(rect.coordinate(ofCorner: .bottomLeft))
+      leftPoints.append(rect.coordinate(ofCorner: .topLeft))
+    }
+
+    if cloudsRects.count == 1 {
+      appendRect(cloudsRects[0].expanded(by: paddings))
+    } else {
+      for index in 0..<cloudsRects.count {
+        let newPaddings: EdgeInsets
+        if index == 0 {
+          newPaddings = EdgeInsets(
+            top: 0,
+            left: paddings.left,
+            bottom: paddings.bottom,
+            right: paddings.right
+          )
+        } else if index == cloudsRects.count - 1 {
+          newPaddings = EdgeInsets(
+            top: paddings.top,
+            left: paddings.left,
+            bottom: 0,
+            right: paddings.right
+          )
+        } else {
+          newPaddings = EdgeInsets(top: 0, left: paddings.left, bottom: 0, right: paddings.right)
+        }
+        appendRect(cloudsRects[index].expanded(by: newPaddings))
+      }
+    }
+
+    let points: [CGPoint] = rightPoints + leftPoints.reversed()
+    context.drawCloud(points: points, cornerRadius: info.cornerRadius, backgroundColor: info.color)
   }
 
   public func drawSelection(
@@ -1086,6 +1150,16 @@ extension CTLine {
     return (minHeight, maxHeight)
   }
 
+  struct CloudBackground {
+    let rect: CGRect
+    let info: CloudBackgroundAttribute
+  }
+
+  struct LayoutResult<ActionType> {
+    let runsWithAction: [AttributedStringLayout<ActionType>.Run]
+    let runsWithCloudBackground: [CloudBackground]
+  }
+
   fileprivate func draw<ActionType>(
     at position: CGPoint,
     in context: CGContext,
@@ -1093,9 +1167,9 @@ extension CTLine {
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
     borderKey: NSAttributedString.Key?
-  ) -> [AttributedStringLayout<ActionType>.Run] {
+  ) -> LayoutResult<ActionType> {
     var runsWithActions = [AttributedStringLayout<ActionType>.Run]()
-
+    var runsWithCloudBackround = [CloudBackground]()
     for run in runs {
       let runPosition = CGPoint(x: position.x + run.origin.x, y: position.y)
       if let action = (actionKey.flatMap(run.action) as ActionType?) {
@@ -1115,6 +1189,14 @@ extension CTLine {
       #if os(iOS)
       let border = borderKey.flatMap(run.border)
       let background = backgroundKey.flatMap(run.background)
+      let cloudBackground = run.cloudBackground(for: CloudBackgroundAttribute.Key)
+      if let cloudBackground {
+        let rect = CGRect(
+          origin: runPosition.movingY(by: -run.typographicBounds.descent),
+          size: CGSize(width: run.typographicBounds.width, height: run.typographicBounds.height)
+        )
+        runsWithCloudBackround.append(.init(rect: rect, info: cloudBackground))
+      }
 
       if background != nil || border != nil {
         var corners: UIRectCorner = []
@@ -1168,11 +1250,23 @@ extension CTLine {
       #endif
 
       context.textPosition = position
+
       context.inSeparateGState {
         context.performDrawing(shadedWith: run.shadow) {
           CTRunDraw(run, context, .infinite)
-          if #available(iOS 15, *) {} else if run.isSingleStrikethrough {
-            drawStrikethrough(for: run, at: runPosition, in: context)
+          if run.isUnderline {
+            if #available(iOS 18, tvOS 18, macOS 13, *) {
+              drawUnderline(for: run, at: runPosition, in: context)
+            }
+          }
+          if run.isSingleStrikethrough {
+            if #available(iOS 18, tvOS 18, *) {
+              drawStrikethrough(for: run, at: runPosition, in: context)
+            } else if #available(iOS 15, tvOS 15, *) {
+              // Supported by CoreText directly
+            } else {
+              drawStrikethrough(for: run, at: runPosition, in: context)
+            }
           }
         }
       }
@@ -1195,14 +1289,48 @@ extension CTLine {
       }
     }
 
-    return runsWithActions
+    return LayoutResult(
+      runsWithAction: runsWithActions,
+      runsWithCloudBackground: runsWithCloudBackround
+    )
   }
 
   private func drawStrikethrough(for run: CTRun, at position: CGPoint, in context: CGContext) {
     context.saveGState()
     context.setStrokeColor(run.color)
     context.setLineWidth(run.font.estimatedStrikethroughWidth)
-    context.addPath(run.strikethroughLine(forTextPosition: position))
+    context.addPath(
+      run.strikethroughLine(
+        forTextPosition: position,
+        offset: run.baselineOffset + ceil(run.font.xHeight * 0.5)
+      )
+    )
+    context.strokePath()
+    context.restoreGState()
+  }
+
+  @available(iOS 16, tvOS 16, macOS 13, *)
+  private func drawUnderline(for run: CTRun, at position: CGPoint, in context: CGContext) {
+    context.saveGState()
+    context.setStrokeColor(run.color)
+    context.setLineWidth(run.font.underlineThickness)
+
+    var underlinePath = run.strikethroughLine(
+      forTextPosition: position,
+      offset: run.font.underlinePosition
+    )
+    for glyphPath in run.glyphPaths(runPosition: position) {
+      let thickedPath = glyphPath.copy(
+        strokingWithWidth: run.font.estimatedStrikethroughWidth,
+        lineCap: .round,
+        lineJoin: .round,
+        miterLimit: 0
+      )
+      if !underlinePath.lineIntersection(thickedPath).isEmpty {
+        underlinePath = underlinePath.lineSubtracting(thickedPath)
+      }
+    }
+    context.addPath(underlinePath)
     context.strokePath()
     context.restoreGState()
   }
@@ -1225,7 +1353,7 @@ extension CTRun {
     return TypographicBounds(ascent: ascent, descent: descent, width: width)
   }
 
-  private var baselineOffset: CGFloat {
+  fileprivate var baselineOffset: CGFloat {
     var offset: CGFloat? = attribute(withName: .baselineOffset)
     if #available(iOS 11, tvOS 11, OSX 10.13, *) {
       offset = offset ?? attribute(withName: kCTBaselineOffsetAttributeName)
@@ -1241,6 +1369,11 @@ extension CTRun {
 
   fileprivate var isSingleStrikethrough: Bool {
     let underlineStyle: Int? = attribute(withName: .strikethroughStyle)
+    return underlineStyle == UnderlineStyle.single.rawValue
+  }
+
+  fileprivate var isUnderline: Bool {
+    let underlineStyle: Int? = attribute(withName: .underlineStyle)
     return underlineStyle == UnderlineStyle.single.rawValue
   }
 
@@ -1272,8 +1405,10 @@ extension CTRun {
     return origins.first!
   }
 
-  fileprivate func strikethroughLine(forTextPosition position: CGPoint) -> CGPath {
-    let offset = baselineOffset + ceil(font.xHeight * 0.5)
+  fileprivate func strikethroughLine(
+    forTextPosition position: CGPoint,
+    offset: CGFloat
+  ) -> CGPath {
     let width = CTRunGetTypographicBounds(self, .infinite, nil, nil, nil)
 
     let start = CGPoint(
@@ -1304,8 +1439,27 @@ extension CTRun {
     attribute(withName: key) as BackgroundAttribute?
   }
 
+  fileprivate func cloudBackground(for key: NSAttributedString.Key) -> CloudBackgroundAttribute? {
+    attribute(withName: key) as CloudBackgroundAttribute?
+  }
+
   fileprivate func border(for key: NSAttributedString.Key) -> BorderAttribute? {
     attribute(withName: key) as BorderAttribute?
+  }
+
+  fileprivate func glyphPaths(runPosition: CGPoint) -> [CGPath] {
+    let glyphCount = CTRunGetGlyphCount(self)
+    var glyphs: [CGGlyph] = Array(repeating: CGGlyph(), count: glyphCount)
+    CTRunGetGlyphs(self, .infinite, &glyphs)
+
+    var positions: [CGPoint] = Array(repeating: .zero, count: glyphCount)
+    CTRunGetPositions(self, .infinite, &positions)
+
+    return zip(glyphs, positions).compactMap { glyph, position in
+      var transform = CGAffineTransform.identity
+        .translatedBy(x: position.x, y: runPosition.y + position.y)
+      return CTFontCreatePathForGlyph(font, glyph, &transform)
+    }
   }
 }
 
@@ -1409,6 +1563,14 @@ extension Font {
       (pointSize / 12).roundedToScreenScale
     )
   }
+
+  fileprivate var underlineThickness: CGFloat {
+    CTFontGetUnderlineThickness(self)
+  }
+
+  fileprivate var underlinePosition: CGFloat {
+    CTFontGetUnderlinePosition(self)
+  }
 }
 
 private let selectionColor = Color.colorWithHexCode(0xB3_D7_FE_7F)
@@ -1477,5 +1639,15 @@ extension CGPath {
     let path = CGMutablePath()
     path.addRect(rect)
     return path
+  }
+}
+
+extension [CloudBackgroundAttribute: [CGRect]] {
+  fileprivate mutating func append(cloudBackgrounds: [CTLine.CloudBackground]) {
+    for background in cloudBackgrounds {
+      var array = self[background.info] ?? []
+      array.append(background.rect)
+      self[background.info] = array
+    }
   }
 }

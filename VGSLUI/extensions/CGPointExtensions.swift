@@ -47,7 +47,7 @@ public func -(lhs: CGPoint, rhs: CGFloat) -> CGPoint {
   CGPoint(x: lhs.x - rhs, y: lhs.y - rhs)
 }
 
-extension CGPoint: Hashable {
+extension CoreFoundation.CGPoint: Swift.Hashable {
   public func hash(into hasher: inout Hasher) {
     x.hash(into: &hasher)
     y.hash(into: &hasher)

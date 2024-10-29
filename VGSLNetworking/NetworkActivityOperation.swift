@@ -10,7 +10,7 @@ public enum NetworkActivityOperationErrorCode: Int {
   case failedToCreateResource
 }
 
-public final class NetworkActivityOperation<Response>: AsyncOperation {
+public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecked Sendable {
   public typealias ResourceFactory = Variable<Resource<Response>?>
   public typealias Request = (
     URL,

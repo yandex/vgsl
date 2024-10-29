@@ -38,7 +38,8 @@ extension OperationQueue: OperationQueueType {
   }
 }
 
-private final class SerialOperationQueueImpl: OperationQueue, SerialOperationQueue {
+private final class SerialOperationQueueImpl: OperationQueue, SerialOperationQueue,
+  @unchecked Sendable {
   override init() {
     super.init()
     maxConcurrentOperationCount = 1

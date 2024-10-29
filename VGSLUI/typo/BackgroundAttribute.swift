@@ -3,7 +3,7 @@
 import CoreGraphics
 import Foundation
 
-public final class BackgroundAttribute {
+public final class BackgroundAttribute: StringAttribute {
   public static let Key = NSAttributedString.Key("RangeBackground")
 
   public let color: CGColor

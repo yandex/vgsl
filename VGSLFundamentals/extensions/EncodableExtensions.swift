@@ -7,4 +7,8 @@ extension Encodable {
     let data = try JSONEncoder().encode(self)
     return String(data: data, encoding: .utf8)!
   }
+
+  public func jsonData() throws -> Data {
+    try JSONEncoder().encode(self)
+  }
 }

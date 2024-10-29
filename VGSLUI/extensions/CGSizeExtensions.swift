@@ -5,7 +5,7 @@ import Foundation
 
 import VGSLFundamentals
 
-extension CGSize: Hashable {
+extension CoreFoundation.CGSize: Swift.Hashable {
   public static var infinite: CGSize {
     CGSize(width: CGFloat.infinity, height: CGFloat.infinity)
   }
