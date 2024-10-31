@@ -1296,13 +1296,15 @@ extension CTLine {
   }
 
   private func drawStrikethrough(for run: CTRun, at position: CGPoint, in context: CGContext) {
+    let lineWidth = run.font.estimatedStrikethroughWidth
+
     context.saveGState()
     context.setStrokeColor(run.color)
-    context.setLineWidth(run.font.estimatedStrikethroughWidth)
+    context.setLineWidth(lineWidth)
     context.addPath(
       run.strikethroughLine(
         forTextPosition: position,
-        offset: run.baselineOffset + ceil(run.font.xHeight * 0.5)
+        offset: run.baselineOffset + ceil((run.font.xHeight - lineWidth) * 0.5)
       )
     )
     context.strokePath()
@@ -1317,11 +1319,11 @@ extension CTLine {
 
     var underlinePath = run.strikethroughLine(
       forTextPosition: position,
-      offset: run.font.underlinePosition
+      offset: run.font.underlinePosition - run.font.underlineThickness * 0.5
     )
     for glyphPath in run.glyphPaths(runPosition: position) {
       let thickedPath = glyphPath.copy(
-        strokingWithWidth: run.font.estimatedStrikethroughWidth,
+        strokingWithWidth: run.font.underlineThickness * 3,
         lineCap: .round,
         lineJoin: .round,
         miterLimit: 0
