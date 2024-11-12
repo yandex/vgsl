@@ -42,7 +42,7 @@ extension URL {
     queryItems?.map { ($0.name, $0.value) } ?? []
   }
 
-  private var queryItems: [URLQueryItem]? {
+  public var queryItems: [URLQueryItem]? {
     URLComponents(url: self, resolvingAgainstBaseURL: false)?.queryItems
   }
 

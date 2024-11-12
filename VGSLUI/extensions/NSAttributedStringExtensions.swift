@@ -558,11 +558,19 @@ extension NSAttributedString {
     )
     let verticalOffset = max(maybeNegativeOffset, 0)
     var lineOriginY: CGFloat = rect.height - verticalOffset
-
     var firstLineOriginX: CGFloat?
 
+    if let context {
+      drawClouds(
+        context: context,
+        verticalPosition: verticalPosition,
+        rect: rect,
+        textInsets: textInsets,
+        layout: layout
+      )
+    }
+
     var lines: [AttributedStringLineLayout] = []
-    var clouds: [CloudBackgroundAttribute: [CGRect]] = [:]
     for (line, bounds, range, isTruncated, paragraphAttributes) in layout.lines {
       let lineOriginX = horizontalOffset(
         lineWidth: bounds.width,
@@ -579,7 +587,7 @@ extension NSAttributedString {
       )
 
       if let context {
-        let layoutResult: CTLine.LayoutResult<ActionType> = line.draw(
+        let runsWithAction: [AttributedStringLayout<ActionType>.Run] = line.draw(
           at: textPosition,
           in: context,
           layoutY: rect.maxY - lineOriginY,
@@ -587,8 +595,7 @@ extension NSAttributedString {
           backgroundKey: backgroundKey,
           borderKey: borderKey
         )
-        clouds.append(cloudBackgrounds: layoutResult.runsWithCloudBackground)
-        runsLayout += layoutResult.runsWithAction
+        runsLayout += runsWithAction
       } else {
         break
       }
@@ -603,10 +610,6 @@ extension NSAttributedString {
       lineOriginY -= bounds.height
     }
 
-    for (info, cloudsRects) in clouds {
-      draw(context: context, info: info, cloudsRects: cloudsRects)
-    }
-
     return AttributedStringLayout(
       firstLineOriginX: firstLineOriginX,
       runsWithAction: runsLayout,
@@ -614,7 +617,46 @@ extension NSAttributedString {
     )
   }
 
-  func draw(
+  private func drawClouds(
+    context: CGContext,
+    verticalPosition: VerticalPosition,
+    rect: CGRect,
+    textInsets: EdgeInsets,
+    layout: TextLayout
+  ) {
+    let maybeNegativeOffset = verticalPosition.verticalOffset(
+      forHeight: layout.height,
+      availableHeight: rect.height
+    )
+    let verticalOffset = max(maybeNegativeOffset, 0)
+    var lineOriginY: CGFloat = rect.height - verticalOffset
+    var firstLineOriginX: CGFloat?
+
+    var clouds: [CloudBackgroundAttribute: [CGRect]] = [:]
+    for (line, bounds, _, _, paragraphAttributes) in layout.lines {
+      let lineOriginX = horizontalOffset(
+        lineWidth: bounds.width,
+        maxWidth: rect.width,
+        headIndent: paragraphAttributes.headIndent
+      )
+      if firstLineOriginX == nil {
+        firstLineOriginX = lineOriginX + rect.origin.x
+      }
+      lineOriginY -= paragraphAttributes.spacingBefore
+      let textPosition = CGPoint(
+        x: rect.origin.x + lineOriginX + textInsets.left,
+        y: rect.origin.y + lineOriginY - bounds.ascent - textInsets.top
+      )
+      let cloudBackgrounds = line.calculateCloudsLayout(at: textPosition)
+      clouds.append(cloudBackgrounds: cloudBackgrounds)
+      lineOriginY -= bounds.height
+    }
+    for (info, cloudsRects) in clouds {
+      draw(context: context, info: info, cloudsRects: cloudsRects)
+    }
+  }
+
+  private func draw(
     context: CGContext?,
     info: CloudBackgroundAttribute,
     cloudsRects: [CGRect]
@@ -1155,11 +1197,6 @@ extension CTLine {
     let info: CloudBackgroundAttribute
   }
 
-  struct LayoutResult<ActionType> {
-    let runsWithAction: [AttributedStringLayout<ActionType>.Run]
-    let runsWithCloudBackground: [CloudBackground]
-  }
-
   fileprivate func draw<ActionType>(
     at position: CGPoint,
     in context: CGContext,
@@ -1167,9 +1204,8 @@ extension CTLine {
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
     borderKey: NSAttributedString.Key?
-  ) -> LayoutResult<ActionType> {
+  ) -> [AttributedStringLayout<ActionType>.Run] {
     var runsWithActions = [AttributedStringLayout<ActionType>.Run]()
-    var runsWithCloudBackround = [CloudBackground]()
     for run in runs {
       let runPosition = CGPoint(x: position.x + run.origin.x, y: position.y)
       if let action = (actionKey.flatMap(run.action) as ActionType?) {
@@ -1189,14 +1225,6 @@ extension CTLine {
       #if os(iOS)
       let border = borderKey.flatMap(run.border)
       let background = backgroundKey.flatMap(run.background)
-      let cloudBackground = run.cloudBackground(for: CloudBackgroundAttribute.Key)
-      if let cloudBackground {
-        let rect = CGRect(
-          origin: runPosition.movingY(by: -run.typographicBounds.descent),
-          size: CGSize(width: run.typographicBounds.width, height: run.typographicBounds.height)
-        )
-        runsWithCloudBackround.append(.init(rect: rect, info: cloudBackground))
-      }
 
       if background != nil || border != nil {
         var corners: UIRectCorner = []
@@ -1289,10 +1317,7 @@ extension CTLine {
       }
     }
 
-    return LayoutResult(
-      runsWithAction: runsWithActions,
-      runsWithCloudBackground: runsWithCloudBackround
-    )
+    return runsWithActions
   }
 
   private func drawStrikethrough(for run: CTRun, at position: CGPoint, in context: CGContext) {
@@ -1335,6 +1360,39 @@ extension CTLine {
     context.addPath(underlinePath)
     context.strokePath()
     context.restoreGState()
+  }
+
+  fileprivate func calculateCloudsLayout(
+    at position: CGPoint
+  ) -> [CloudBackground] {
+    var cloudBackgrounds: [CloudBackground] = []
+    for run in runs {
+      let runPosition = CGPoint(x: position.x + run.origin.x, y: position.y)
+      let cloudBackground = run.cloudBackground(for: CloudBackgroundAttribute.Key)
+      guard let cloudBackground else { continue }
+      let maximumLineHeight: CGFloat = run.paragraphStyle?.maximumLineHeight ?? .zero
+
+      let rect = CGRect(
+        origin: runPosition.movingY(by: -run.typographicBounds.descent),
+        size: CGSize(
+          width: run.typographicBounds.width,
+          height: max(run.typographicBounds.height, maximumLineHeight)
+        )
+      )
+      if let cloudRun = cloudBackgrounds.last, cloudRun.info == cloudBackground {
+        let newRect = CGRect(
+          origin: cloudRun.rect.origin,
+          size: CGSize(width: cloudRun.rect.width + rect.width, height: cloudRun.rect.height)
+        )
+        cloudBackgrounds[cloudBackgrounds.count - 1] = CloudBackground(
+          rect: newRect,
+          info: cloudBackground
+        )
+      } else {
+        cloudBackgrounds.append(CloudBackground(rect: rect, info: cloudBackground))
+      }
+    }
+    return cloudBackgrounds
   }
 }
 
