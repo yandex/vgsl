@@ -439,6 +439,7 @@
   "VGSLNetworking/NetworkOperationServer.swift":"mobile/vgsl/public/VGSLNetworking/NetworkOperationServer.swift",
   "VGSLNetworking/NetworkSessionMetrics.swift":"mobile/vgsl/public/VGSLNetworking/NetworkSessionMetrics.swift",
   "VGSLNetworking/NetworkURLResourceRequester.swift":"mobile/vgsl/public/VGSLNetworking/NetworkURLResourceRequester.swift",
+  "VGSLNetworking/PlaceholderEvent.swift":"mobile/vgsl/public/VGSLNetworking/PlaceholderEvent.swift",
   "VGSLNetworking/RemoteImageHolder.swift":"mobile/vgsl/public/VGSLNetworking/RemoteImageHolder.swift",
   "VGSLNetworking/Resource.swift":"mobile/vgsl/public/VGSLNetworking/Resource.swift",
   "VGSLNetworking/Retrying/DateHTTPExtensions.swift":"mobile/vgsl/public/VGSLNetworking/Retrying/DateHTTPExtensions.swift",
