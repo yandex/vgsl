@@ -11,11 +11,9 @@ public final class RemoteImageHolder: ImageHolder {
 
   public let placeholder: ImagePlaceholder?
   public let url: URL
-  public var placeholderEventSignal: Signal<PlaceholderEvent> { placeholderEventPipe.signal }
   public private(set) weak var image: Image?
   private let resourceRequester: AsyncImageRequester
   private let imageProcessingQueue: OperationQueueType
-  private let placeholderEventPipe = SignalPipe<PlaceholderEvent>()
 
   private init(
     url: URL,
@@ -107,8 +105,6 @@ public final class RemoteImageHolder: ImageHolder {
       return nil
     }
 
-    var placeholderUpdateId: UUID?
-
     switch placeholder {
     case let .image(image)?:
       completion((image, .cache))
@@ -120,15 +116,7 @@ public final class RemoteImageHolder: ImageHolder {
       break
     }
 
-    if placeholder != nil {
-      placeholderUpdateId = UUID()
-      placeholderUpdateId.map { placeholderEventPipe.send(.show(id: $0)) }
-    }
-
-    return resourceRequester { [weak self] handler in
-      completion(handler)
-      placeholderUpdateId.map { self?.placeholderEventPipe.send(.hide(id: $0)) }
-    }
+    return resourceRequester(completion)
   }
 
   public func equals(_ other: ImageHolder) -> Bool {

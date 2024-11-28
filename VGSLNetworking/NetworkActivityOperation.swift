@@ -8,10 +8,12 @@ public let NetworkActivityOperationErrorDomain =
   "vgsl.commonCore.networking.NetworkActivityOperation"
 public enum NetworkActivityOperationErrorCode: Int {
   case failedToCreateResource
+  case cancelled
 }
 
 public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecked Sendable {
   public typealias ResourceFactory = Variable<Resource<Response>?>
+  public typealias ResourceFutureFactory = Variable<Future<Resource<Response>>?>
   public typealias Request = (
     URL,
     Resource<Response>,
@@ -23,7 +25,7 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
   public typealias Completion = (Result<Response, NSError>) -> Void
 
   private let baseURLProvider: Variable<URL>
-  private let resourceFactory: ResourceFactory
+  private let resourceFactory: ResourceFutureFactory
   private let request: Request
   private let userAgent: Variable<String?>
   private let downloadProgress: ProgressHandler?
@@ -45,9 +47,33 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
   public var predefinedResponse: (body: Data, httpResponse: HTTPURLResponse)?
   #endif
 
-  public init(
+  public convenience init(
     baseURLProvider: Variable<URL>,
     resourceFactory: ResourceFactory,
+    request: @escaping Request,
+    userAgent: Variable<String?>,
+    downloadProgress: ProgressHandler? = nil,
+    uploadProgress: ProgressHandler? = nil,
+    errorStrategy: NetworkErrorHandlingStrategy? = nil,
+    completion: @escaping Completion
+  ) {
+    self.init(
+      baseURLProvider: baseURLProvider,
+      resourceFactory: Variable {
+        resourceFactory.value.map { .resolved($0) }
+      },
+      request: request,
+      userAgent: userAgent,
+      downloadProgress: downloadProgress,
+      uploadProgress: uploadProgress,
+      errorStrategy: errorStrategy,
+      completion: completion
+    )
+  }
+
+  public init(
+    baseURLProvider: Variable<URL>,
+    resourceFactory: ResourceFutureFactory,
     request: @escaping Request,
     userAgent: Variable<String?>,
     downloadProgress: ProgressHandler? = nil,
@@ -87,7 +113,26 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
 
   private func performRequest() {
     Thread.assertIsMain()
-    guard let originalResource = resourceFactory.value else {
+    guard let resource = resourceFactory.value else {
+      return performRequest(originalResource: nil)
+    }
+    resource.resolved { resource in
+      onMainThread { [self] in
+        guard !isCancelled else {
+          return completeWith(.failure(NSError(
+            domain: NetworkActivityOperationErrorDomain,
+            code: NetworkActivityOperationErrorCode.cancelled.rawValue,
+            userInfo: nil
+          )))
+        }
+        performRequest(originalResource: resource)
+      }
+    }
+  }
+
+  private func performRequest(originalResource: Resource<Response>?) {
+    Thread.assertIsMain()
+    guard let originalResource else {
       let error = NSError(
         domain: NetworkActivityOperationErrorDomain,
         code: NetworkActivityOperationErrorCode.failedToCreateResource.rawValue,

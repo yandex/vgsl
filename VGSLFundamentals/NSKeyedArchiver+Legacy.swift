@@ -5,7 +5,7 @@ import Foundation
 #if os(iOS)
 extension NSKeyedArchiver {
   public class func legacyArchivedData(withRootObject object: Any) -> Data {
-    archivedData(withRootObject: object)
+    (try? archivedData(withRootObject: object, requiringSecureCoding: false)) ?? Data()
   }
 }
 #endif

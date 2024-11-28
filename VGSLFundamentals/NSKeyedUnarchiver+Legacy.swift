@@ -5,7 +5,7 @@ import Foundation
 #if os(iOS)
 extension NSKeyedUnarchiver {
   public class func legacyUnarchiveObject(with data: Data) -> Any? {
-    unarchiveObject(with: data)
+    try? unarchivedObject(ofClasses: [AnyObject.self], from: data)
   }
 }
 #endif

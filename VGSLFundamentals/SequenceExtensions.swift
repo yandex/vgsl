@@ -115,7 +115,7 @@ extension Sequence {
     return res
   }
 
-  @available(iOS 13.0, tvOS 13.0, *)
+  @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
   public func map<T>(
     concurrencyLimit: Int,
     transform: @escaping (Element) async throws -> T
@@ -127,7 +127,7 @@ extension Sequence {
     return result
   }
 
-  @available(iOS 13.0, tvOS 13.0, *)
+  @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
   public func compactMap<T>(
     concurrencyLimit: Int,
     transform: @escaping (Element) async throws -> T?
@@ -142,7 +142,7 @@ extension Sequence {
 
   // async forEach with concurrency limit
   // order of yield calls is guaranteed
-  @available(iOS 13.0, tvOS 13.0, *)
+  @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
   public func forEach<T>(
     concurrencyLimit: Int,
     transform: @escaping (Element) async throws -> T,
@@ -289,7 +289,7 @@ public func walkSync<IteratorType: IteratorProtocol, Element>(
   walkSync()
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
+@available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
 private actor LazyTask<Success, Failure: Error> {
   private let source: () -> Task<Success, Failure>
   private(set) lazy var value: Task<Success, Failure> = source()
