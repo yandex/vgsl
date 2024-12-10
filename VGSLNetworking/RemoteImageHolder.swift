@@ -6,14 +6,31 @@ import VGSLFundamentals
 import VGSLUI
 
 public final class RemoteImageHolder: ImageHolder {
+  public enum LoadEvent {
+    public final class Token: Hashable {
+      public static func ==(lhs: Token, rhs: Token) -> Bool {
+        lhs === rhs
+      }
+
+      public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+      }
+    }
+
+    case placeholderProvided(token: Token)
+    case imageLoaded(token: Token)
+  }
+
   private typealias AsyncImageRequester = (@escaping ((Image, URLRequestResult.Source)?) -> Void)
     -> Cancellable?
 
   public let placeholder: ImagePlaceholder?
   public let url: URL
+  public var loadEventSignal: Signal<LoadEvent> { loadEventPipe.signal }
   public private(set) weak var image: Image?
   private let resourceRequester: AsyncImageRequester
   private let imageProcessingQueue: OperationQueueType
+  private let loadEventPipe = SignalPipe<LoadEvent>()
 
   private init(
     url: URL,
@@ -116,7 +133,16 @@ public final class RemoteImageHolder: ImageHolder {
       break
     }
 
-    return resourceRequester(completion)
+    var placeholderEventToken: LoadEvent.Token?
+    if placeholder != nil {
+      placeholderEventToken = LoadEvent.Token()
+      placeholderEventToken.map { loadEventPipe.send(.placeholderProvided(token: $0)) }
+    }
+
+    return resourceRequester { [weak self] handler in
+      completion(handler)
+      placeholderEventToken.map { self?.loadEventPipe.send(.imageLoaded(token: $0)) }
+    }
   }
 
   public func equals(_ other: ImageHolder) -> Bool {
