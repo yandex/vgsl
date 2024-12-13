@@ -115,6 +115,7 @@ extension UIDevice {
       return "iPad Pro 6 12.9\""
     case "iPad14,8", "iPad14,9": return "iPad Air 11\" (M2)"
     case "iPad14,10", "iPad14,11": return "iPad Air 13\" (M2)"
+    case "iPad16,1", "iPad16,2": return "iPad mini (A17 Pro)"
     case "iPad16,3", "iPad16,4": return "iPad Pro 11\" (M4)"
     case "iPad16,5", "iPad16,6": return "iPad Pro 13\" (M4)"
     default:

@@ -20,13 +20,32 @@ extension NSAttributedString {
   }
 
   public func sizeForWidth(_ width: CGFloat) -> CGSize {
-    sizeForString(self, CGSize(width: width, height: .infinity), Int.max)
+    sizeForString(
+      TextLayoutParams(
+        string: self,
+        maxTextSize: CGSize(width: width, height: .infinity),
+        maxNumberOfLines: Int.max,
+        truncationToken: nil
+      )
+    )
   }
 
+  /// Calculates the height required to display the attributed string within a specified width,
+  /// considering the maximum number of lines and an optional truncation token.
+  ///
+  /// - Parameters:
+  ///   - width: The maximum allowable width for the string's layout.
+  ///   - maxNumberOfLines: The maximum number of lines allowed for the string.
+  ///     If the string exceeds this number of lines, it will be truncated.
+  ///   - minNumberOfHiddenLines: The minimum number of lines that must remain hidden
+  ///     when truncation occurs. Default is 0.
+  ///   - truncationToken: An optional NSAttributedString that is appended to the end
+  ///     of the truncated text to indicate truncation (e.g., "..." or "Read more").
   public func heightForWidth(
     _ width: CGFloat,
     maxNumberOfLines: Int,
-    minNumberOfHiddenLines: Int = 0
+    minNumberOfHiddenLines: Int = 0,
+    truncationToken: NSAttributedString? = nil
   ) -> CGFloat {
     let maxTextSize = CGSize(width: width, height: .infinity)
     if minNumberOfHiddenLines > 0 {
@@ -40,15 +59,36 @@ extension NSAttributedString {
       }
     }
 
-    return sizeForString(self, maxTextSize, maxNumberOfLines).height
+    let layoutParams = TextLayoutParams(
+      string: self,
+      maxTextSize: maxTextSize,
+      maxNumberOfLines: maxNumberOfLines,
+      truncationToken: truncationToken
+    )
+
+    return sizeForString(layoutParams).height
   }
 
   public func heightForWidth(_ width: CGFloat, maxTextHeight: CGFloat) -> CGFloat {
-    sizeForString(self, CGSize(width: width, height: maxTextHeight), Int.max).height
+    sizeForString(
+      TextLayoutParams(
+        string: self,
+        maxTextSize: CGSize(width: width, height: maxTextHeight),
+        maxNumberOfLines: Int.max,
+        truncationToken: nil
+      )
+    ).height
   }
 
   public func sizeThatFits(_ size: CGSize, maxNumberOfLines: Int) -> CGSize {
-    sizeForString(self, size, maxNumberOfLines)
+    sizeForString(
+      TextLayoutParams(
+        string: self,
+        maxTextSize: size,
+        maxNumberOfLines: maxNumberOfLines,
+        truncationToken: nil
+      )
+    )
   }
 
   public func ascent(forWidth width: CGFloat) -> CGFloat? {
@@ -77,15 +117,14 @@ public func measureString(
 }
 
 private let sizeForString =
-  memoizeAClass { (
-    string: NSAttributedString,
-    maxTextSize: CGSize,
-    maxNumberOfLines: Int
+  memoize { (
+    layoutParams: TextLayoutParams
   ) -> CGSize in
     let layout = computeLayout(
-      for: string,
-      maxTextSize: maxTextSize,
-      maxNumberOfLines: maxNumberOfLines
+      for: layoutParams.string,
+      maxTextSize: layoutParams.maxTextSize,
+      maxNumberOfLines: layoutParams.maxNumberOfLines,
+      truncationToken: layoutParams.truncationToken
     )
     return layout.size
   }
@@ -93,7 +132,8 @@ private let sizeForString =
 private func computeLayout(
   for string: NSAttributedString,
   maxTextSize: CGSize,
-  maxNumberOfLines: Int
+  maxNumberOfLines: Int,
+  truncationToken: NSAttributedString? = nil
 ) -> TextLayout {
   if string.containsSoftHyphens {
     let layout = string
@@ -102,7 +142,7 @@ private func computeLayout(
         in: maxTextSize,
         maxNumberOfLines: maxNumberOfLines,
         breakWords: false,
-        truncationToken: nil
+        truncationToken: truncationToken
       )
     if layout.entireTextFits(maxTextSize) {
       return layout
@@ -112,8 +152,15 @@ private func computeLayout(
     in: maxTextSize,
     maxNumberOfLines: maxNumberOfLines,
     breakWords: true,
-    truncationToken: nil
+    truncationToken: truncationToken
   )
+}
+
+private struct TextLayoutParams: Hashable {
+  let string: NSAttributedString
+  let maxTextSize: CGSize
+  let maxNumberOfLines: Int
+  let truncationToken: NSAttributedString?
 }
 
 struct TypographicBounds {
