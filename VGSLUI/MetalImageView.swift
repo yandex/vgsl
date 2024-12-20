@@ -160,11 +160,14 @@ extension MetalImageView: MTKViewDelegate {
       ))
 
     let ciContext: CIContext?
+    let syncWithUI: (() -> Void)?
 
     #if DEBUG
     ciContext = isSnapshotTest ? CIContext() : self.ciContext
+    syncWithUI = isSnapshotTest ? { buffer?.waitUntilCompleted() } : nil
     #else
     ciContext = self.ciContext
+    syncWithUI = nil
     #endif
 
     if #available(iOS 11, tvOS 11, *) {
@@ -191,6 +194,7 @@ extension MetalImageView: MTKViewDelegate {
 
     buffer?.present(drawable)
     buffer?.commit()
+    syncWithUI?()
   }
 }
 

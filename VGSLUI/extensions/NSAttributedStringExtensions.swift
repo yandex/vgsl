@@ -1395,7 +1395,7 @@ extension CTLine {
     )
     for glyphPath in run.glyphPaths(runPosition: position) {
       let thickedPath = glyphPath.copy(
-        strokingWithWidth: run.font.underlineThickness * 3,
+        strokingWithWidth: run.font.underlineThickness * 2.5,
         lineCap: .round,
         lineJoin: .round,
         miterLimit: 0

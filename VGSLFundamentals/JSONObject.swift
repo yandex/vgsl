@@ -390,7 +390,8 @@ extension [String: JSONObject] {
 }
 
 extension JSONObject {
-  public struct Path: Codable, CustomDebugStringConvertible, ExpressibleByStringLiteral, Hashable, Sendable {
+  public struct Path: Codable, CustomDebugStringConvertible, ExpressibleByStringLiteral, Hashable,
+    Sendable {
     public typealias Component = JSONPathComponent
 
     public private(set) var components: [Component]

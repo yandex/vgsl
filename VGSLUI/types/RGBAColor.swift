@@ -2,7 +2,7 @@
 
 import CoreGraphics
 
-public struct RGBAColor {
+public struct RGBAColor: Sendable {
   public let red: CGFloat
   public let green: CGFloat
   public let blue: CGFloat

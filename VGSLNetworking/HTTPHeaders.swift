@@ -40,12 +40,11 @@ extension HTTPHeaders {
 }
 
 extension HTTPHeaders {
-  /**
-     Creates a new instance, combining current headers with newHeaders.
-     Conflicting keys get a value from newHeaders.
-     "Cookies" field is merged separately, all cookies are stored,
-     conflicting cookie keys get a value from newHeaders' cookies.
-   **/
+  ///  Creates a new instance, combining current headers with newHeaders.
+  ///  Conflicting keys get a value from newHeaders.
+  ///  "Cookies" field is merged separately, all cookies are stored,
+  ///  conflicting cookie keys get a value from newHeaders' cookies.
+  /// *
   public func merged(with newHeaders: HTTPHeaders) -> HTTPHeaders {
     let cookie = mergeCookies(self["Cookie"], newHeaders["Cookie"])
     return self + newHeaders +
