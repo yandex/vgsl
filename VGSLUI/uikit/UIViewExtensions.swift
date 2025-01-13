@@ -102,6 +102,11 @@ extension UIView {
     return result
   }
 
+  public func setNonTransformedFrame(_ rect: CGRect) {
+    bounds.size = rect.size
+    center = rect.center
+  }
+
   public func makeScreenshot(
     in cropRect: RelativeRect = .full,
     isOpaque: Bool = false,

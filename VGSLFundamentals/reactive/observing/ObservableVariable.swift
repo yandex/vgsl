@@ -486,8 +486,8 @@ extension ObservableVariable {
     initial: Bool = false,
     areEqual: @escaping (T, T) -> Bool
   ) -> Signal<T> {
-    (initial ? currentAndNewValues : newValues)
-      .skipRepeats(areEqual: areEqual)
+    let ov = skipRepeats(areEqual: areEqual)
+    return initial ? ov.currentAndNewValues : ov.newValues
   }
 }
 
@@ -515,6 +515,7 @@ extension ObservableVariable where T: Equatable {
   public func changes(
     initial: Bool = false
   ) -> Signal<T> {
-    (initial ? currentAndNewValues : newValues).skipRepeats()
+    let ov = skipRepeats()
+    return initial ? ov.currentAndNewValues : ov.newValues
   }
 }
