@@ -48,7 +48,26 @@ public struct RGBAColor: Sendable {
     SystemColor(red: red, green: green, blue: blue, alpha: alpha)
   }
 
+  public static func argb(_ argb: UInt32) -> RGBAColor {
+    let alpha = UInt8((argb & 0xFF_00_00_00) >> 24)
+    let red = UInt8((argb & 0x00_FF_00_00) >> 16)
+    let green = UInt8((argb & 0x00_00_FF_00) >> 8)
+    let blue = UInt8(argb & 0x00_00_00_FF)
+
+    return RGBAColor(
+      red: CGFloat(red) / 255,
+      green: CGFloat(green) / 255,
+      blue: CGFloat(blue) / 255,
+      alpha: CGFloat(alpha) / 255
+    )
+  }
+
+  /// DEPRECATED: Use `rgba` method
   public static func colorWithHexCode(_ hex: UInt32) -> RGBAColor {
+    .rgba(hex)
+  }
+
+  public static func rgba(_ hex: UInt32) -> RGBAColor {
     let red = UInt8(hex >> 24)
     let green = UInt8((hex & 0x00_FF_00_00) >> 16)
     let blue = UInt8((hex & 0x00_00_FF_00) >> 8)

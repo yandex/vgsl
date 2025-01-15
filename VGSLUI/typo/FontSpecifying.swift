@@ -6,10 +6,10 @@ public protocol FontSpecifying: AnyObject {
   func font(weight: FontWeight, size: CGFloat) -> Font
 }
 
-public final class FontSpecifiers {
-  public let text: FontSpecifying
-  public let display: FontSpecifying
-  public let wide: FontSpecifying?
+public struct FontSpecifiers {
+  public var text: FontSpecifying
+  public var display: FontSpecifying
+  public var wide: FontSpecifying?
 
   public init(
     text: FontSpecifying,

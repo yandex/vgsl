@@ -1185,13 +1185,32 @@ extension CTLine {
     let runsBounds: [TypographicBounds] = runs.map {
       let bounds = $0.typographicBounds
       let font = $0.font
+      let baselineOffset = $0.baselineOffset
+
+      let style = $0.paragraphStyle
+      let minHeight = style?.minimumLineHeight ?? 0
+      var maxHeight = style?.maximumLineHeight ?? 0
+      if maxHeight == 0 {
+        maxHeight = .greatestFiniteMagnitude
+      }
+      let heightOffset = max((minHeight - bounds.height) / 2, 0) + min(
+        (maxHeight - bounds.height) / 2,
+        0
+      )
+
+      let ascenderOffset = heightOffset + baselineOffset
+      let descenderOffset = heightOffset - baselineOffset
+
       if font.fontName != Font.emojiFontName {
-        return bounds
+        return modified(bounds) {
+          $0.ascent += ascenderOffset
+          $0.descent += descenderOffset
+        }
       }
       let systemFont = Font.systemFont(ofSize: font.pointSize)
       return modified(bounds) {
-        $0.ascent = systemFont.ascender
-        $0.descent = abs(systemFont.descender)
+        $0.ascent = systemFont.ascender + ascenderOffset
+        $0.descent = abs(systemFont.descender) + descenderOffset
       }
     }
 
@@ -1208,14 +1227,6 @@ extension CTLine {
 
   fileprivate var typographicBounds: TypographicBounds {
     var bounds = typographicBoundsNotConsideringEmojiHeight
-
-    let height = bounds.height
-    let (minHeight, maxHeight) = overriddenHeight
-
-    let offset = max((minHeight - height) / 2, 0) + min((maxHeight - height) / 2, 0)
-    bounds.ascent += offset
-    bounds.descent += offset
-
     let descentAddition = 1 - modf(bounds.descent).1
     if descentAddition < 0.5 {
       bounds.ascent -= descentAddition
@@ -1223,20 +1234,6 @@ extension CTLine {
     }
 
     return bounds
-  }
-
-  private var overriddenHeight: (min: CGFloat, max: CGFloat) {
-    var minHeight: CGFloat = 0
-    var maxHeight: CGFloat = 0
-    for run in runs {
-      let style = run.paragraphStyle
-      minHeight = max(minHeight, style?.minimumLineHeight ?? 0)
-      maxHeight = max(maxHeight, style?.maximumLineHeight ?? 0)
-    }
-    if maxHeight == 0 {
-      maxHeight = .greatestFiniteMagnitude
-    }
-    return (minHeight, maxHeight)
   }
 
   struct CloudBackground {
