@@ -340,22 +340,3 @@ extension UIImage {
     return cropFilter.outputImage
   }
 }
-
-extension TintMode {
-  fileprivate var cgBlendMode: CGBlendMode {
-    switch self {
-    case .sourceIn:
-      .sourceIn
-    case .sourceAtop:
-      .sourceAtop
-    case .darken:
-      .darken
-    case .lighten:
-      .lighten
-    case .multiply:
-      .multiply
-    case .screen:
-      .screen
-    }
-  }
-}

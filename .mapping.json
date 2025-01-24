@@ -574,6 +574,7 @@
   "VGSLUI/extensions/ImageExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/ImageExtensions.swift",
   "VGSLUI/extensions/NSAttributedStringExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/NSAttributedStringExtensions.swift",
   "VGSLUI/extensions/StringExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/StringExtensions.swift",
+  "VGSLUI/extensions/TintModeExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/TintModeExtensions.swift",
   "VGSLUI/extensions/UIDeviceExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIDeviceExtensions.swift",
   "VGSLUI/extensions/UIImageExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIImageExtensions.swift",
   "VGSLUI/extensions/UIImageViewExtensions.swift":"mobile/vgsl/public/VGSLUI/extensions/UIImageViewExtensions.swift",

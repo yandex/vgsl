@@ -118,6 +118,10 @@ extension ScrollViewType {
     contentOffset = CGPoint(x: newOffsetX, y: newOffsetY)
   }
 
+  public var minContentOffset: CGPoint {
+    CGPoint(x: -contentInset.left, y: -contentInset.top)
+  }
+
   public var maxContentOffsetXBeforeBounce: CGFloat {
     maxContentOffset(
       forContentSize: contentSize.width,

@@ -144,10 +144,11 @@ extension Image {
 
   public func redrawn(
     withTintColor color: Color,
+    tintMode: TintMode = .sourceIn,
     size: CGSize? = nil
   ) -> Image {
     redrawn(withSize: size, overlayDrawingHandler: { ctx, rect in
-      ctx.setBlendMode(.sourceIn)
+      ctx.setBlendMode(tintMode.cgBlendMode)
       ctx.setFillColor(color.cgColor)
       ctx.fill(rect)
     })
