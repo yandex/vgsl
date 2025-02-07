@@ -1,4 +1,5 @@
 {
+  ".":"mobile/vgsl/public",
   ".gitignore":"mobile/vgsl/public/.gitignore",
   "AUTHORS":"mobile/vgsl/public/AUTHORS",
   "CONTRIBUTING.md":"mobile/vgsl/public/CONTRIBUTING.md",
