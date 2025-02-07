@@ -96,9 +96,8 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
       if !needsVisualEffectView {
         visualEffectView = nil
       }
+      forceLayout()
     }
-    setNeedsLayout()
-    layoutIfNeeded()
   }
 
   public func setImage(_ image: UIImage?, animated: Bool?) {
@@ -116,8 +115,6 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
     } else {
       updateContent()
     }
-    setNeedsLayout()
-    layoutIfNeeded()
   }
 
   private var image: UIImage?

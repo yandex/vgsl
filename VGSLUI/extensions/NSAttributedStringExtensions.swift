@@ -1187,19 +1187,8 @@ extension CTLine {
       let font = $0.font
       let baselineOffset = $0.baselineOffset
 
-      let style = $0.paragraphStyle
-      let minHeight = style?.minimumLineHeight ?? 0
-      var maxHeight = style?.maximumLineHeight ?? 0
-      if maxHeight == 0 {
-        maxHeight = .greatestFiniteMagnitude
-      }
-      let heightOffset = max((minHeight - bounds.height) / 2, 0) + min(
-        (maxHeight - bounds.height) / 2,
-        0
-      )
-
-      let ascenderOffset = heightOffset + baselineOffset
-      let descenderOffset = heightOffset - baselineOffset
+      let ascenderOffset = baselineOffset
+      let descenderOffset = -baselineOffset
 
       if font.fontName != Font.emojiFontName {
         return modified(bounds) {
@@ -1227,6 +1216,22 @@ extension CTLine {
 
   fileprivate var typographicBounds: TypographicBounds {
     var bounds = typographicBoundsNotConsideringEmojiHeight
+
+    let height = bounds.height
+    let (minHeight, maxHeight) = overriddenHeight
+
+    var heightDiff: CGFloat = 0
+    if height < minHeight {
+      heightDiff += minHeight - height
+    }
+    if height > maxHeight {
+      heightDiff -= height - maxHeight
+    }
+
+    let halfHeightDiff = heightDiff / 2
+    bounds.ascent += halfHeightDiff
+    bounds.descent += halfHeightDiff
+
     let descentAddition = 1 - modf(bounds.descent).1
     if descentAddition < 0.5 {
       bounds.ascent -= descentAddition
@@ -1234,6 +1239,20 @@ extension CTLine {
     }
 
     return bounds
+  }
+
+  private var overriddenHeight: (min: CGFloat, max: CGFloat) {
+    var minHeight: CGFloat = 0
+    var maxHeight: CGFloat = 0
+    for run in runs {
+      let style = run.paragraphStyle
+      minHeight = max(minHeight, style?.minimumLineHeight ?? 0)
+      maxHeight = max(maxHeight, style?.maximumLineHeight ?? 0)
+    }
+    if maxHeight == 0 {
+      maxHeight = .greatestFiniteMagnitude
+    }
+    return (minHeight, maxHeight)
   }
 
   struct CloudBackground {

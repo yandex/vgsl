@@ -32,26 +32,30 @@ public final class CachedURLResourceRequester: URLResourceRequesting, LocalResou
     let task = DeferredCancel(completion: completion)
     let key = cacheKeyBuilder(url)
     cache.retriveResource(forKey: key, completion: { result in
-      if let result = result.value() {
-        task.fulfill(result: .success(URLRequestResult(data: result, source: .cache)))
-        return
-      }
-      let cachemissTask = self.cachemissRequester.getDataWithSource(
-        from: url,
-        completion: { result in
-          if let data = result.value() {
-            self.cache.storeResource(data: data.data, forKey: key) { _ in
-              if self.waitForCacheWrite {
+      switch result {
+      case let .success(data):
+        task.fulfill(result: .success(URLRequestResult(data: data, source: .cache)))
+      case .failure:
+        let cachemissTask = self.cachemissRequester.getDataWithSource(
+          from: url,
+          completion: { result in
+            switch result {
+            case let .success(data):
+              self.cache.storeResource(data: data.data, forKey: key) { _ in
+                if self.waitForCacheWrite {
+                  task.fulfill(result: result)
+                }
+              }
+              if !self.waitForCacheWrite {
                 task.fulfill(result: result)
               }
+            case .failure:
+              task.fulfill(result: result)
             }
           }
-          if !self.waitForCacheWrite {
-            task.fulfill(result: result)
-          }
-        }
-      )
-      task.underlyingCancellation = cachemissTask
+        )
+        task.underlyingCancellation = cachemissTask
+      }
     })
     return task
   }

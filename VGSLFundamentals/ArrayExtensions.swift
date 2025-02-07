@@ -63,7 +63,19 @@ extension Array where Element: Hashable {
 
   @inlinable
   public var uniqueElements: [Element] {
-    Array(Set(self))
+    Array(unsafeUninitializedCapacity: count) { buffer, initializedCount in
+      var currentSource = 0
+      var inserted = Set<Element>(minimumCapacity: count)
+      while currentSource < count {
+        let element = self[currentSource]
+        if !inserted.contains(element) {
+          inserted.insert(element)
+          buffer.initializeElement(at: initializedCount, to: element)
+          initializedCount += 1
+        }
+        currentSource += 1
+      }
+    }
   }
 }
 
