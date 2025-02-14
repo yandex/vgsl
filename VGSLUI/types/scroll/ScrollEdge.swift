@@ -1,6 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
-public struct ScrollEdge: RawRepresentable, OptionSet {
+public struct ScrollEdge: RawRepresentable, OptionSet, Sendable {
   public let rawValue: Int
   public init(rawValue: Int) {
     self.rawValue = rawValue

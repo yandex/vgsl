@@ -205,6 +205,8 @@ private enum State<Storage> {
   case loaded(storage: Storage)
 }
 
+extension State: Sendable where Storage: Sendable {}
+
 enum ParameterizedDiskCacheErrors: Error {
   case keyNotFound
 }

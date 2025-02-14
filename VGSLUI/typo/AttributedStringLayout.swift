@@ -15,6 +15,9 @@ public struct AttributedStringLayout<Action> {
   public let lines: [AttributedStringLineLayout]
 }
 
+@available(*, unavailable)
+extension AttributedStringLayout: Sendable {}
+
 public struct AttributedStringLineLayout: Equatable {
   public let line: CTLine
   public let verticalOffset: CGFloat
@@ -22,3 +25,6 @@ public struct AttributedStringLineLayout: Equatable {
   public let range: NSRange
   public let isTruncated: Bool
 }
+
+@available(*, unavailable)
+extension AttributedStringLineLayout: Sendable {}

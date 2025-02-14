@@ -57,6 +57,7 @@ extension Signal {
   /// Once the subscription is cancelled with `Disposable` the observer will be released.
   @inlinable
   public init(fromFuture future: Future<T>) {
+    @Sendable
     func onObserverSubscribed(observer: Observer<T>) -> Disposable {
       var observer = Optional(observer)
       func onResolved(value: T) {
@@ -84,6 +85,7 @@ extension Signal {
   /// Once the subscription is cancelled with `Disposable` the observer will be released.
   @inlinable
   internal init(_fromFulfillmentOfFuture future: Future<T>) {
+    @Sendable
     func onObserverSubscribed(observer: Observer<T>) -> Disposable {
       guard !future.isFulfilled else {
         return .empty

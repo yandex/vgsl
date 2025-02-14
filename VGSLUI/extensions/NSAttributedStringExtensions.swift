@@ -156,11 +156,31 @@ private func computeLayout(
   )
 }
 
-private struct TextLayoutParams: Hashable {
+private struct TextLayoutParams: Hashable, @unchecked Sendable {
   let string: NSAttributedString
   let maxTextSize: CGSize
   let maxNumberOfLines: Int
   let truncationToken: NSAttributedString?
+
+  init(
+    string: NSAttributedString,
+    maxTextSize: CGSize,
+    maxNumberOfLines: Int,
+    truncationToken: NSAttributedString?
+  ) {
+    if string is NSMutableAttributedString {
+      self.string = string.copy() as! NSAttributedString
+    } else {
+      self.string = string
+    }
+    self.maxTextSize = maxTextSize
+    self.maxNumberOfLines = maxNumberOfLines
+    if let truncationToken, truncationToken is NSMutableAttributedString {
+      self.truncationToken = truncationToken.copy() as? NSAttributedString
+    } else {
+      self.truncationToken = truncationToken
+    }
+  }
 }
 
 struct TypographicBounds {
@@ -1407,7 +1427,7 @@ extension CTLine {
 
     var underlinePath = run.strikethroughLine(
       forTextPosition: position,
-      offset: run.font.underlinePosition - run.font.underlineThickness * 0.5
+      offset: run.font.underlinePosition - run.font.underlineThickness
     )
     for glyphPath in run.glyphPaths(runPosition: position) {
       let thickedPath = glyphPath.copy(

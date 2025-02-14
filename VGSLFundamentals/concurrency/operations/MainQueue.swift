@@ -8,7 +8,7 @@ public let MainQueue: SerialOperationQueue = MainQueueProxy()
 private let systemMainQueue = OperationQueue.main
 // swiftlint:enable no_direct_use_for_main_queue
 
-private class MainQueueProxy: SerialOperationQueue {
+private final class MainQueueProxy: SerialOperationQueue {
   func addOperation(_ operation: Operation) {
     assert(!operation.isAsynchronous)
     systemMainQueue.addOperation(operation)

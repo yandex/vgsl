@@ -1,6 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
-public struct CacheRecord: Codable, Equatable {
+public struct CacheRecord: Codable, Equatable, Sendable {
   public let key: String
   public let size: Int
 

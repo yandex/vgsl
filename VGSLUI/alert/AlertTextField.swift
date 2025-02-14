@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct AlertTextField: Equatable {
+public struct AlertTextField: Equatable, Sendable {
   public let placeholder: String?
   public let initialText: String?
   public let isSecureTextEntry: Bool

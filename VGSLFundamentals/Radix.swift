@@ -1,7 +1,7 @@
 // Copyright 2020 Yandex LLC. All rights reserved.
 
 // radix must be in the range 2...36
-public enum Radix: Int {
+public enum Radix: Int, Sendable {
   case decimal = 10
   case hex = 16
 }

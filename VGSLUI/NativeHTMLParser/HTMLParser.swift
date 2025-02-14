@@ -2,7 +2,7 @@
 
 import Foundation
 
-public final class HTMLParser {
+public final class HTMLParser: Sendable {
   private let resolver = HTMLEntitiesResolver()
   private let tagsToReplace: [String: String]
 

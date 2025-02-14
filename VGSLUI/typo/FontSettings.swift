@@ -3,14 +3,14 @@
 import CoreGraphics
 import Foundation
 
-public enum FontFamily: Hashable {
+public enum FontFamily: Hashable, Sendable {
   case YSText
   case YSTextWide
   case YSDisplay
 }
 
 @frozen
-public enum FontWeight: Hashable {
+public enum FontWeight: Hashable, Sendable {
   case light
   case regular
   case medium
@@ -18,7 +18,7 @@ public enum FontWeight: Hashable {
   case bold
 }
 
-public struct FontSize: RawRepresentable {
+public struct FontSize: RawRepresentable, Sendable {
   public static let caption = FontSize(rawValue: 11)
   public static let capsS = FontSize(rawValue: 12)
   public static let textXS = FontSize(rawValue: 12)
@@ -38,7 +38,7 @@ public struct FontSize: RawRepresentable {
   }
 }
 
-public struct FontLineHeight: RawRepresentable {
+public struct FontLineHeight: RawRepresentable, Sendable {
   public static let unspecified = FontLineHeight(rawValue: 0) // not constrained
   public static let textXS = FontLineHeight(rawValue: 14)
   public static let caption = FontLineHeight(rawValue: 16)
@@ -63,7 +63,7 @@ public struct FontLineHeight: RawRepresentable {
   }
 }
 
-public struct Kern: RawRepresentable {
+public struct Kern: RawRepresentable, Sendable {
   public static let caption = Kern(rawValue: 0.75)
   public static let capsS = Kern(rawValue: 0.75)
   public static let textS = capsS

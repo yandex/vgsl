@@ -331,3 +331,5 @@ extension NonEmpty {
     return NonEmpty<[Element]>(head, Array(tail.prefix(maxLength - 1)))
   }
 }
+
+extension NonEmpty: Sendable where C: Sendable, C.Element: Sendable {}

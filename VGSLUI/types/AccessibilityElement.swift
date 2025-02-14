@@ -1,7 +1,7 @@
 // Copyright 2020 Yandex LLC. All rights reserved.
 
-public struct AccessibilityElement: Equatable, Codable {
-  public enum Traits: String, Codable {
+public struct AccessibilityElement: Equatable, Codable, Sendable {
+  public enum Traits: String, Codable, Sendable {
     case button
     case header
     case link
@@ -14,7 +14,7 @@ public struct AccessibilityElement: Equatable, Codable {
     case none
   }
 
-  public struct Strings: Equatable, Codable {
+  public struct Strings: Equatable, Codable, Sendable {
     public let label: String?
     public let hint: String?
     public var value: String?

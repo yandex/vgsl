@@ -3,7 +3,7 @@
 import CoreGraphics
 import Foundation
 
-public enum StatusBarStyle: Equatable {
+public enum StatusBarStyle: Equatable, Sendable {
   case `default`
   case light
   case dark

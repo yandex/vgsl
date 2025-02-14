@@ -8,6 +8,8 @@ public enum ModelReusability<Object> {
   case hasReusableObject(Object)
 }
 
+extension ModelReusability: Sendable where Object: Sendable {}
+
 public struct ReuseResult<Object, Model> {
   public let modelsReusability: [(Model, ModelReusability<Object>)]
   public let orphanObjects: [Object]
@@ -17,6 +19,8 @@ public struct ReuseResult<Object, Model> {
     self.orphanObjects = orphanObjects
   }
 }
+
+extension ReuseResult: Sendable where Object: Sendable, Model: Sendable {}
 
 @inlinable
 public func calculateReusabilityFor<R, M>(

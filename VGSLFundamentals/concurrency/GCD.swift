@@ -88,9 +88,11 @@ public func after(
   block: @escaping () -> Void
 ) -> Cancellable {
   let fireTime = DispatchTime.now() + delay
-  let workItem = DispatchWorkItem(block: block)
+  nonisolated(unsafe) let workItem = DispatchWorkItem(block: block)
   queue.asyncAfter(deadline: fireTime, execute: workItem)
-  return workItem
+  return CallbackCancellable {
+    workItem.cancel()
+  }
 }
 
 @inlinable
@@ -122,5 +124,3 @@ public func performAsyncAction<T>(
     tryComplete()
   }
 }
-
-extension DispatchWorkItem: Cancellable {}

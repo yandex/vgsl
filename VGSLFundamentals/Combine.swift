@@ -2,18 +2,18 @@
 
 public enum Combine {
   @inlinable
-  public static func `throw`<T>(_ first: T, last: T) throws -> T {
+  public static func `throw`<T: Sendable>(_ first: T, last: T) throws -> T {
     throw CombineFailure(values: [first, last])
   }
 
   @inlinable
-  public static func lastWithAssertionFailure<T>(_ first: T, last: T) -> T {
+  public static func lastWithAssertionFailure<T: Sendable>(_ first: T, last: T) -> T {
     assertionFailure(CombineFailure(values: [first, last]).debugDescription)
     return last
   }
 }
 
-public struct CombineFailure<T>: Error, CustomDebugStringConvertible {
+public struct CombineFailure<T: Sendable>: Error, CustomDebugStringConvertible {
   let values: [T]
 
   public init(values: [T]) {

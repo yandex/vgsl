@@ -1,6 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
-public struct ImageRedrawingStyle: Equatable {
+public struct ImageRedrawingStyle: Equatable, Sendable {
   public static func ==(lhs: ImageRedrawingStyle, rhs: ImageRedrawingStyle) -> Bool {
     lhs.tintColor == rhs.tintColor &&
       lhs.tintMode == rhs.tintMode &&

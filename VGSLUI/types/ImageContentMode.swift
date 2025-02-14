@@ -4,8 +4,8 @@ import CoreGraphics
 import Foundation
 import QuartzCore
 
-public struct ImageContentMode: Equatable {
-  public enum Scale: Equatable {
+public struct ImageContentMode: Equatable, Sendable {
+  public enum Scale: Equatable, Sendable {
     case resize
     case aspectFill
     case aspectFit
@@ -13,13 +13,13 @@ public struct ImageContentMode: Equatable {
     case noScale
   }
 
-  public enum VerticalAlignment: Equatable {
+  public enum VerticalAlignment: Equatable, Sendable {
     case top
     case center
     case bottom
   }
 
-  public enum HorizontalAlignment: Equatable {
+  public enum HorizontalAlignment: Equatable, Sendable {
     case left
     case center
     case right

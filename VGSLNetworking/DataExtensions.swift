@@ -2,7 +2,7 @@
 
 import Foundation
 
-private enum ImageHeaderData: CaseIterable {
+private enum ImageHeaderData: CaseIterable, Sendable {
   case png
   case jpeg
   case gif
@@ -25,7 +25,7 @@ private enum ImageHeaderData: CaseIterable {
   }
 }
 
-public enum ImageFormat {
+public enum ImageFormat: Sendable {
   case unknown
   case png
   case jpeg

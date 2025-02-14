@@ -2,8 +2,8 @@
 
 internal import SwiftShims
 
-public struct OSInfo {
-  public enum Platform: Equatable {
+public struct OSInfo: Sendable {
+  public enum Platform: Equatable, Sendable {
     /// https://docs.swift.org/swift-book/ReferenceManual/Statements.html#ID539
     case macOS, iOS, watchOS, tvOS, linux, windows
 

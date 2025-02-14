@@ -2,7 +2,7 @@
 
 import CoreGraphics
 
-public enum ImageEffect: Equatable {
+public enum ImageEffect: Equatable, Sendable {
   case blur(radius: CGFloat)
   case tint(color: RGBAColor, mode: TintMode?)
 }

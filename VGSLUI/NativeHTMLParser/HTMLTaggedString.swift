@@ -2,7 +2,7 @@
 
 import Foundation
 
-struct HTMLTaggedString: CustomStringConvertible {
+struct HTMLTaggedString: CustomStringConvertible, Sendable {
   let text: String
   let tags: [HTMLTag]
 

@@ -2,7 +2,7 @@
 
 import CoreGraphics
 
-public struct RelativePoint: Equatable {
+public struct RelativePoint: Equatable, Sendable {
   public var rawValue: CGPoint
 
   public init(rawValue: CGPoint) {

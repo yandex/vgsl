@@ -1,6 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
-public struct OSVersion: Comparable {
+public struct OSVersion: Comparable, Sendable {
   public typealias Tuple2 = (Int, Int)
   public typealias Tuple3 = (Int, Int, Int)
 

@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum HTTPRetryAfterHeader: Equatable {
+enum HTTPRetryAfterHeader: Equatable, Sendable {
   case date(Date)
   case seconds(TimeInterval)
 }

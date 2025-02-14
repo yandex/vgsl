@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum CacheContent: Equatable {
+enum CacheContent: Equatable, Sendable {
   case loaded(Data)
   case notLoaded(size: Int)
 }

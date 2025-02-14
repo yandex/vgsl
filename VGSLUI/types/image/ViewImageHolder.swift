@@ -28,7 +28,7 @@ public final class ViewImageHolder: ImageHolder {
     return viewProvider.equals(other: other.viewProvider)
   }
 
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     "ViewImageHolder()"
   }
 }

@@ -1,7 +1,7 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
 @resultBuilder
-public enum ArrayBuilder<Element> {
+public enum ArrayBuilder<Element>: Sendable {
   public typealias Component = [Element]
   public typealias Expression = Element
 

@@ -290,7 +290,7 @@ public func walkSync<IteratorType: IteratorProtocol, Element>(
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
-private actor LazyTask<Success, Failure: Error> {
+private actor LazyTask<Success: Sendable, Failure: Error>: Sendable {
   private let source: () -> Task<Success, Failure>
   private(set) lazy var value: Task<Success, Failure> = source()
 

@@ -4,15 +4,15 @@ import Foundation
 
 import VGSLFundamentals
 
-public enum HTTPMethod: String {
+public enum HTTPMethod: String, Sendable {
   case GET
   case POST
   case PUT
   case DELETE
 }
 
-public struct Resource<T> {
-  public typealias Parser = (Data, HTTPURLResponse) throws -> T
+public struct Resource<T>: Sendable {
+  public typealias Parser = @Sendable (Data, HTTPURLResponse) throws -> T
 
   public let path: String?
   public let method: HTTPMethod
@@ -116,6 +116,7 @@ public func URLRequestForResource(
   return request
 }
 
+@Sendable
 public func noOpParser<T>(_: Data, _: HTTPURLResponse) throws -> T {
   throw UnexpectedParserInvocation()
 }

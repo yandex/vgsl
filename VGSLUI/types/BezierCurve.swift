@@ -2,7 +2,7 @@
 
 import CoreGraphics
 
-public struct BezierCurve {
+public struct BezierCurve: Sendable {
   public var from: CGPoint
   public var control1: CGPoint
   public var control2: CGPoint

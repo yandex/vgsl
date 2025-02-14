@@ -19,8 +19,8 @@ extension URLResourceRequesting {
   }
 }
 
-public struct URLRequestResult {
-  public enum Source {
+public struct URLRequestResult: Sendable {
+  public enum Source: Sendable {
     case network
     case cache
   }

@@ -2,7 +2,7 @@
 
 import CoreGraphics
 
-public struct ImageLayerLayout {
+public struct ImageLayerLayout: Sendable {
   public let frame: CGRect
   public let contentRect: CGRect
   public let contentCenter: CGRect

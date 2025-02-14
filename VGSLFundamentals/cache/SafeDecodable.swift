@@ -15,3 +15,5 @@ public struct SafeDecodable<Base: Decodable>: Decodable {
     }
   }
 }
+
+extension SafeDecodable: Sendable where Base: Sendable {}

@@ -4,7 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
-enum HTMLTag: CustomStringConvertible, Equatable {
+enum HTMLTag: CustomStringConvertible, Equatable, Sendable {
   case bold
   case font(Color?)
 

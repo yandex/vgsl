@@ -20,7 +20,7 @@ extension CGRect {
 }
 
 extension CGRect {
-  public enum Corner: CaseIterable {
+  public enum Corner: CaseIterable, Sendable {
     case topLeft
     case topRight
     case bottomLeft

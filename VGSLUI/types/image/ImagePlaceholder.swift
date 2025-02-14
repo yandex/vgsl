@@ -24,7 +24,7 @@ extension ImagePlaceholder {
     }
   }
 
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     switch self {
     case let .image(image):
       "Image(\(image.size.width) x \(image.size.height))"
@@ -72,7 +72,7 @@ extension ImagePlaceholder? {
   }
 }
 
-public struct ImageData: Hashable {
+public struct ImageData: Hashable, Sendable {
   private let base64: String
   private let highPriority: Bool
 

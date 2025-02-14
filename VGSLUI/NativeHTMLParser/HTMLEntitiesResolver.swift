@@ -1,6 +1,6 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
-public final class HTMLEntitiesResolver {
+public final class HTMLEntitiesResolver: Sendable {
   private let symbolsToEscapeForXML: [String: String]
   private let entityNameToSymbol: [String: String]
 

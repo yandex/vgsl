@@ -1,6 +1,6 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
-public enum HTTPCode: Int, RawRepresentable, CaseIterable {
+public enum HTTPCode: Int, RawRepresentable, CaseIterable, Sendable {
   case ok
   case noContent
   case unauthorized

@@ -3,7 +3,7 @@
 import SwiftUI
 
 @frozen
-public enum Theme: String {
+public enum Theme: String, Sendable {
   case dark
   case light
 }

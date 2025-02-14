@@ -18,7 +18,7 @@ extension ImageViewProtocol {
   }
 }
 
-public struct ImageViewAnimation {
+public struct ImageViewAnimation: Sendable {
   let duration: Double
   let delay: Double
   let startAlpha: Double

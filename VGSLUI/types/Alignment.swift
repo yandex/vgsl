@@ -4,7 +4,7 @@ import CoreGraphics
 
 /// Determines postioning of child item inside parent container
 @frozen
-public enum Alignment {
+public enum Alignment: Sendable {
   /// Child items are laid out starting from top/left
   case leading
   /// Child items are centered in container

@@ -4,7 +4,7 @@ import CoreGraphics
 
 import VGSLFundamentals
 
-public enum RelativeTag {}
+public enum RelativeTag: Sendable {}
 public typealias RelativeValue = Tagged<RelativeTag, CGFloat>
 
 extension Tagged where Tag == RelativeTag, RawValue == CGFloat {

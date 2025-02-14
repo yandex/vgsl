@@ -329,6 +329,11 @@ public func imagesDataAreEqual(_ lhs: Image?, _ rhs: Image?) -> Bool {
   }
 }
 
+#if os(macOS)
+import AppKit
+extension NSImage: @retroactive @unchecked Sendable {}
+#endif
+
 extension Image: ImageHolder {
   public var image: Image? { self }
   public var placeholder: ImagePlaceholder? { .image(self) }

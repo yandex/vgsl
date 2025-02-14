@@ -11,7 +11,7 @@ public enum CacheFactory {
     signpostStart: @escaping Action = {},
     signpostEnd: @escaping Action = {}
   ) -> Cache {
-    let cacheUrl = Lazy(getter: { () -> URL in
+    nonisolated(unsafe) let cacheUrl = Lazy(getter: { () -> URL in
       signpostStart()
       defer { signpostEnd() }
       let cacheDirectory = NSSearchPathForDirectoriesInDomains(

@@ -2,7 +2,8 @@
 
 import CoreGraphics
 
-public struct SideInsets: Equatable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {
+public struct SideInsets: Equatable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral,
+  Sendable {
   public var leading: CGFloat
   public var trailing: CGFloat
 

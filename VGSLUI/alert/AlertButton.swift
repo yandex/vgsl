@@ -3,7 +3,7 @@
 import Foundation
 
 public struct AlertButton {
-  public enum Trait: Int {
+  public enum Trait: Int, Sendable {
     case `default`
     case cancel
     case destructive

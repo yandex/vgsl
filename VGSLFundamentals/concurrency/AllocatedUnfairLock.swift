@@ -24,6 +24,11 @@ public struct AllocatedUnfairLock<State>: @unchecked Sendable {
   }
 
   @inlinable
+  public init(sendingState initialState: State) {
+    self.init(uncheckedState: initialState)
+  }
+
+  @inlinable
   public func withLock<R: Sendable>(_ f: @Sendable (inout State) throws -> R) rethrows -> R {
     try withLockUnchecked(f)
   }

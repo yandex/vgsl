@@ -2,7 +2,7 @@ import Foundation
 
 import VGSLFundamentals
 
-struct RetryingTimeout {
+struct RetryingTimeout: Sendable {
   private let minValue: TimeInterval
   private let maxValue: TimeInterval
   private let growthFactor: Double

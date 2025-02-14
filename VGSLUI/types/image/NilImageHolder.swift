@@ -7,7 +7,7 @@ import VGSLFundamentals
 public final class NilImageHolder: ImageHolder {
   public var image: Image? { nil }
   public var placeholder: ImagePlaceholder? { nil }
-  public var debugDescription: String { "NilImageHolder" }
+  public nonisolated var debugDescription: String { "NilImageHolder" }
 
   public init() {}
 

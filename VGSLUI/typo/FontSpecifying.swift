@@ -2,11 +2,11 @@
 
 import CoreGraphics
 
-public protocol FontSpecifying: AnyObject {
+public protocol FontSpecifying: AnyObject, Sendable {
   func font(weight: FontWeight, size: CGFloat) -> Font
 }
 
-public struct FontSpecifiers {
+public struct FontSpecifiers: Sendable {
   public var text: FontSpecifying
   public var display: FontSpecifying
   public var wide: FontSpecifying?

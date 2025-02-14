@@ -8,7 +8,9 @@ public struct Tagged<Tag, RawValue>: RawRepresentable {
   }
 }
 
-public protocol NumericTag {}
+extension Tagged: Sendable where RawValue: Sendable {}
+
+public protocol NumericTag: Sendable {}
 
 extension Tagged: Equatable where RawValue: Equatable {}
 
@@ -119,8 +121,6 @@ extension Tagged {
     return self
   }
 }
-
-extension Tagged: Sendable where RawValue: Sendable {}
 
 // Conforming to ExpressibleByArrayLiteral & ExpressibleByDictionaryLiteral is impossible
 // due to https://bugs.swift.org/browse/SR-128

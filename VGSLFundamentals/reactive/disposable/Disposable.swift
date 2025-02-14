@@ -16,7 +16,7 @@ public final class Disposable {
     dispose()
   }
 
-  public static let empty = Disposable()
+  public static var empty: Disposable { .init() }
 }
 
 extension Disposable {

@@ -23,7 +23,7 @@ public protocol NetworkReachabilityObserving: AnyObject {
   func stopObserving() -> Bool
 }
 
-private enum ReachabilityStatus {
+private enum ReachabilityStatus: Sendable {
   case notReachable, reachableViaWiFi, reachableViaWWAN, unknown
 }
 

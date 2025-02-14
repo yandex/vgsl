@@ -2,6 +2,8 @@
 
 import Foundation
 
+import VGSLFundamentals
+
 public typealias ChallengeHandlers = (
   webViewChallengeHandler: ChallengeHandling,
   webContentChallengeHandler: ChallengeHandling?
@@ -14,4 +16,13 @@ public protocol ChallengeHandling {
   )
 }
 
-public var externalURLSessionChallengeHandler: ChallengeHandling?
+private let _externalURLSessionChallengeHandler: AllocatedUnfairLock<ChallengeHandling?> =
+  .init(initialState: nil)
+public var externalURLSessionChallengeHandler: ChallengeHandling? {
+  get {
+    _externalURLSessionChallengeHandler.withLockUnchecked { $0 }
+  }
+  set {
+    _externalURLSessionChallengeHandler.withLockUnchecked { $0 = newValue }
+  }
+}

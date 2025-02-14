@@ -274,7 +274,8 @@ extension ObservableVariable {
     )
   }
 
-  /// Creates an `ObservableVariable` that observes changes to a specific key path of an `NSObject`.
+  /// Creates an `ObservableVariable` that observes changes to a specific key path of an
+  /// `NSObject`.
   /// This method leverages KVO (Key-Value Observing) to listen for changes and update the
   /// observable variable accordingly.
   /// - Parameters:

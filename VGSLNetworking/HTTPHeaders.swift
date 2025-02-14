@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct HTTPHeaders: Equatable {
+public struct HTTPHeaders: Equatable, Sendable {
   // TODO: remove public headersDictionary after SSDK-1104
   public let headersDictionary: [String: String]
   private let lowercasedKeysHeadersDictionary: [String: String]

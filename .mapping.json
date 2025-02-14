@@ -423,8 +423,6 @@
   "VGSLFundamentals/LoginWithSourcePerformer.swift":"mobile/vgsl/public/VGSLFundamentals/LoginWithSourcePerformer.swift",
   "VGSLFundamentals/Memoization.swift":"mobile/vgsl/public/VGSLFundamentals/Memoization.swift",
   "VGSLFundamentals/Modifier.swift":"mobile/vgsl/public/VGSLFundamentals/Modifier.swift",
-  "VGSLFundamentals/NSKeyedArchiver+Legacy.swift":"mobile/vgsl/public/VGSLFundamentals/NSKeyedArchiver+Legacy.swift",
-  "VGSLFundamentals/NSKeyedUnarchiver+Legacy.swift":"mobile/vgsl/public/VGSLFundamentals/NSKeyedUnarchiver+Legacy.swift",
   "VGSLFundamentals/NSTimerExtensions.swift":"mobile/vgsl/public/VGSLFundamentals/NSTimerExtensions.swift",
   "VGSLFundamentals/OAuthToken.swift":"mobile/vgsl/public/VGSLFundamentals/OAuthToken.swift",
   "VGSLFundamentals/OSInfo.swift":"mobile/vgsl/public/VGSLFundamentals/OSInfo.swift",

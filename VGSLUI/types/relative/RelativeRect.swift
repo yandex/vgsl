@@ -4,7 +4,7 @@ import CoreGraphics
 
 import VGSLFundamentals
 
-public struct RelativeRect: Hashable {
+public struct RelativeRect: Hashable, Sendable {
   public var origin: RelativePoint
   public var size: RelativeSize
 

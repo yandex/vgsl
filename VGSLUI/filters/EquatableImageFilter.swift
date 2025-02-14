@@ -2,14 +2,14 @@
 
 import CoreImage
 
-public protocol EquatableImageFilter: Equatable {
+public protocol EquatableImageFilter: Equatable, Sendable {
   func apply(to image: CIImage) -> CIImage?
   var showOriginalImageIfFailed: Bool { get }
 }
 
-public struct AnyEquatableImageFilter {
+public struct AnyEquatableImageFilter: Sendable {
   public let value: any EquatableImageFilter
-  private let equals: (Any) -> Bool
+  private let equals: @Sendable (Any) -> Bool
 
   public init<T: EquatableImageFilter>(_ value: T) {
     self.value = value
