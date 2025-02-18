@@ -2,10 +2,20 @@
 
 import CoreGraphics
 
-public var fontSpecifiers = FontSpecifiers(
+import VGSLFundamentals
+
+private let _fontSpecifiers = AllocatedUnfairLock<FontSpecifiers>(initialState: .init(
   text: systemFontSpecifier,
   display: systemFontSpecifier
-)
+))
+public var fontSpecifiers: FontSpecifiers {
+  get {
+    _fontSpecifiers.withLock { $0 }
+  }
+  set {
+    _fontSpecifiers.withLock { $0 = newValue }
+  }
+}
 
 private let systemFontSpecifier = SystemFontSpecifier()
 

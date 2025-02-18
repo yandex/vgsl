@@ -50,7 +50,15 @@ public struct OSInfo: Sendable {
   }
 
   #if INTERNAL_BUILD
-  public static var current: Self = ._current
+  private static let __current: AllocatedUnfairLock<Self> = .init(initialState: ._current)
+  public static var current: Self {
+    get {
+      __current.withLock { $0 }
+    }
+    set {
+      __current.withLock { $0 = newValue }
+    }
+  }
 
   static func restoreSystemCurrent() {
     current = _current

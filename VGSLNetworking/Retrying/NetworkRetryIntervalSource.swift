@@ -57,13 +57,13 @@ public final class HTTPHeaderRetryIntervalSource: NetworkRetryIntervalSource {
 
 public final class LocalRetryIntervalSource: NetworkRetryIntervalSource {
   // Starting value of 1 sec should be a reasonable compromise for retries.
-  private var retryingTimeout = RetryingTimeout(value: 1)
+  private let retryingTimeout = AllocatedUnfairLock<RetryingTimeout>(initialState: .init(value: 1))
 
   public init() {}
 
   public func determineInterval(from error: NSError, since _: Date) -> TimeInterval? {
     if error.isNonRecoverableServerError { return nil }
-    return retryingTimeout.getValueAndIncrement()
+    return retryingTimeout.withLock { $0.getValueAndIncrement() }
   }
 }
 

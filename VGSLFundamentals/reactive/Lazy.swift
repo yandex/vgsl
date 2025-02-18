@@ -297,5 +297,13 @@ extension Lazy {
 }
 
 #if DEBUG
-public var _LazyTraceLoggingEnabled = false
+private let __LazyTraceLoggingEnabled: AllocatedUnfairLock<Bool> = .init(initialState: false)
+public var _LazyTraceLoggingEnabled: Bool {
+  get {
+    __LazyTraceLoggingEnabled.withLock { $0 }
+  }
+  set {
+    __LazyTraceLoggingEnabled.withLock { $0 = newValue }
+  }
+}
 #endif

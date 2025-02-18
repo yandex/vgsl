@@ -2,7 +2,15 @@
 
 import Foundation
 
-public var _RWLockUsesAllocatedUnfairLock = false
+private let __RWLockUsesAllocatedUnfairLock: AllocatedUnfairLock<Bool> = .init(initialState: false)
+public var _RWLockUsesAllocatedUnfairLock: Bool {
+  get {
+    __RWLockUsesAllocatedUnfairLock.withLock { $0 }
+  }
+  set {
+    __RWLockUsesAllocatedUnfairLock.withLock { $0 = newValue }
+  }
+}
 
 public struct RWLock {
   private let impl: any _ReadWriteLock

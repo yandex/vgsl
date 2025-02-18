@@ -223,13 +223,13 @@ extension Signal {
   @inlinable
   public func delay(_ interval: TimeInterval) -> Signal {
     Signal { observer in
-      var cancellable: Cancellable?
+      let cancellable: AllocatedUnfairLock<Cancellable?> = .init(initialState: nil)
       let disposable = addObserver { t in
-        cancellable = after(interval, onQueue: .main) { observer.action(t) }
+        cancellable.withLock { $0 = after(interval, onQueue: .main) { observer.action(t) } }
       }
       return Disposable {
         disposable.dispose()
-        cancellable?.cancel()
+        cancellable.withLock { $0 }?.cancel()
       }
     }
   }

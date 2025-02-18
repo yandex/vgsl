@@ -10,6 +10,40 @@ public typealias DelayedExecution = (TimeInterval, @escaping () -> Void) -> Void
 public typealias DelayedRunner = (_ delay: TimeInterval, _ block: @escaping () -> Void)
   -> Cancellable
 
+@_unavailableFromAsync(message: "await the call to the @MainActor closure directly")
+@available(iOS, introduced: 9.0, deprecated: 13.0, message: "Use MainActor.assumeIsolated instead.")
+private func backportedAssumeIsolatedToMainActor<T>(
+  _ operation: @MainActor () throws -> T,
+  file _: StaticString = #fileID, line _: UInt = #line
+) rethrows -> T where T: Sendable {
+  typealias YesActor = @MainActor () throws -> T
+  typealias NoActor = () throws -> T
+
+  assert(Thread.isMainThread)
+  // To do the unsafe cast, we have to pretend it's @escaping.
+  return try withoutActuallyEscaping(operation) {
+    (_ fn: @escaping YesActor) throws -> T in
+    let rawFn = unsafeBitCast(fn, to: NoActor.self)
+    return try rawFn()
+  }
+}
+
+@_unavailableFromAsync(message: "await the call to the @MainActor closure directly")
+public func assumeIsolatedToMainActor<T>(
+  _ operation: @MainActor () throws -> T,
+  file _: StaticString = #fileID, line _: UInt = #line
+) rethrows -> T where T: Sendable {
+  if #available(iOS 13.0, tvOS 13.0, *) {
+    try MainActor.assumeIsolated {
+      try operation()
+    }
+  } else {
+    try backportedAssumeIsolatedToMainActor {
+      try operation()
+    }
+  }
+}
+
 public func onMainThread(_ block: @escaping () -> Void) {
   if Thread.isMainThread {
     block()
@@ -36,6 +70,19 @@ public func onMainThreadResult<T>(_ function: @escaping () -> Future<T>) -> Futu
     }
   }
   return future
+}
+
+/// Executes a @MainActor closure by bypassing actor isolation checks.
+///
+/// - Warning: Only use if you fully understand the memory safety implications.
+@_unavailableFromAsync
+@inlinable
+@inline(__always)
+@_spi(Unsafe)
+public func runUnsafelyOnMainActor<T>(_ body: @MainActor () throws -> T) rethrows -> T {
+  try withoutActuallyEscaping(body) { fn in
+    try unsafeBitCast(fn, to: (() throws -> T).self)()
+  }
 }
 
 public func onMainThreadAsync(_ block: @escaping () -> Void) {

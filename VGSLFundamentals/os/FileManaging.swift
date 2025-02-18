@@ -4,7 +4,7 @@ import Foundation
 
 // swiftlint:disable use_make_instead_of_create
 
-public protocol FileManaging {
+public protocol FileManaging: Sendable {
   var applicationSupportDirectory: URL { get }
   var documentDirectory: URL { get }
   var libraryDirectory: URL { get }
@@ -18,7 +18,7 @@ public protocol FileManaging {
   func moveItem(at srcURL: URL, to dstURL: URL) throws
 }
 
-extension FileManager: FileManaging {
+extension FileManager: @unchecked @retroactive Sendable, FileManaging {
   public var applicationSupportDirectory: URL {
     getSystemDirectoryURL(.applicationSupportDirectory)
   }
