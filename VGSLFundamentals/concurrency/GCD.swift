@@ -171,3 +171,5 @@ public func performAsyncAction<T>(
     tryComplete()
   }
 }
+
+extension DispatchWorkItem: Cancellable {}
