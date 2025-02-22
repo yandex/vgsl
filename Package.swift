@@ -78,6 +78,7 @@ let package = Package(
     .target(
       name: "VGSLFundamentals",
       path: "VGSLFundamentals",
+      resources: [.copy("PrivacyInfo.xcprivacy")],
       swiftSettings: swiftSettings
     ),
     .target(
