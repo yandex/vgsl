@@ -3,8 +3,15 @@
 import MetalKit
 import UIKit
 
+import VGSLFundamentals
+
 public final class MetalImageView: UIView, RemoteImageViewContentProtocol {
   public var appearanceAnimation: ImageViewAnimation?
+  public var onImageDrawn: Signal<Void> {
+    onImageDrawnPipe.signal
+  }
+
+  private let onImageDrawnPipe = SignalPipe<Void>()
   private var commandQueue: MTLCommandQueue?
   private var ciContext: CIContext?
   private lazy var device = MTLCreateSystemDefaultDevice()
@@ -190,6 +197,13 @@ extension MetalImageView: MTKViewDelegate {
         bounds: bounds,
         colorSpace: CGColorSpaceCreateDeviceRGB()
       )
+    }
+
+    buffer?.addCompletedHandler { [onImageDrawnPipe] buffer in
+      guard case .completed = buffer.status else { return }
+      onMainThread {
+        onImageDrawnPipe.send()
+      }
     }
 
     buffer?.present(drawable)

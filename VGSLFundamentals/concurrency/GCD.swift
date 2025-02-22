@@ -33,7 +33,7 @@ public func assumeIsolatedToMainActor<T>(
   _ operation: @MainActor () throws -> T,
   file _: StaticString = #fileID, line _: UInt = #line
 ) rethrows -> T where T: Sendable {
-  if #available(iOS 13.0, tvOS 13.0, *) {
+  if #available(iOS 13.0, tvOS 13.0, macOS 10.15, *) {
     try MainActor.assumeIsolated {
       try operation()
     }

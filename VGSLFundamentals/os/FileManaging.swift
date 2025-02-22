@@ -62,7 +62,7 @@ extension FileManager: FileManaging {
       assertionFailure("Unable to access \(directory)")
       // CommonCore is exported with minimal iOS version 9.0.
       // It's needed by RealTimeAnalytics pod, which is integrated in YXMobileMetrica.
-      if #available(iOS 10, tvOS 10, *) {
+      if #available(iOS 10, tvOS 10, macOS 10.12, *) {
         return temporaryDirectory
       } else {
         return URL(fileURLWithPath: NSTemporaryDirectory())

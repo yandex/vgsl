@@ -43,6 +43,7 @@ extension SettingProperty where T: RawRepresentable, T.RawValue: KeyValueDirectS
 
 extension SettingProperty where T: Archivable {
   @inlinable
+  @available(macOS 10.11, *)
   public static func encodedStorage(
     _ storage: KeyValueStorage,
     key: String,
@@ -54,7 +55,7 @@ extension SettingProperty where T: Archivable {
         assertionFailure()
         return nil
       }
-      if #available(iOS 11, tvOS 11, *) {
+      if #available(iOS 11, tvOS 11, macOS 10.13, *) {
         do {
           return try NSKeyedUnarchiver.unarchivedObject(ofClass: T.self, from: data)
         } catch let e as NSError {
@@ -68,7 +69,7 @@ extension SettingProperty where T: Archivable {
       if let newValue = $0 {
         // Exported with minimal iOS version 9.0.
         let encodedValue =
-          if #available(iOS 11, tvOS 11, *) {
+          if #available(iOS 11, tvOS 11, macOS 10.13, *) {
             try? NSKeyedArchiver.archivedData(
               withRootObject: newValue,
               requiringSecureCoding: false
@@ -113,6 +114,7 @@ extension Property where T == Data? {
 
 extension SettingProperty where T: ReferenceConvertible, T.ReferenceType: NSSecureCoding {
   @inlinable
+  @available(macOS 10.11, *)
   public static func referencedEncodedStorage(
     _ storage: KeyValueStorage,
     key: String
