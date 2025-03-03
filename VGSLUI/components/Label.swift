@@ -2,6 +2,8 @@
 
 import UIKit
 
+import VGSLFundamentals
+
 @objc(YCLabel)
 public final class Label: UIView {
   private var useAttributesFromText = false
@@ -13,6 +15,12 @@ public final class Label: UIView {
   }
 
   public private(set) var textLayout: AttributedStringLayout<URL>?
+
+  private var textLayoutSignalPipe = SignalPipe<AttributedStringLayout<URL>>()
+
+  public var textLayoutSignal: Signal<AttributedStringLayout<URL>> {
+    textLayoutSignalPipe.signal
+  }
 
   public var attributedText: NSAttributedString? {
     get {
@@ -94,6 +102,20 @@ public final class Label: UIView {
     }
   }
 
+  private var _writingDirection: NSWritingDirection?
+  public var writingDirection: NSWritingDirection? {
+    get {
+      _writingDirection
+    }
+    set {
+      guard _writingDirection != newValue else {
+        return
+      }
+      _writingDirection = newValue
+      updateText()
+    }
+  }
+
   private var _font: UIFont?
   public var font: UIFont? {
     get {
@@ -137,6 +159,7 @@ public final class Label: UIView {
     _textColor = nil
     _lineBreakMode = nil
     _textAlignment = nil
+    _writingDirection = nil
     _font = nil
   }
 
@@ -151,6 +174,7 @@ public final class Label: UIView {
     result.append((isHighlighted ? highlightedTextColor : textColor).map { Typo(color: $0) })
     result.append(lineBreakMode.map(Typo.init))
     result.append(textAlignment.map(Typo.init))
+    result.append(writingDirection.map(Typo.init))
     result.append(font.map { Typo(font: $0) })
     return result
   }
@@ -172,7 +196,7 @@ public final class Label: UIView {
   public override func draw(_ rect: CGRect) {
     let context = UIGraphicsGetCurrentContext()!
     let textToDraw = attributedText ?? NSAttributedString()
-    textLayout = textToDraw.drawAndGetLayout(
+    let layout: AttributedStringLayout<URL> = textToDraw.drawAndGetLayout(
       inContext: context,
       rect: rect,
       actionKey: .link,
@@ -180,6 +204,8 @@ public final class Label: UIView {
       borderKey: BorderAttribute.Key,
       selectedRange: nil
     )
+    textLayout = layout
+    textLayoutSignalPipe.send(layout)
   }
 
   public override func sizeThatFits(_ size: CGSize) -> CGSize {
