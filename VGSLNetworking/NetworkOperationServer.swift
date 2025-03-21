@@ -63,6 +63,33 @@ extension NetworkOperationServing where RequestArgs == Void {
   }
 }
 
+extension NetworkOperationServing {
+  @available(iOS 13, tvOS 13, *)
+  @discardableResult
+  @MainActor
+  public func performRequest(_ args: RequestArgs) async throws -> Response {
+    var receivedResult: Result<Response, NSError>?
+    return try await withCheckedThrowingContinuation { continuation in
+      let serverOp = performRequest(args, completion: { result in
+        MainActor.assumeIsolated {
+          receivedResult = result
+        }
+      })
+      let continuationOp = BlockOperation {
+        MainActor.assumeIsolated {
+          if let receivedResult {
+            continuation.resume(with: receivedResult.mapError { $0 })
+          } else {
+            continuation.resume(throwing: CancellationError())
+          }
+        }
+      }
+      continuationOp.addDependency(serverOp)
+      OperationQueue.main.addOperation(continuationOp)
+    }
+  }
+}
+
 extension NetworkOperationServer {
   public convenience init(
     baseURL: Variable<URL>,

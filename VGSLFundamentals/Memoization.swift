@@ -120,3 +120,27 @@ public func memoizeAClass<
     )
   }
 }
+
+private struct MemoizeParams4<A: Hashable, B: Hashable, C: Hashable, D: Hashable>: Hashable {
+  let a: A
+  let b: B
+  let c: C
+  let d: D
+}
+
+public func memoize<
+  A: Hashable,
+  B: Hashable,
+  C: Hashable,
+  D: Hashable,
+  E
+>(_ f: @escaping (A, B, C, D) -> E) -> (A, B, C, D) -> E {
+  let cache = Atomic(initialValue: [MemoizeParams4<A, B, C, D>: E]())
+  return { (a: A, b: B, c: C, d: D) -> E in
+    cachedValue(
+      from: cache,
+      for: MemoizeParams4(a: a, b: b, c: c, d: d),
+      fallback: { f($0.a, $0.b, $0.c, $0.d) }
+    )
+  }
+}

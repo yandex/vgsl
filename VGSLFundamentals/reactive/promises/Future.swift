@@ -503,16 +503,29 @@ public func first<T, U>(_ a: Future<T>, _ b: Future<U>) -> Future<Either<T, U>> 
 }
 
 @inlinable public func all<T>(futures: [Future<T>]) -> Future<[T]> {
-  guard let future = futures.first else {
+  guard !futures.isEmpty else {
     return Future<[T]>(payload: [])
   }
 
-  guard futures.count > 1 else {
-    return future.map { [$0] }
+  let finalPromise = Promise<[T]>()
+  let result = AllocatedUnfairLock(
+    uncheckedState: (
+      values: [T?](repeating: nil, count: futures.count),
+      fullfilledCount: 0
+    )
+  )
+  for (index, future) in futures.enumerated() {
+    future.resolved { value in
+      result.withLock {
+        $0.values[index] = value
+        $0.fullfilledCount += 1
+        if $0.fullfilledCount == futures.count {
+          finalPromise.resolve($0.values.compactMap { $0 })
+        }
+      }
+    }
   }
-
-  let lastFutures = Array(futures.dropFirst())
-  return all(future, all(futures: lastFutures)).flatMap { Future(payload: [$0.0] + $0.1) }
+  return finalPromise.future
 }
 
 extension Future {

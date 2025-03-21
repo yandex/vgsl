@@ -56,11 +56,11 @@ extension UIScrollView: ScrollViewType {
   }
 
   public var isVerticallyScrollable: Bool {
-    bounds.height < contentSize.height && !alwaysBounceVertical
+    bounds.height < contentSize.height + adjustedContentInset.vertical.sum
   }
 
   public var isHorizontallyScrollable: Bool {
-    bounds.width < contentSize.width && !alwaysBounceHorizontal
+    bounds.width < contentSize.width + adjustedContentInset.horizontal.sum
   }
 
   // Exported with minimal iOS version 9.0.

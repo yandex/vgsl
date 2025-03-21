@@ -18,6 +18,10 @@ public final class URLRequestPerformer: URLRequestPerforming {
   private let trustedHosts: [String]
   private let urlTransform: URLTransform?
 
+  /// Used for preventing memory leak when we are creating `URLSession` in `URLRequestPerformer`.
+  /// Set to `true` if you are creating a `URLSession` in `URLRequestPerformer`, otherwise `false`.
+  private let urlSessionShouldBeInvalidated: Bool
+
   private init(
     urlSession: URLSession,
     URLSessionDelegate: URLSessionDelegateImpl,
@@ -25,7 +29,8 @@ public final class URLRequestPerformer: URLRequestPerforming {
     challengeHandler: ChallengeHandler? = nil,
     redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,
     trustedHosts: [String],
-    urlTransform: URLTransform?
+    urlTransform: URLTransform?,
+    urlSessionShouldBeInvalidated: Bool
   ) {
     self.urlSession = urlSession
     self.URLSessionDelegate = URLSessionDelegate
@@ -34,6 +39,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
     self.redirectHandler = redirectHandler
     self.trustedHosts = trustedHosts
     self.urlTransform = urlTransform
+    self.urlSessionShouldBeInvalidated = urlSessionShouldBeInvalidated
   }
 
   public convenience init(
@@ -51,7 +57,8 @@ public final class URLRequestPerformer: URLRequestPerforming {
       challengeHandler: challengeHandler,
       redirectHandler: redirectHandler,
       trustedHosts: [],
-      urlTransform: urlTransform
+      urlTransform: urlTransform,
+      urlSessionShouldBeInvalidated: false
     )
   }
 
@@ -65,7 +72,9 @@ public final class URLRequestPerformer: URLRequestPerforming {
       urlSession: session,
       URLSessionDelegate: delegate,
       redirectHandler: redirectHandler,
-      urlTransform: urlTransform
+      trustedHosts: [],
+      urlTransform: urlTransform,
+      urlSessionShouldBeInvalidated: true
     )
   }
 
@@ -77,10 +86,17 @@ public final class URLRequestPerformer: URLRequestPerforming {
       urlSession: session,
       URLSessionDelegate: delegate,
       trustedHosts: trustedHosts,
-      urlTransform: urlTransform
+      urlTransform: urlTransform,
+      urlSessionShouldBeInvalidated: true
     )
   }
   #endif
+
+  deinit {
+    if urlSessionShouldBeInvalidated {
+      urlSession.finishTasksAndInvalidate()
+    }
+  }
 
   public func performRequest(
     _ request: URLRequest,
