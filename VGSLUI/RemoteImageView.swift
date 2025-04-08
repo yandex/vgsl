@@ -177,7 +177,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   @available(iOS 14.0, tvOS 14.0, *)
   private func applyAsyncFilter(_ filter: AnyEquatableImageFilter, imageToUpdate: UIImage) {
     let imageRect = bounds
-    let resultHandler: (CGImage?) -> Void = { cgImage in
+    let resultHandler: @Sendable (CGImage?) -> Void = { cgImage in
       onMainThreadAsync { [weak self] in
         guard let self,
               self.image === imageToUpdate,

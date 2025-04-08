@@ -2,12 +2,14 @@
 
 import UIKit
 
+@preconcurrency @MainActor
 public enum ImageViewBackgroundModel {
   case color(Color)
   case view(ViewProvider)
 }
 
 extension ImageViewBackgroundModel {
+  @preconcurrency @MainActor
   public init?(placeholder: ImagePlaceholder) {
     switch placeholder {
     case let .color(color):
@@ -21,6 +23,7 @@ extension ImageViewBackgroundModel {
 }
 
 extension ImageViewBackgroundModel? {
+  @preconcurrency @MainActor
   public func applyTo(_ view: UIView, oldValue: Self) {
     view.subviews.filter { $0 == oldValue?.view }.forEach { $0.removeFromSuperview() }
     view.backgroundColor = self?.color

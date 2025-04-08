@@ -5,6 +5,7 @@ import Foundation
 import VGSLFundamentals
 import VGSLUI
 
+@preconcurrency @MainActor
 public final class RemoteImageHolder: ImageHolder {
   public enum LoadEvent {
     public final class Token: Hashable {
@@ -21,8 +22,10 @@ public final class RemoteImageHolder: ImageHolder {
     case imageLoaded(token: Token)
   }
 
-  private typealias AsyncImageRequester = (@escaping ((Image, URLRequestResult.Source)?) -> Void)
-    -> Cancellable?
+  private typealias AsyncImageRequester = (@escaping @MainActor ((
+    Image,
+    URLRequestResult.Source
+  )?) -> Void) -> Cancellable?
 
   public let placeholder: ImagePlaceholder?
   public let url: URL
@@ -104,14 +107,16 @@ public final class RemoteImageHolder: ImageHolder {
     weakSelf = self
   }
 
+  @preconcurrency @MainActor
   @discardableResult
-  public func requestImageWithCompletion(_ completion: @escaping ((Image?) -> Void))
+  public func requestImageWithCompletion(_ completion: @escaping @MainActor (Image?) -> Void)
     -> Cancellable? {
     requestImageWithSource {
       completion($0?.0)
     }
   }
 
+  @preconcurrency @MainActor
   @discardableResult
   public func requestImageWithSource(_ completion: @escaping CompletionHandlerWithSource)
     -> Cancellable? {
@@ -179,8 +184,10 @@ private func makeDecodedImage(data: Data) -> Image? {
 #endif
 
 extension RemoteImageHolder: CustomDebugStringConvertible {
-  public var debugDescription: String {
-    "URL = \(dbgStr(url)), placeholder = \(dbgStr(placeholder?.debugDescription))"
+  public nonisolated var debugDescription: String {
+    onMainThreadSync {
+      "URL = \(dbgStr(url)), placeholder = \(dbgStr(placeholder?.debugDescription))"
+    }
   }
 }
 

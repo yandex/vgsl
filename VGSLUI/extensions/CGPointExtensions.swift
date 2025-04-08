@@ -59,6 +59,7 @@ extension CGPoint {
     CGPoint(x: x.rounded(toStep: step), y: y.rounded(toStep: step))
   }
 
+  @preconcurrency @MainActor
   public var roundedToScreenScale: CGPoint {
     rounded(toStep: 1 / PlatformDescription.screenScale())
   }

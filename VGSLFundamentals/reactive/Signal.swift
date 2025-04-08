@@ -57,7 +57,6 @@ extension Signal {
   /// Once the subscription is cancelled with `Disposable` the observer will be released.
   @inlinable
   public init(fromFuture future: Future<T>) {
-    @Sendable
     func onObserverSubscribed(observer: Observer<T>) -> Disposable {
       var observer = Optional(observer)
       func onResolved(value: T) {
@@ -85,7 +84,6 @@ extension Signal {
   /// Once the subscription is cancelled with `Disposable` the observer will be released.
   @inlinable
   internal init(_fromFulfillmentOfFuture future: Future<T>) {
-    @Sendable
     func onObserverSubscribed(observer: Observer<T>) -> Disposable {
       guard !future.isFulfilled else {
         return .empty
@@ -96,7 +94,7 @@ extension Signal {
   }
 
   @inlinable
-  public static func values(_ values: some Sequence<T>) -> Signal {
+  public static func values(_ values: some Sequence<T> & Sendable) -> Signal {
     Signal(addObserver: { observer in
       for value in values {
         observer.action(value)
@@ -255,16 +253,19 @@ extension Signal {
       acc = nextPartialResult(acc, next)
     }
   }
+}
 
+extension Signal where T: Sendable {
   @inlinable
   public func mapOnBackground<U>(
-    _ transform: @escaping (T) -> U,
+    _ transform: @Sendable @escaping (T) -> U,
     backgroundRunner: @escaping BackgroundRunner = onBackgroundThread,
     mainThreadAsyncRunner: @escaping MainThreadAsyncRunner = onMainThreadAsync
   ) -> Signal<U> {
     self.flatMap { it in
       Signal<U> { observer -> Disposable in
         Thread.assertIsMain()
+        nonisolated(unsafe) let observer = observer
         var disposed = false
         backgroundRunner {
           let value = transform(it)
@@ -371,6 +372,7 @@ extension Signal {
     options: NSKeyValueObservingOptions
   ) -> Signal where T == (object: Root, change: NSKeyValueObservedChange<Value>) {
     return Signal(addObserver: { observer in
+      nonisolated(unsafe) let observer = observer
       let token = object.observe(keyPath, options: options, changeHandler: { object, change in
         observer.action((object, change))
       })

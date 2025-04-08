@@ -141,6 +141,7 @@ extension CGRect {
     }
   }
 
+  @preconcurrency @MainActor
   public var roundedToScreenScale: CGRect {
     rounded(toStep: 1 / PlatformDescription.screenScale())
   }

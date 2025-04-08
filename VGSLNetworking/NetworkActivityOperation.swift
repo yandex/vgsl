@@ -21,32 +21,42 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     _ uploadProgress: ProgressHandler?,
     @escaping Completion
   ) -> NetworkTask
-  public typealias ProgressHandler = (Double) -> Void
-  public typealias Completion = (Result<Response, NSError>) -> Void
+  public typealias ProgressHandler = @MainActor (Double) -> Void
+  public typealias Completion = @MainActor (sending Result<Response, NSError>) -> Void
 
+  @MainActor
   private let baseURLProvider: Variable<URL>
+  @MainActor
   private let resourceFactory: ResourceFutureFactory
   private let request: Request
+  @MainActor
   private let userAgent: Variable<String?>
   private let downloadProgress: ProgressHandler?
   private let uploadProgress: ProgressHandler?
+  @MainActor
   private var wasCancelled = false
 
   // public for tests
+  @MainActor
   public let errorStrategy: NetworkErrorHandlingStrategy?
 
+  @preconcurrency @MainActor
   public private(set) var result: Result<Response, NSError>?
 
   public let completion: Completion
 
+  @MainActor
   private var networkTask: NetworkTask!
 
+  @preconcurrency @MainActor
   public weak var lifecycleDelegate: NetworkActivityOperationLifecycleDelegate?
 
   #if INTERNAL_BUILD
+  @preconcurrency @MainActor
   public var predefinedResponse: (body: Data, httpResponse: HTTPURLResponse)?
   #endif
 
+  @preconcurrency @MainActor
   public convenience init(
     baseURLProvider: Variable<URL>,
     resourceFactory: ResourceFactory,
@@ -71,6 +81,7 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     )
   }
 
+  @preconcurrency @MainActor
   public init(
     baseURLProvider: Variable<URL>,
     resourceFactory: ResourceFutureFactory,
@@ -104,15 +115,15 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
   public override func cancel() {
     // MOBYANDEXIOS-813: Cancellation must happen on main thread to avoid races since cancellation flag is checked on
     // main thread as well
-
-    wasCancelled = true
-    networkTask?.cancel()
-    precondition(Thread.isMainThread)
+    assumeIsolatedToMainActor {
+      wasCancelled = true
+      networkTask?.cancel()
+    }
     super.cancel()
   }
 
+  @MainActor
   private func performRequest() {
-    Thread.assertIsMain()
     guard let resource = resourceFactory.value else {
       return performRequest(originalResource: nil)
     }
@@ -130,8 +141,8 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     }
   }
 
+  @MainActor
   private func performRequest(originalResource: Resource<Response>?) {
-    Thread.assertIsMain()
     guard let originalResource else {
       let error = NSError(
         domain: NetworkActivityOperationErrorDomain,
@@ -169,8 +180,8 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     ) { [weak self] in self?.handleRequestResult($0, baseURL: baseURL) }
   }
 
+  @MainActor
   private func handleRequestResult(_ result: Result<Response, NSError>, baseURL: URL) {
-    Thread.assertIsMain()
     switch result {
     case .success:
       completeWith(result)
@@ -182,8 +193,8 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     }
   }
 
-  private func completeWith(_ result: Result<Response, NSError>) {
-    Thread.assertIsMain()
+  @MainActor
+  private func completeWith(_ result: sending Result<Response, NSError>) {
     defer { complete() }
     guard !wasCancelled else { return }
     self.result = result
@@ -193,8 +204,10 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
 
 extension NetworkActivityOperation: NetworkErrorHandlingStrategyDelegate {
   public func performRetry() {
-    lifecycleDelegate?.onRetry()
-    performRequest()
+    onMainThread { [self] in
+      lifecycleDelegate?.onRetry()
+      performRequest()
+    }
   }
 }
 

@@ -13,10 +13,10 @@ final class ImageDataHolder: ImageHolder {
     self.image = imageData.makeImage()
   }
 
-  public func requestImageWithCompletion(_ completion: @escaping ((Image?) -> Void))
+  public func requestImageWithCompletion(_ completion: @escaping @MainActor (Image?) -> Void)
     -> Cancellable? {
-    onMainThread {
-      completion(self.image)
+    onMainThread { [image = self.image] in
+      completion(image)
     }
     return nil
   }
@@ -29,7 +29,7 @@ final class ImageDataHolder: ImageHolder {
     (other as? ImageDataHolder)?.imageData == imageData
   }
 
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     "ImageDataHolder"
   }
 }

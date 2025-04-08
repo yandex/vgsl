@@ -6,6 +6,7 @@ import CoreGraphics
 import UIKit.UIScrollView
 #endif
 
+@preconcurrency @MainActor
 public protocol ScrollToDrag: ScrollingToTop {
   var contentInset: EdgeInsets { get set }
   var contentOffset: CGPoint { get set }
@@ -21,6 +22,7 @@ public protocol ScrollToDrag: ScrollingToTop {
   func setContentOffset(_ contentOffset: CGPoint, animated: Bool)
 }
 
+@preconcurrency @MainActor
 public protocol ScrollViewType: ScrollToDrag, ScrollViewTrackable {
   var contentSize: CGSize { get set }
   var contentInset: EdgeInsets { get set }

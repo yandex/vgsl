@@ -2,8 +2,9 @@
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public final class AsyncResourceRequester<Resource> {
-  public typealias Completion = (Resource?) -> Void
+  public typealias Completion = @MainActor (Resource?) -> Void
   public typealias Request = (@escaping Completion) -> Cancellable?
 
   private let request: Request
@@ -23,8 +24,10 @@ public final class AsyncResourceRequester<Resource> {
       }
       self.currentRequestToken = currentRequestToken
     }
-    let proxy = RequestToken(cancelAction: { [weak self] cancellable in
-      self?.cancel(cancellable: cancellable)
+    let proxy = RequestToken(cancelAction: { cancellable in
+      onMainThread { [weak self] in
+        self?.cancel(cancellable: cancellable)
+      }
     })
     completions[proxy] = completion
     return proxy
@@ -47,7 +50,7 @@ public final class AsyncResourceRequester<Resource> {
 }
 
 private final class RequestToken: Cancellable, Hashable {
-  typealias CancelAction = (RequestToken) -> Void
+  typealias CancelAction = @Sendable (RequestToken) -> Void
 
   private let cancelAction: CancelAction
 
@@ -63,7 +66,7 @@ private final class RequestToken: Cancellable, Hashable {
     lhs === rhs
   }
 
-  public func hash(into hasher: inout Hasher) {
+  public nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self).hashValue)
   }
 }

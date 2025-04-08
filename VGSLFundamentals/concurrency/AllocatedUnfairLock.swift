@@ -24,13 +24,17 @@ public struct AllocatedUnfairLock<State>: @unchecked Sendable {
   }
 
   @inlinable
-  public init(sendingState initialState: State) {
-    self.init(uncheckedState: initialState)
+  public init(sendingState: sending State) {
+    self.init(uncheckedState: sendingState)
   }
 
   @inlinable
-  public func withLock<R: Sendable>(_ f: @Sendable (inout State) throws -> R) rethrows -> R {
-    try withLockUnchecked(f)
+  public borrowing func withLock<T>(
+    _ f: (inout sending State) throws -> sending T
+  ) rethrows -> sending T {
+    ll_lock_lock(buffer.elementPointer)
+    defer { ll_lock_unlock(buffer.elementPointer) }
+    return try f(&buffer.headerPointer.pointee)
   }
 
   @inlinable
@@ -43,9 +47,13 @@ public struct AllocatedUnfairLock<State>: @unchecked Sendable {
   }
 
   @inlinable
-  public func withLockIfAvailable<R: Sendable>(_ f: @Sendable (inout State) throws -> R) rethrows
-    -> R? {
-    try withLockIfAvailableUnchecked(f)
+  public func withLockIfAvailable<R>(_ f: (inout sending State) throws -> sending R) rethrows
+    -> sending R? {
+    guard ll_lock_trylock(buffer.elementPointer) else {
+      return nil
+    }
+    defer { ll_lock_unlock(buffer.elementPointer) }
+    return try f(&buffer.headerPointer.pointee)
   }
 
   @inlinable
@@ -84,8 +92,10 @@ extension AllocatedUnfairLock where State == Void {
   }
 
   @inlinable
-  public func withLock<R: Sendable>(_ f: @Sendable () throws -> R) rethrows -> R {
-    try withLock { _ in try f() }
+  public func withLock<R>(_ f: () throws -> sending R) rethrows -> sending R {
+    ll_lock_lock(buffer.elementPointer)
+    defer { ll_lock_unlock(buffer.elementPointer) }
+    return try f()
   }
 
   @inlinable
@@ -95,7 +105,11 @@ extension AllocatedUnfairLock where State == Void {
 
   @inlinable
   public func withLockIfAvailable<R: Sendable>(_ f: @Sendable () throws -> R) rethrows -> R? {
-    try withLockIfAvailable { _ in try f() }
+    guard ll_lock_trylock(buffer.elementPointer) else {
+      return nil
+    }
+    defer { ll_lock_unlock(buffer.elementPointer) }
+    return try f()
   }
 
   @inlinable
@@ -124,6 +138,18 @@ extension AllocatedUnfairLock where State: Sendable {
   @inlinable
   public init(initialState: State) {
     self.init(uncheckedState: initialState)
+  }
+}
+
+extension ManagedBuffer {
+  @inlinable
+  var headerPointer: UnsafeMutablePointer<Header> {
+    withUnsafeMutablePointerToHeader { $0 }
+  }
+
+  @inlinable
+  var elementPointer: UnsafeMutablePointer<Element> {
+    withUnsafeMutablePointerToElements { $0 }
   }
 }
 

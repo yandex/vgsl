@@ -4,7 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
-public protocol NetworkRetryIntervalSource {
+public protocol NetworkRetryIntervalSource: Sendable {
   func determineInterval(from: NSError, since: Date) -> TimeInterval?
 }
 

@@ -9,7 +9,7 @@ public enum Gradient: Equatable {
   public typealias Point = (color: Color, location: CGFloat)
 
   public struct Linear: Equatable {
-    public struct Direction: Equatable {
+    public struct Direction: Equatable, Sendable {
       public let from: RelativePoint
       public let to: RelativePoint
 

@@ -4,6 +4,7 @@ import UIKit
 
 internal import AudioToolbox
 
+@preconcurrency @MainActor
 public protocol PhysicalFeedbackGenerator {
   func prepare()
   func generateFeedback()

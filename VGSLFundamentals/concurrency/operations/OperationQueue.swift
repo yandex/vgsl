@@ -4,7 +4,7 @@ import Foundation
 
 public typealias MainQueueScheduler = (Operation) -> Void
 
-public protocol OperationQueueType: AnyObject {
+public protocol OperationQueueType: AnyObject, Sendable {
   func addOperation(_ operation: Operation)
   #if swift(>=5.9)
   func addOperation(_ block: @escaping @Sendable () -> Void)
@@ -15,10 +15,10 @@ public protocol OperationQueueType: AnyObject {
   func cancelAllOperations()
 }
 
-public protocol SerialOperationQueue: OperationQueueType {}
+public protocol SerialOperationQueue: OperationQueueType, Sendable {}
 
 extension OperationQueueType {
-  public func addOperation(_ block: @escaping () -> Void) {
+  public func addOperation(_ block: @escaping @Sendable () -> Void) {
     addOperation(BlockOperation(block: block))
   }
 }

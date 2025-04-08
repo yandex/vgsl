@@ -6,9 +6,9 @@ import UIKit
 extension UIApplication: NetworkActivityIndicatorUI {}
 
 @available(iOSApplicationExtension, unavailable)
+@preconcurrency @MainActor
 public let networkActivityIndicatorController = NetworkActivityIndicatorController(
-  UI: UIApplication
-    .shared
+  UI: UIApplication.shared
 )
 #endif
 

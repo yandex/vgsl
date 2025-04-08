@@ -8,6 +8,14 @@ public struct Observer<T> {
   }
 }
 
+public struct SendableObserver<T>: Sendable {
+  public let action: @Sendable (T) -> Void
+
+  public init(action: @Sendable @escaping (T) -> Void) {
+    self.action = action
+  }
+}
+
 extension Observer {
   @inlinable
   public func contramap<U>(_ transform: @escaping (U) -> T) -> Observer<U> {

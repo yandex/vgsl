@@ -2,7 +2,8 @@
 
 import Foundation
 
-public protocol APIRequestObserving {
+@preconcurrency @MainActor
+public protocol APIRequestObserving: Sendable {
   func requestWillBeSent(to url: URL, HTTPBody: Any?)
   func requestParsingWillStart()
   func requestParsingDidFail(error: Error, responseData: Data)

@@ -4,6 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public protocol NetworkTask: AnyObject, Cancellable {
   var taskDescription: String? { get set }
   func resume()
@@ -11,9 +12,11 @@ public protocol NetworkTask: AnyObject, Cancellable {
 
 extension Foundation.URLSessionTask: VGSLNetworking.NetworkTask {}
 
-public typealias URLRequestCompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
+public typealias URLRequestCompletionHandler =
+  @MainActor (Result<(Data, HTTPURLResponse), NSError>) -> Void
 
-public protocol URLRequestPerforming: AnyObject {
+@preconcurrency @MainActor
+public protocol URLRequestPerforming: AnyObject, Sendable {
   @discardableResult
   func performRequest(_ request: URLRequest, completion: @escaping URLRequestCompletionHandler)
     -> NetworkTask

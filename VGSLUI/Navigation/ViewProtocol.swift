@@ -4,6 +4,7 @@ import UIKit
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public protocol ViewProtocol: AnyObject {
   static func animate(
     duration: TimeInterval,

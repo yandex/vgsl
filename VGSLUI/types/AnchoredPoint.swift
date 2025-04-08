@@ -11,6 +11,7 @@ public struct AnchoredPoint {
     self.space = space
   }
 
+  @preconcurrency @MainActor
   public func coordinates(in other: UICoordinateSpace) -> CGPoint {
     other.convert(value, from: space)
   }

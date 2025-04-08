@@ -4,7 +4,8 @@ import Foundation
 
 import VGSLFundamentals
 
-public protocol NetworkOperationServing: AnyObject, Cancellable {
+@preconcurrency @MainActor
+public protocol NetworkOperationServing: AnyObject {
   associatedtype RequestArgs
   associatedtype Response
 
@@ -13,6 +14,8 @@ public protocol NetworkOperationServing: AnyObject, Cancellable {
     _ args: RequestArgs,
     completion: NetworkActivityOperation<Response>.Completion?
   ) -> Operation
+
+  func cancel()
 }
 
 public final class NetworkOperationServer<RequestArgs, Response>: NetworkOperationServing {
@@ -68,17 +71,16 @@ extension NetworkOperationServing {
   @discardableResult
   @MainActor
   public func performRequest(_ args: RequestArgs) async throws -> Response {
-    var receivedResult: Result<Response, NSError>?
-    return try await withCheckedThrowingContinuation { continuation in
+    try await withCheckedThrowingContinuation { continuation in
+      nonisolated(unsafe) var receivedResult: Result<Response, NSError>?
       let serverOp = performRequest(args, completion: { result in
-        MainActor.assumeIsolated {
-          receivedResult = result
-        }
+        receivedResult = result
       })
       let continuationOp = BlockOperation {
         MainActor.assumeIsolated {
           if let receivedResult {
-            continuation.resume(with: receivedResult.mapError { $0 })
+            nonisolated(unsafe) let receivedResult = receivedResult
+            continuation.resume(with: receivedResult)
           } else {
             continuation.resume(throwing: CancellationError())
           }

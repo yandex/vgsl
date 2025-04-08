@@ -8,6 +8,7 @@ public let APIRequestErrorDomain = "vgsl.commonCore.networking"
 public let APIRequestResponseParsingErrorCode = 0
 
 @inlinable
+@preconcurrency @MainActor
 public func wrappedAPIRequest<T>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
@@ -34,6 +35,7 @@ public func wrappedAPIRequest<T>(
 #if !os(tvOS)
 @inlinable
 @available(iOSApplicationExtension, unavailable)
+@preconcurrency @MainActor
 public func wrappedAPIRequest<T>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
@@ -52,6 +54,7 @@ public func wrappedAPIRequest<T>(
 #endif
 
 @inlinable
+@preconcurrency @MainActor
 public func APIRequest<T>(
   requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
@@ -61,13 +64,12 @@ public func APIRequest<T>(
   downloadProgressHandler: ((Double) -> Void)? = nil,
   uploadProgressHandler: ((Double) -> Void)? = nil,
   observer: APIRequestObserving? = nil,
-  completion: @escaping (Result<T, NSError>) -> Void
+  completion: @escaping @MainActor (sending Result<T, NSError>) -> Void
 ) -> NetworkTask {
   let request = URLRequestForResource(resource, withBaseURL: baseURL)
 
-  var httpBody: Any?
-  if let body = request.httpBody {
-    httpBody = try? JSONSerialization.jsonObject(with: body, options: [])
+  let httpBody = request.httpBody.flatMap {
+    try? JSONSerialization.jsonObject(with: $0, options: [])
   }
 
   onMainThread {
@@ -117,6 +119,7 @@ public func APIRequest<T>(
 #if !os(tvOS)
 @available(iOSApplicationExtension, unavailable)
 @inlinable
+@preconcurrency @MainActor
 public func APIRequest<T>(
   requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
@@ -126,7 +129,7 @@ public func APIRequest<T>(
   downloadProgressHandler: ((Double) -> Void)? = nil,
   uploadProgressHandler: ((Double) -> Void)? = nil,
   observer: APIRequestObserving? = nil,
-  completion: @escaping (Result<T, NSError>) -> Void
+  completion: @escaping @MainActor (sending Result<T, NSError>) -> Void
 ) -> NetworkTask {
   APIRequest(
     requestPerformer: requestPerformer,

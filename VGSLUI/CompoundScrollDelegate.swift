@@ -4,6 +4,7 @@ import UIKit
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public final class CompoundScrollDelegate: NSObject {
   private var delegates = WeakCollection<ScrollDelegate>()
   private let contentOffsetSignalPipe = SignalPipe<CGPoint>()

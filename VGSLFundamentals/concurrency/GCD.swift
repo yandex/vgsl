@@ -2,12 +2,12 @@
 
 import Foundation
 
-public typealias MainThreadRunner = (@escaping () -> Void) -> Void
-public typealias MainThreadAsyncRunner = (@escaping () -> Void) -> Void
-public typealias BackgroundRunner = (@escaping () -> Void) -> Void
-public typealias SyncQueueRunner = (@escaping () -> Void) -> Void
+public typealias MainThreadRunner = @Sendable (@escaping @MainActor () -> Void) -> Void
+public typealias MainThreadAsyncRunner = @Sendable (@escaping @MainActor () -> Void) -> Void
+public typealias BackgroundRunner = (@escaping @Sendable () -> Void) -> Void
+public typealias SyncQueueRunner = (@escaping @Sendable () -> Void) -> Void
 public typealias DelayedExecution = (TimeInterval, @escaping () -> Void) -> Void
-public typealias DelayedRunner = (_ delay: TimeInterval, _ block: @escaping () -> Void)
+public typealias DelayedRunner = (_ delay: TimeInterval, _ block: @escaping @Sendable () -> Void)
   -> Cancellable
 
 @_unavailableFromAsync(message: "await the call to the @MainActor closure directly")
@@ -44,15 +44,20 @@ public func assumeIsolatedToMainActor<T>(
   }
 }
 
-public func onMainThread(_ block: @escaping () -> Void) {
+@Sendable
+public func onMainThread(_ block: @escaping @MainActor () -> Void) {
   if Thread.isMainThread {
-    block()
+    assumeIsolatedToMainActor {
+      block()
+    }
   } else {
     DispatchQueue.main.async(execute: block)
   }
 }
 
-public func onMainThreadResult<T>(_ function: @escaping () -> T) -> Future<T> {
+public func onMainThreadResult<T: Sendable>(
+  _ function: @escaping @MainActor () -> T
+) -> Future<T> {
   let (future, feed) = Future<T>.create()
   onMainThread {
     feed(function())
@@ -60,7 +65,8 @@ public func onMainThreadResult<T>(_ function: @escaping () -> T) -> Future<T> {
   return future
 }
 
-public func onMainThreadResult<T>(_ function: @escaping () -> Future<T>) -> Future<T> {
+public func onMainThreadResult<T: Sendable>(_ function: @escaping @Sendable () -> Future<T>)
+  -> Future<T> {
   let (future, feed) = Future<T>.create()
   onMainThread {
     function().resolved { result in
@@ -85,28 +91,36 @@ public func runUnsafelyOnMainActor<T>(_ body: @MainActor () throws -> T) rethrow
   }
 }
 
-public func onMainThreadAsync(_ block: @escaping () -> Void) {
+@Sendable
+@inlinable
+public func onMainThreadAsync(_ block: @escaping @MainActor () -> Void) {
   DispatchQueue.main.async(execute: block)
 }
 
 @inlinable
-public func onMainThreadSync<T>(_ block: () -> T) -> T {
+@Sendable
+public func onMainThreadSync<T: Sendable>(_ block: @MainActor () -> T) -> T {
   if Thread.isMainThread {
-    return block()
-  } else {
-    var result: T!
-    DispatchQueue.main.sync {
-      result = block()
+    return assumeIsolatedToMainActor {
+      block()
     }
-    return result
+  } else {
+    return DispatchQueue.main.sync {
+      assumeIsolatedToMainActor {
+        block()
+      }
+    }
   }
 }
 
-public func onBackgroundThread(_ block: @escaping () -> Void) {
+@inlinable
+public func onBackgroundThread(_ block: @escaping @Sendable () -> Void) {
   onBackgroundThread(qos: .default)(block)
 }
 
-public func onBackgroundThread(qos: DispatchQoS.QoSClass) -> (@escaping () -> Void) -> Void {
+public func onBackgroundThread(
+  qos: DispatchQoS.QoSClass
+) -> (@escaping @Sendable () -> Void) -> Void {
   {
     DispatchQueue.global(qos: qos).async(execute: $0)
   }
@@ -119,9 +133,13 @@ public func invokeImmediately(_ block: @escaping () -> Void) {
 @discardableResult
 public func dispatchAfter(
   _ delay: TimeInterval,
-  block: @escaping () -> Void
+  block: @escaping MainActorAction
 ) -> Cancellable {
-  after(delay, onQueue: .main, block: block)
+  after(delay, onQueue: .main) {
+    assumeIsolatedToMainActor {
+      block()
+    }
+  }
 }
 
 public func after(_ delay: TimeInterval, block: @escaping () -> Void) {
@@ -171,5 +189,3 @@ public func performAsyncAction<T>(
     tryComplete()
   }
 }
-
-extension DispatchWorkItem: Cancellable {}

@@ -2,10 +2,12 @@
 
 import Foundation
 
+@preconcurrency @MainActor
 public protocol NetworkActivityIndicatorUI: AnyObject {
   var isNetworkActivityIndicatorVisible: Bool { get set }
 }
 
+@preconcurrency @MainActor
 public final class NetworkActivityIndicatorController {
   private let UI: NetworkActivityIndicatorUI
   private var numberOfOperations = 0

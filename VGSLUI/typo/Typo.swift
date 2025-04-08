@@ -1,6 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-import CoreGraphics
+@preconcurrency import CoreGraphics
 import CoreText
 import Foundation
 

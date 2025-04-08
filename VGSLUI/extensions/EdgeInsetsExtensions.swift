@@ -37,18 +37,6 @@ extension EdgeInsets {
   public var vertical: SideInsets {
     SideInsets(leading: top, trailing: bottom)
   }
-
-  // VGSL-34: Remove in major release
-  @inlinable
-  public var horizontalInsets: SideInsets {
-    horizontal
-  }
-
-  // VGSL-34: Remove in major release
-  @inlinable
-  public var verticalInsets: SideInsets {
-    vertical
-  }
 }
 
 extension EdgeInsets {

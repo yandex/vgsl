@@ -4,13 +4,15 @@ import Foundation
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public protocol ImageHolder: AnyObject, CustomDebugStringConvertible {
-  typealias CompletionHandlerWithSource = ((Image, URLRequestResult.Source)?) -> Void
+  typealias CompletionHandlerWithSource = @MainActor ((Image, URLRequestResult.Source)?) -> Void
 
   var image: Image? { get }
   var placeholder: ImagePlaceholder? { get }
   @discardableResult
-  func requestImageWithCompletion(_ completion: @escaping ((Image?) -> Void)) -> Cancellable?
+  func requestImageWithCompletion(_ completion: @escaping @MainActor (Image?) -> Void)
+    -> Cancellable?
   func requestImageWithSource(_ completion: @escaping CompletionHandlerWithSource) -> Cancellable?
   func reused(with placeholder: ImagePlaceholder?, remoteImageURL: URL?) -> ImageHolder?
   func equals(_ other: ImageHolder) -> Bool
@@ -29,6 +31,7 @@ extension ImageHolder {
   }
 }
 
+@preconcurrency @MainActor
 public func compare(_ lhs: ImageHolder, _ rhs: ImageHolder) -> Bool {
   if lhs === rhs {
     return true
@@ -37,6 +40,7 @@ public func compare(_ lhs: ImageHolder, _ rhs: ImageHolder) -> Bool {
   return lhs.equals(rhs)
 }
 
+@preconcurrency @MainActor
 public func compare(_ lhs: ImageHolder?, _ rhs: ImageHolder?) -> Bool {
   switch (lhs, rhs) {
   case (.none, .none):

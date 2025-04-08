@@ -2,6 +2,7 @@
 
 import Foundation
 
+@preconcurrency @MainActor
 public protocol LocalResourceURLProviding: AnyObject {
   func getLocalResourceURL(with url: URL) -> URL?
 }

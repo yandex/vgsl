@@ -7,7 +7,7 @@ private let assignmentQueue = DispatchQueue(
   attributes: [.concurrent]
 )
 
-private func cachedValue<A, B>(
+private func cachedValue<A: Sendable, B: Sendable>(
   from cache: Atomic<[A: B]>,
   for key: A,
   fallback: (A) throws -> B
@@ -16,50 +16,122 @@ private func cachedValue<A, B>(
     return cachedValue
   }
   let value = try fallback(key)
-  cache.accessWrite { $0[key] = value }
+  cache.accessWrite {
+    $0[key] = value
+  }
   return value
 }
 
-public func memoize<A: Hashable, B>(_ f: @escaping (A) throws -> B) -> (A) throws -> B {
+public func memoize<
+  A: Hashable & Sendable,
+  B: Sendable
+>(_ f: @escaping @Sendable (A) throws -> B) -> @Sendable (A) throws -> B {
   let cache = Atomic(initialValue: [A: B]())
   return { (input: A) -> B in
     try cachedValue(from: cache, for: input, fallback: f)
   }
 }
 
-public func memoize<A: Hashable, B>(_ f: @escaping (A) -> B) -> (A) -> B {
+public func memoize<
+  A: Hashable & Sendable,
+  B: Sendable
+>(_ f: @Sendable @escaping (A) -> B) -> @Sendable (A) -> B {
   let cache = Atomic(initialValue: [A: B]())
   return { (input: A) -> B in
     cachedValue(from: cache, for: input, fallback: f)
   }
 }
 
-private struct MemoizeParams2<A: Hashable, B: Hashable>: Hashable {
+public func memoizeNonSendable<A: Hashable, B>(_ f: @escaping (A) -> B) -> (A) -> B {
+  var cache = [A: B]()
+  return { (key: A) -> B in
+    if let cachedValue = cache[key] {
+      return cachedValue
+    }
+    let value = f(key)
+    cache[key] = value
+    return value
+  }
+}
+
+private struct MemoizeParams2<A: Hashable & Sendable, B: Hashable & Sendable>: Hashable, Sendable {
   let a: A
   let b: B
 }
 
-public func memoize<A: Hashable, B: Hashable, C>(_ f: @escaping (A, B) -> C) -> (A, B) -> C {
+private struct MemoizeParams2NonSendable<A: Hashable, B: Hashable>: Hashable {
+  let a: A
+  let b: B
+}
+
+public func memoize<
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Sendable
+>(_ f: @escaping @Sendable (
+  A,
+  B
+) -> C) -> @Sendable (A, B) -> C {
   let cache = Atomic(initialValue: [MemoizeParams2<A, B>: C]())
   return { (a: A, b: B) -> C in
     cachedValue(from: cache, for: MemoizeParams2(a: a, b: b), fallback: { f($0.a, $0.b) })
   }
 }
 
-private struct MemoizeParams3<A: Hashable, B: Hashable, C: Hashable>: Hashable {
+public func memoizeNonSendable<
+  A: Hashable,
+  B: Hashable,
+  C
+>(_ f: @escaping (A, B) -> C) -> (A, B) -> C {
+  var cache = [MemoizeParams2NonSendable<A, B>: C]()
+
+  return { (a: A, b: B) -> C in
+    let key = MemoizeParams2NonSendable(a: a, b: b)
+    if let cachedValue = cache[key] {
+      return cachedValue
+    }
+    let value = f(a, b)
+    cache[key] = value
+    return value
+  }
+}
+
+private struct MemoizeParams3<
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable
+>: Hashable, Sendable {
   let a: A
   let b: B
   let c: C
 }
 
-private class MemoizeParams3AClass<A: Hashable, B: Hashable, C: Hashable>: Hashable
+private struct MemoizeParams3NonSendable<
+  A: Hashable,
+  B: Hashable,
+  C: Hashable
+>: Hashable {
+  let a: A
+  let b: B
+  let c: C
+}
+
+private final class MemoizeParams3AClass<
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable
+>: Hashable, Sendable
   where A: AnyObject {
-  private(set) var a: A
+  var a: A {
+    _a.withLock { $0 }
+  }
+
+  private let _a: AllocatedUnfairLock<A>
   let b: B
   let c: C
 
-  init(a: A, b: B, c: C) {
-    self.a = a
+  init(a: sending A, b: B, c: C) {
+    self._a = AllocatedUnfairLock(sendingState: a)
     self.b = b
     self.c = c
   }
@@ -83,18 +155,18 @@ private class MemoizeParams3AClass<A: Hashable, B: Hashable, C: Hashable>: Hasha
       return false
     }
 
-    assignmentQueue.sync(flags: .barrier) { lhs.a = rhs.a }
+    assignmentQueue.sync(flags: .barrier) { lhs._a.withLock { $0 = rhs.a } }
 
     return lhs.b == rhs.b && lhs.c == rhs.c
   }
 }
 
 public func memoize<
-  A: Hashable,
-  B: Hashable,
-  C: Hashable,
-  D
->(_ f: @escaping (A, B, C) -> D) -> (A, B, C) -> D {
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable,
+  D: Sendable
+>(_ f: @escaping @Sendable (A, B, C) -> D) -> @Sendable (A, B, C) -> D {
   let cache = Atomic(initialValue: [MemoizeParams3<A, B, C>: D]())
   return { (a: A, b: B, c: C) -> D in
     cachedValue(
@@ -105,11 +177,29 @@ public func memoize<
   }
 }
 
-public func memoizeAClass<
+public func memoizeNonSendable<
   A: Hashable,
   B: Hashable,
   C: Hashable,
   D
+>(_ f: @escaping (A, B, C) -> D) -> (A, B, C) -> D {
+  var cache = [MemoizeParams3NonSendable<A, B, C>: D]()
+  return { (a: A, b: B, c: C) -> D in
+    let key = MemoizeParams3NonSendable(a: a, b: b, c: c)
+    if let cachedValue = cache[key] {
+      return cachedValue
+    }
+    let value = f(a, b, c)
+    cache[key] = value
+    return value
+  }
+}
+
+public func memoizeAClass<
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable,
+  D: Sendable
 >(_ f: @escaping (A, B, C) -> D) -> (A, B, C) -> D where A: AnyObject {
   let cache = Atomic(initialValue: [MemoizeParams3AClass<A, B, C>: D]())
   return { (a: A, b: B, c: C) -> D in
@@ -121,7 +211,12 @@ public func memoizeAClass<
   }
 }
 
-private struct MemoizeParams4<A: Hashable, B: Hashable, C: Hashable, D: Hashable>: Hashable {
+private struct MemoizeParams4<
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable,
+  D: Hashable & Sendable
+>: Hashable, Sendable {
   let a: A
   let b: B
   let c: C
@@ -129,12 +224,12 @@ private struct MemoizeParams4<A: Hashable, B: Hashable, C: Hashable, D: Hashable
 }
 
 public func memoize<
-  A: Hashable,
-  B: Hashable,
-  C: Hashable,
-  D: Hashable,
-  E
->(_ f: @escaping (A, B, C, D) -> E) -> (A, B, C, D) -> E {
+  A: Hashable & Sendable,
+  B: Hashable & Sendable,
+  C: Hashable & Sendable,
+  D: Hashable & Sendable,
+  E: Sendable
+>(_ f: @escaping @Sendable (A, B, C, D) -> E) -> @Sendable (A, B, C, D) -> E {
   let cache = Atomic(initialValue: [MemoizeParams4<A, B, C, D>: E]())
   return { (a: A, b: B, c: C, d: D) -> E in
     cachedValue(
@@ -142,5 +237,36 @@ public func memoize<
       for: MemoizeParams4(a: a, b: b, c: c, d: d),
       fallback: { f($0.a, $0.b, $0.c, $0.d) }
     )
+  }
+}
+
+private struct MemoizeParams4NonSendable<
+  A: Hashable,
+  B: Hashable,
+  C: Hashable,
+  D: Hashable
+>: Hashable {
+  let a: A
+  let b: B
+  let c: C
+  let d: D
+}
+
+public func memoizeNonSendable<
+  A: Hashable,
+  B: Hashable,
+  C: Hashable,
+  D: Hashable,
+  E
+>(_ f: @escaping (A, B, C, D) -> E) -> (A, B, C, D) -> E {
+  var cache = [MemoizeParams4NonSendable<A, B, C, D>: E]()
+  return { (a: A, b: B, c: C, d: D) -> E in
+    let key = MemoizeParams4NonSendable(a: a, b: b, c: c, d: d)
+    if let cachedValue = cache[key] {
+      return cachedValue
+    }
+    let value = f(a, b, c, d)
+    cache[key] = value
+    return value
   }
 }

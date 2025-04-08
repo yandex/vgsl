@@ -11,6 +11,7 @@ public enum ImagePlaceholder: Equatable, CustomDebugStringConvertible {
 }
 
 extension ImagePlaceholder {
+  @preconcurrency @MainActor
   public func toImageHolder() -> ImageHolder {
     switch self {
     case let .image(image):
@@ -81,8 +82,11 @@ public struct ImageData: Hashable, Sendable {
     self.highPriority = highPriority
   }
 
-  public func makeImage(queue: OperationQueueType, completion: @escaping (Image) -> Void) {
-    let action = {
+  public func makeImage(
+    queue: OperationQueueType,
+    completion: @escaping @MainActor @Sendable (Image) -> Void
+  ) {
+    let action: @Sendable () -> Void = {
       if let image = makeImage() {
         onMainThread {
           completion(image)

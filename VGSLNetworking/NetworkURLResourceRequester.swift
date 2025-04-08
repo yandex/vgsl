@@ -4,6 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public final class NetworkURLResourceRequester: URLResourceRequesting {
   private let performer: URLRequestPerforming
 

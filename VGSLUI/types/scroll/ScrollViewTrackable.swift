@@ -2,6 +2,7 @@
 
 import Foundation
 
+@preconcurrency @MainActor
 public protocol ScrollViewTrackable {
   var isTracking: Bool { get }
   var isDragging: Bool { get }

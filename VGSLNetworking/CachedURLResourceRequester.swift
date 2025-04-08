@@ -4,6 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
+@preconcurrency @MainActor
 public final class CachedURLResourceRequester: URLResourceRequesting, LocalResourceURLProviding {
   public typealias CacheKeyBuilder = (URL) -> String
 
@@ -65,32 +66,36 @@ public final class CachedURLResourceRequester: URLResourceRequesting, LocalResou
   }
 }
 
-private class DeferredCancel: Cancellable {
-  private var isCancelled = false
-  private let completion: (Result<URLRequestResult, NSError>) -> Void
+private final class DeferredCancel: Cancellable {
+  private let isCancelled: AllocatedUnfairLock<Bool> = .init(initialState: false)
+  private let completion: @MainActor (Result<URLRequestResult, NSError>) -> Void
+
+  @MainActor
   var underlyingCancellation: Cancellable? {
     didSet {
-      Thread.assertIsMain()
-      if isCancelled {
+      if isCancelled.withLock({ $0 }) {
         underlyingCancellation?.cancel()
       }
     }
   }
 
-  init(completion: @escaping (Result<URLRequestResult, NSError>) -> Void) {
+  init(completion: @escaping @MainActor (Result<URLRequestResult, NSError>) -> Void) {
     self.completion = completion
   }
 
   func cancel() {
-    Thread.assertIsMain()
-    isCancelled = true
-    underlyingCancellation?.cancel()
+    isCancelled.withLock { $0 = true }
+    onMainThread { [self] in
+      underlyingCancellation?.cancel()
+    }
   }
 
   func fulfill(result: Result<URLRequestResult, NSError>) {
     Thread.assertIsMain()
-    if !isCancelled {
-      completion(result)
+    if !isCancelled.withLock({ $0 }) {
+      onMainThread { [self] in
+        completion(result)
+      }
     }
   }
 }

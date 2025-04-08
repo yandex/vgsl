@@ -17,7 +17,7 @@ public protocol ChallengeHandling {
 }
 
 private let _externalURLSessionChallengeHandler: AllocatedUnfairLock<ChallengeHandling?> =
-  .init(initialState: nil)
+  .init(sendingState: nil)
 public var externalURLSessionChallengeHandler: ChallengeHandling? {
   get {
     _externalURLSessionChallengeHandler.withLockUnchecked { $0 }

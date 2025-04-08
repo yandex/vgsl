@@ -11,8 +11,9 @@ public final class NilImageHolder: ImageHolder {
 
   public init() {}
 
-  public func requestImageWithCompletion(_ completion: @escaping ((Image?) -> Void))
-    -> Cancellable? {
+  public func requestImageWithCompletion(
+    _ completion: @escaping @MainActor (Image?) -> Void
+  ) -> Cancellable? {
     onMainThread {
       completion(nil)
     }

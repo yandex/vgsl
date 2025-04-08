@@ -4,6 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
+@MainActor
 public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrategyDelegate {
   public var taskDescription: String? {
     get {
@@ -41,10 +42,12 @@ public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrateg
     currentTask.resume()
   }
 
-  public func cancel() {
-    currentTask.cancel()
-    retryStrategy.delegate = nil
-    retainSelf = nil
+  public nonisolated func cancel() {
+    onMainThread { [self] in
+      currentTask.cancel()
+      retryStrategy.delegate = nil
+      retainSelf = nil
+    }
   }
 
   func onSuccess() {
@@ -59,8 +62,10 @@ public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrateg
     return policy
   }
 
-  public func performRetry() {
-    currentTask = dataTaskFactory(request)
-    retryAction(self)
+  public nonisolated func performRetry() {
+    onMainThread { [self] in
+      currentTask = dataTaskFactory(request)
+      retryAction(self)
+    }
   }
 }

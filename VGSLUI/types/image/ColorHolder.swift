@@ -13,7 +13,7 @@ public final class ColorHolder: ImageHolder {
     self.color = color
   }
 
-  public func requestImageWithCompletion(_: @escaping ((Image?) -> Void)) -> Cancellable? {
+  public func requestImageWithCompletion(_: @escaping @MainActor (Image?) -> Void) -> Cancellable? {
     nil
   }
 
@@ -25,7 +25,7 @@ public final class ColorHolder: ImageHolder {
     (other as? ColorHolder)?.color == color
   }
 
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     "ColorHolder(" + color.debugDescription + ")"
   }
 }

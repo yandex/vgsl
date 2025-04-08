@@ -5,6 +5,7 @@ import Foundation
 import VGSLFundamentals
 import VGSLUI
 
+@preconcurrency @MainActor
 public struct ImageHolderFactory {
   private let _make: (URL?, ImagePlaceholder?) -> ImageHolder
 

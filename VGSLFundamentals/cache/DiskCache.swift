@@ -3,36 +3,43 @@
 import Foundation
 
 public final class DiskCache: Cache {
-  private let cacheUrl: Lazy<URL>
+  private let lazyCacheURL: Lazy<URL>
+  private nonisolated(unsafe) var _cacheURL: URL?
+  private nonisolated var cacheURL: URL {
+    if let _cacheURL {
+      return _cacheURL
+    }
+
+    return assumeIsolatedToMainActor {
+      let result = lazyCacheURL.value
+      _cacheURL = result
+      return result
+    }
+  }
+
   private let ioQueue: SerialOperationQueue
-  private let fileManager: FileManaging
-  private let log: (String) -> Void
-  private let signpostStart: Action
-  private let signpostEnd: Action
+  private let fileManager: FileManaging & Sendable
+  private let log: @Sendable (String) -> Void
 
   private init(
     cacheUrl: Lazy<URL>,
     ioQueue: SerialOperationQueue,
-    fileManager: FileManaging,
-    log: @escaping (String) -> Void,
-    signpostStart: @escaping Action,
-    signpostEnd: @escaping Action
+    fileManager: FileManaging & Sendable,
+    log: @escaping @Sendable (String) -> Void
   ) {
-    self.cacheUrl = cacheUrl
+    self.lazyCacheURL = cacheUrl
     self.ioQueue = ioQueue
     self.fileManager = fileManager
     self.log = log
-    self.signpostStart = signpostStart
-    self.signpostEnd = signpostEnd
   }
 
   public convenience init(
     in path: URL,
     ioQueue: SerialOperationQueue,
-    fileManager: FileManaging = FileManager(),
-    log: @escaping (String) -> Void = { _ in },
-    signpostStart: @escaping Action = {},
-    signpostEnd: @escaping Action = {}
+    fileManager: FileManaging & Sendable,
+    log: @escaping @Sendable (String) -> Void = { _ in },
+    signpostStart: @escaping SendableAction = {},
+    signpostEnd: @escaping SendableAction = {}
   ) {
     let cacheUrl = Lazy(getter: { () -> URL in
       signpostStart()
@@ -43,9 +50,7 @@ public final class DiskCache: Cache {
       cacheUrl: cacheUrl,
       ioQueue: ioQueue,
       fileManager: fileManager,
-      log: log,
-      signpostStart: signpostStart,
-      signpostEnd: signpostEnd
+      log: log
     )
     log("Initializing DiskCache in \(path)")
   }
@@ -53,8 +58,8 @@ public final class DiskCache: Cache {
   public convenience init(
     name: String,
     ioQueue queue: SerialOperationQueue,
-    fileManager: FileManaging = FileManager(),
-    log: @escaping (String) -> Void = { _ in },
+    fileManager: FileManaging & Sendable,
+    log: @escaping @Sendable (String) -> Void = { _ in },
     signpostStart: @escaping Action = {},
     signpostEnd: @escaping Action = {}
   ) {
@@ -73,28 +78,26 @@ public final class DiskCache: Cache {
       cacheUrl: cacheUrl,
       ioQueue: queue,
       fileManager: fileManager,
-      log: log,
-      signpostStart: signpostStart,
-      signpostEnd: signpostEnd
+      log: log
     )
     log("Initializing DiskCache with name '\(name)'")
   }
 
   public func retriveResource(
     forKey key: String,
-    completion: @escaping (Result<Data, Error>) -> Void
+    completion: @escaping @MainActor (Result<Data, Error>) -> Void
   ) {
+    loadCacheURL()
     ioQueue.addOperation { [self] in
-      let cacheUrl = cacheUrl.value
       let url = url(forKey: key)
       let result: Result<Data, Error>
       do {
         let data = try fileManager.contents(at: url)
-        log("DiskCache retrived a resource with key '\(key)' in \(cacheUrl)")
+        log("DiskCache retrived a resource with key '\(key)' in \(cacheURL)")
         result = .success(data)
       } catch {
         log(
-          "DiskCache failed to retrive a resource with key '\(key)' in \(cacheUrl) with error: \(error)"
+          "DiskCache failed to retrive a resource with key '\(key)' in \(cacheURL) with error: \(error)"
         )
         result = .failure(error as Error)
       }
@@ -107,22 +110,22 @@ public final class DiskCache: Cache {
   public func storeResource(
     data: Data,
     forKey key: String,
-    completion: ((Result<Void, Error>) -> Void)?
+    completion: (@MainActor (Result<Void, Error>) -> Void)?
   ) {
+    loadCacheURL()
     ioQueue.addOperation { [self] in
-      let cacheUrl = cacheUrl.value
       let result: Result<Void, Error>
       do {
-        if !fileManager.fileExists(at: cacheUrl) {
-          try fileManager.createDirectory(at: cacheUrl, withIntermediateDirectories: true)
+        if !fileManager.fileExists(at: cacheURL) {
+          try fileManager.createDirectory(at: cacheURL, withIntermediateDirectories: true)
         }
         let resourceUrl = url(forKey: key)
         try fileManager.createFile(at: resourceUrl, contents: data)
-        log("DiskCache stored a resource with key '\(key)' in \(cacheUrl)")
+        log("DiskCache stored a resource with key '\(key)' in \(cacheURL)")
         result = .success(())
       } catch {
         log(
-          "DiskCache failed to store a resource with key '\(key)' in \(cacheUrl) with error: \(error)"
+          "DiskCache failed to store a resource with key '\(key)' in \(cacheURL) with error: \(error)"
         )
         result = Result<Void, Error>.failure(error)
       }
@@ -137,8 +140,12 @@ public final class DiskCache: Cache {
     return fileManager.fileExists(at: targetURL) ? targetURL : nil
   }
 
-  private func url(forKey key: String) -> URL {
+  private nonisolated func url(forKey key: String) -> URL {
     let filename = key.percentEncoded()
-    return cacheUrl.value.appendingPathComponent(filename)
+    return cacheURL.appendingPathComponent(filename)
+  }
+
+  private func loadCacheURL() {
+    _ = cacheURL
   }
 }

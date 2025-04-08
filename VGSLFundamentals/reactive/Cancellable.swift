@@ -2,7 +2,7 @@
 
 import Foundation
 
-public protocol Cancellable {
+public protocol Cancellable: Sendable {
   func cancel()
 }
 
@@ -13,9 +13,9 @@ public final class EmptyCancellable: Cancellable {
 }
 
 public struct CallbackCancellable: Cancellable {
-  private let onCancel: Action
+  private let onCancel: @Sendable () -> Void
 
-  public init(onCancel: @escaping Action) {
+  public init(onCancel: @escaping @Sendable () -> Void) {
     self.onCancel = onCancel
   }
 

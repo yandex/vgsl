@@ -3,6 +3,7 @@
 import CoreGraphics
 import UIKit
 
+@_spi(Unsafe)
 import VGSLFundamentals
 
 public typealias Color = RGBAColor
@@ -17,6 +18,7 @@ public typealias UserInterfaceLayoutDirection = UIUserInterfaceLayoutDirection
 extension UserInterfaceLayoutDirection {
   @available(iOSApplicationExtension, unavailable)
   @available(tvOSApplicationExtension, unavailable)
+  @preconcurrency @MainActor
   public static var system: UserInterfaceLayoutDirection {
     UIApplication.shared.userInterfaceLayoutDirection
   }
@@ -55,7 +57,12 @@ extension UIImage {
     transformForUIKitCompatibility: Bool = true,
     drawingHandler: (CGContext) -> Void
   ) -> UIImage? {
-    let actualScale = scale.isZero ? UIScreen.main.scale : scale
+    let actualScale =
+      if scale.isZero {
+        runUnsafelyOnMainActor { UIScreen.main.scale }
+      } else {
+        scale
+      }
     let width = Int(size.width * actualScale)
     let height = Int(size.height * actualScale)
     let alphaInfo = opaque ? CGImageAlphaInfo.noneSkipFirst : CGImageAlphaInfo.premultipliedFirst
@@ -97,7 +104,7 @@ extension Image {
 
 public enum PlatformDescription {
   public static func screenScale() -> CGFloat {
-    UIScreen.main.scale
+    runUnsafelyOnMainActor { UIScreen.main.scale }
   }
 }
 
@@ -166,6 +173,7 @@ public let RectFill = UIRectFill
 public typealias ViewContentMode = UIView.ContentMode
 
 @available(tvOS, unavailable)
+@preconcurrency @MainActor
 public let uiSwitchSize = UISwitch().frame.size
 
 public enum PageControl {
@@ -174,11 +182,12 @@ public enum PageControl {
   }
 }
 
-private let pageControlSizeForNumberOfPages = memoize { numberOfPages in
-  modified(UIPageControl()) {
-    $0.numberOfPages = numberOfPages
-  }.size(forNumberOfPages: numberOfPages)
-}
+@preconcurrency @MainActor private let pageControlSizeForNumberOfPages =
+  memoizeNonSendable { numberOfPages in
+    modified(UIPageControl()) {
+      $0.numberOfPages = numberOfPages
+    }.size(forNumberOfPages: numberOfPages)
+  }
 
 @available(tvOS, unavailable)
 extension StatusBarStyle {
@@ -210,4 +219,5 @@ extension KeyboardAppearance {
 }
 
 /// Line width of one rendered pixel
+@preconcurrency @MainActor
 public let minimalLineWidth: CGFloat = 1 / UIScreen.main.scale

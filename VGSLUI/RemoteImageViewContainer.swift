@@ -73,6 +73,8 @@ public final class RemoteImageViewContainer: UIView {
   }
 
   deinit {
-    imageRequest?.cancel()
+    onMainThread { [imageRequest] in
+      imageRequest?.cancel()
+    }
   }
 }

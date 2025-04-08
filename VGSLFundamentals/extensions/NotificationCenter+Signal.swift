@@ -6,11 +6,12 @@ extension NotificationCenter {
   @inlinable
   public func makeSignal<T>(
     forName name: NSNotification.Name?,
-    object obj: Any? = nil,
+    object obj: Sendable? = nil,
     queue: OperationQueue? = nil,
-    parse: @escaping (Notification) -> T?
+    parse: @escaping @Sendable (Notification) -> T?
   ) -> Signal<T> {
     Signal { observer in
+      nonisolated(unsafe) let observer = observer
       let token = self.addObserver(
         forName: name,
         object: obj,
@@ -27,7 +28,7 @@ extension NotificationCenter {
   @inlinable
   public func makeSignal(
     forName name: NSNotification.Name?,
-    object obj: Any? = nil,
+    object obj: Sendable? = nil,
     queue: OperationQueue? = nil
   ) -> Signal<Void> {
     makeSignal(forName: name, object: obj, queue: queue) { _ in }

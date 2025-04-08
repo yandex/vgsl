@@ -12,6 +12,7 @@ public protocol VisibleBoundsTrackingContainer: VisibleBoundsTracking {
 }
 
 extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
+  @preconcurrency @MainActor
   public func passVisibleBoundsChanged(from: CGRect, to: CGRect) {
     guard !from.isEmpty || !to.isEmpty else {
       return
@@ -27,6 +28,7 @@ extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
     }
   }
 
+  @preconcurrency @MainActor
   public func onVisibleBoundsChanged(from: CGRect, to: CGRect) {
     passVisibleBoundsChanged(from: from, to: to)
   }

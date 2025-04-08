@@ -2,11 +2,13 @@
 
 import UIKit
 
+@preconcurrency @MainActor
 public protocol ScrollableContent: AnyObject {
   var scrollDelegate: ScrollDelegate? { get set }
   var scrollView: ScrollView { get }
 }
 
+@preconcurrency @MainActor
 public protocol ScrollToDragContent: AnyObject {
   var scrollDelegate: ScrollDelegate? { get set }
   var scrollToDragView: ScrollToDragView { get }
@@ -23,6 +25,7 @@ extension UIScrollView {
   }
 }
 
+@preconcurrency @MainActor
 private final class ScrollViewWrapper: ScrollableContent, ScrollToDragContent {
   private let subject: UIScrollView
   private let adapter = CompoundScrollDelegate()

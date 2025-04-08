@@ -2,6 +2,8 @@
 
 import Foundation
 
+import VGSLFundamentals
+
 public let URLSessionErrorResponseKey = "URLSessionErrorResponseKey"
 public let URLSessionErrorReceivedDataKey = "URLSessionErrorReceivedDataKey"
 
@@ -10,6 +12,7 @@ private func isExpectedBytesCountToTransferValid(_ expectedBytesToTransfer: Int6
 }
 
 @objc(YXURLSessionDelegateImpl)
+@preconcurrency @MainActor
 public final class URLSessionDelegateImpl: NSObject {
   public typealias ProgressChangeHandler = (Double) -> Void
   public typealias CompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
@@ -32,6 +35,7 @@ public final class URLSessionDelegateImpl: NSObject {
     self.errorInferrer = errorInferrer
   }
 
+  @preconcurrency @MainActor
   public func setHandlers(
     downloadProgressChange: ProgressChangeHandler? = nil,
     uploadProgressChange: ProgressChangeHandler? = nil,
@@ -55,85 +59,99 @@ public final class URLSessionDelegateImpl: NSObject {
 }
 
 extension URLSessionDelegateImpl: URLSessionDataDelegate {
-  public func urlSession(
+  public nonisolated func urlSession(
     _: URLSession,
     task: URLSessionTask,
     didSendBodyData _: Int64,
     totalBytesSent: Int64,
     totalBytesExpectedToSend: Int64
   ) {
-    Thread.assertIsMain()
-    guard isExpectedBytesCountToTransferValid(totalBytesExpectedToSend),
-          let handler = stateByTask[task]?.uploadProgressChangeHandler else { return }
+    assumeIsolatedToMainActor {
+      guard isExpectedBytesCountToTransferValid(totalBytesExpectedToSend),
+            let handler = stateByTask[task]?.uploadProgressChangeHandler else { return }
 
-    let progress = Double(totalBytesSent) / Double(totalBytesExpectedToSend)
-    handler(progress)
+      let progress = Double(totalBytesSent) / Double(totalBytesExpectedToSend)
+      handler(progress)
+    }
   }
 
-  public func urlSession(_: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-    Thread.assertIsMain()
-    assert(stateByTask[dataTask] != nil)
-    stateByTask[dataTask]?.receivedData.append(data)
+  public nonisolated func urlSession(
+    _: URLSession,
+    dataTask: URLSessionDataTask,
+    didReceive data: Data
+  ) {
+    assumeIsolatedToMainActor {
+      assert(stateByTask[dataTask] != nil)
+      stateByTask[dataTask]?.receivedData.append(data)
 
-    guard isExpectedBytesCountToTransferValid(dataTask.countOfBytesExpectedToReceive),
-          let handler = stateByTask[dataTask]?.downloadProgressChangeHandler else { return }
+      guard isExpectedBytesCountToTransferValid(dataTask.countOfBytesExpectedToReceive),
+            let handler = stateByTask[dataTask]?.downloadProgressChangeHandler else { return }
 
-    let progress = Double(dataTask.countOfBytesReceived) /
-      Double(dataTask.countOfBytesExpectedToReceive)
-    handler(progress)
+      let progress = Double(dataTask.countOfBytesReceived) /
+        Double(dataTask.countOfBytesExpectedToReceive)
+      handler(progress)
+    }
   }
 
-  public func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-    Thread.assertIsMain()
-    guard let taskState = stateByTask.removeValue(forKey: task) else {
-      assertionFailure()
-      return
+  public nonisolated func urlSession(
+    _: URLSession,
+    task: URLSessionTask,
+    didCompleteWithError error: Error?
+  ) {
+    assumeIsolatedToMainActor {
+      guard let taskState = stateByTask.removeValue(forKey: task) else {
+        assertionFailure()
+        return
+      }
+      let result: Result<(Data, HTTPURLResponse), NSError>
+      if let error = errorInferrer(task, error, taskState.receivedData) {
+        result = .failure(error)
+      } else {
+        let response = task.response as! HTTPURLResponse
+        result = .success((taskState.receivedData, response))
+      }
+      taskState.completionHandler(result)
     }
-    let result: Result<(Data, HTTPURLResponse), NSError>
-    if let error = errorInferrer(task, error, taskState.receivedData) {
-      result = .failure(error)
-    } else {
-      let response = task.response as! HTTPURLResponse
-      result = .success((taskState.receivedData, response))
-    }
-    taskState.completionHandler(result)
   }
 
   func isStoringStateForTask(_ task: URLSessionTask) -> Bool {
     stateByTask[task] != nil
   }
 
-  public func urlSession(
+  public nonisolated func urlSession(
     _: URLSession,
     didReceive challenge: URLAuthenticationChallenge,
-    completionHandler: @escaping (
+    completionHandler: @escaping @Sendable (
       URLSession.AuthChallengeDisposition,
       URLCredential?
     ) -> Void
   ) {
-    guard let challengeHandler else {
-      return completionHandler(.performDefaultHandling, nil)
+    onMainThread { [weak self] in
+      guard let challengeHandler = self?.challengeHandler else {
+        return completionHandler(.performDefaultHandling, nil)
+      }
+      challengeHandler.handleChallenge(
+        with: challenge.protectionSpace,
+        completionHandler: completionHandler
+      )
     }
-    challengeHandler.handleChallenge(
-      with: challenge.protectionSpace,
-      completionHandler: completionHandler
-    )
   }
 }
 
 extension URLSessionDelegateImpl: URLSessionTaskDelegate {
-  public func urlSession(
+  public nonisolated func urlSession(
     _: URLSession,
     task: URLSessionTask,
     willPerformHTTPRedirection response: HTTPURLResponse,
     newRequest request: URLRequest,
-    completionHandler: @escaping (URLRequest?) -> Void
+    completionHandler: @escaping @Sendable (URLRequest?) -> Void
   ) {
-    Thread.assertIsMain()
-    guard let redirectHandler = stateByTask[task]?.redirectHandler else {
-      return completionHandler(request)
+    assumeIsolatedToMainActor {
+      guard let redirectHandler = stateByTask[task]?.redirectHandler else {
+        return completionHandler(request)
+      }
+      completionHandler(redirectHandler(response, request))
     }
-    completionHandler(redirectHandler(response, request))
   }
 }
 

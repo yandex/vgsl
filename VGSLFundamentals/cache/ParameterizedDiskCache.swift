@@ -4,47 +4,48 @@ import Foundation
 
 final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   where Storage.Item == CacheContent {
-  typealias StorageFactory = ([CacheRecord]) -> Storage
-  typealias ProvideRecords = (Storage) -> [CacheRecord]
-  typealias SerializeRecords = ([CacheRecord]) throws -> Data
-  typealias DeserializeRecords = (Data) throws -> [CacheRecord]
-  typealias EncodeKey = (String) -> String
+  typealias StorageFactory = @Sendable ([CacheRecord]) -> Storage
+  typealias ProvideRecords = @Sendable (Storage) -> [CacheRecord]
+  typealias SerializeRecords = @Sendable ([CacheRecord]) throws -> Data
+  typealias DeserializeRecords = @Sendable (Data) throws -> [CacheRecord]
+  typealias EncodeKey = @Sendable (String) -> String
 
   private let lazyCacheURL: Lazy<URL>
-  private var _cacheURL: URL?
-  private var cacheURL: URL {
+  private nonisolated(unsafe) var _cacheURL: URL?
+  private nonisolated var cacheURL: URL {
     if let _cacheURL {
       return _cacheURL
     }
 
-    Thread.assertIsMain()
-    let result = lazyCacheURL.value
-    _cacheURL = result
-    return result
+    return assumeIsolatedToMainActor {
+      let result = lazyCacheURL.value
+      _cacheURL = result
+      return result
+    }
   }
 
   private let ioQueue: SerialOperationQueue
   private let mainThreadRunner: MainThreadRunner
-  private let fileManager: FileManaging
-  private var state: State<Storage> = .notLoaded
+  private let fileManager: FileManaging & Sendable
+  private nonisolated(unsafe) var state: State<Storage> = .notLoaded
   private let storageFactory: StorageFactory
   private let provideRecords: ProvideRecords
   private let serializeRecords: SerializeRecords
   private let deserializeRecords: DeserializeRecords
   private let encodeKey: EncodeKey
-  private let reportError: ((Error) -> Void)?
+  private let reportError: (@Sendable (Error) -> Void)?
 
   init(
     cacheUrl: Lazy<URL>,
     ioQueue: SerialOperationQueue,
     mainThreadRunner: @escaping MainThreadRunner,
-    fileManager: FileManaging,
+    fileManager: FileManaging & Sendable,
     storageFactory: @escaping StorageFactory,
     provideRecords: @escaping ProvideRecords,
     serializeRecords: @escaping SerializeRecords,
     deserializeRecords: @escaping DeserializeRecords,
     encodeKey: @escaping EncodeKey,
-    reportError: ((Error) -> Void)?
+    reportError: (@Sendable (Error) -> Void)?
   ) {
     lazyCacheURL = cacheUrl
     self.ioQueue = ioQueue
@@ -58,7 +59,10 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     self.reportError = reportError
   }
 
-  func retriveResource(forKey key: String, completion: @escaping (Result<Data, Error>) -> Void) {
+  func retriveResource(
+    forKey key: String,
+    completion: @escaping @MainActor (Result<Data, Error>) -> Void
+  ) {
     Thread.assertIsMain()
     loadCacheURL()
     ioQueue.addOperation {
@@ -77,7 +81,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     }
   }
 
-  private func loadState() -> Storage {
+  private nonisolated func loadState() -> Storage {
     guard fileManager.fileExists(at: cacheIndexURL) else {
       return storageFactory([])
     }
@@ -92,7 +96,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     return storageFactory(records)
   }
 
-  private func retrieveResource(storage: Storage, key: String) -> Result<Data, Error> {
+  private nonisolated func retrieveResource(storage: Storage, key: String) -> Result<Data, Error> {
     guard let content = storage.value(for: key) else {
       return .failure(ParameterizedDiskCacheErrors.keyNotFound)
     }
@@ -114,7 +118,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     }
   }
 
-  private func updateIndex(storage: Storage) {
+  private nonisolated func updateIndex(storage: Storage) {
     do {
       let records = provideRecords(storage)
       let data = try serializeRecords(records)
@@ -127,7 +131,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   func storeResource(
     data: Data,
     forKey key: String,
-    completion: ((Result<Void, Error>) -> Void)?
+    completion: (@MainActor (Result<Void, Error>) -> Void)?
   ) {
     Thread.assertIsMain()
     loadCacheURL()
@@ -147,7 +151,7 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
     }
   }
 
-  private func storeResource(
+  private nonisolated func storeResource(
     key: String,
     data: Data,
     in storage: Storage
@@ -168,11 +172,10 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   }
 
   private func loadCacheURL() {
-    Thread.assertIsMain()
     _ = cacheURL
   }
 
-  private func add(key: String, value: CacheContent, in storage: Storage) throws {
+  private nonisolated func add(key: String, value: CacheContent, in storage: Storage) throws {
     let evictedKeys = storage.add(key: key, item: value)
     try evictedKeys.rawValue.forEach {
       let url = self.url(forKey: $0)
@@ -181,19 +184,18 @@ final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
   }
 
   func getResourceURL(forKey key: String) -> URL? {
-    Thread.assertIsMain()
     loadCacheURL()
     let targetURL = url(forKey: key)
     return fileManager.fileExists(at: targetURL) ? targetURL : nil
   }
 
-  private func url(forKey key: String) -> URL {
+  private nonisolated func url(forKey key: String) -> URL {
     assert(_cacheURL != nil)
     let filename = "file_\(encodeKey(key))"
     return cacheURL.appendingPathComponent(filename)
   }
 
-  private var cacheIndexURL: URL {
+  private nonisolated var cacheIndexURL: URL {
     assert(_cacheURL != nil)
     let index = "index"
     return cacheURL.appendingPathComponent(index)

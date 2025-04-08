@@ -14,8 +14,12 @@ private final class MainQueueProxy: SerialOperationQueue {
     systemMainQueue.addOperation(operation)
   }
 
-  func addOperation(_ block: @escaping () -> Void) {
-    systemMainQueue.addOperation(block)
+  func addOperation(_ block: @escaping @Sendable @MainActor () -> Void) {
+    systemMainQueue.addOperation {
+      assumeIsolatedToMainActor {
+        block()
+      }
+    }
   }
 
   func cancelAllOperations() {

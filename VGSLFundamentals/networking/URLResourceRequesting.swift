@@ -2,8 +2,9 @@
 
 import Foundation
 
+@preconcurrency @MainActor
 public protocol URLResourceRequesting: AnyObject {
-  typealias CompletionHandlerWithSource = (Result<URLRequestResult, NSError>) -> Void
+  typealias CompletionHandlerWithSource = @MainActor (Result<URLRequestResult, NSError>) -> Void
 
   func getDataWithSource(from url: URL, completion: @escaping CompletionHandlerWithSource)
     -> Cancellable?

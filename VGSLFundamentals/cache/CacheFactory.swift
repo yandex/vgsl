@@ -3,15 +3,17 @@
 import Foundation
 
 public enum CacheFactory {
+  @preconcurrency @MainActor
   public static func makeLRUDiskCache(
     name: String,
     ioQueue queue: SerialOperationQueue,
     maxCapacity: UInt,
-    reportError: ((Error) -> Void)?,
+    fileManager: FileManaging & Sendable,
+    reportError: (@Sendable (Error) -> Void)?,
     signpostStart: @escaping Action = {},
     signpostEnd: @escaping Action = {}
   ) -> Cache {
-    nonisolated(unsafe) let cacheUrl = Lazy(getter: { () -> URL in
+    let cacheUrl = Lazy(getter: { () -> URL in
       signpostStart()
       defer { signpostEnd() }
       let cacheDirectory = NSSearchPathForDirectoriesInDomains(
@@ -23,7 +25,7 @@ public enum CacheFactory {
       return cacheDirectoryUrl.appendingPathComponent(name)
     })
 
-    let storageFactory: ([CacheRecord])
+    let storageFactory: @Sendable ([CacheRecord])
       -> LRUCacheStorage<LinkedListOrderedDictionary<CacheContent>> = { records in
         let storage = LinkedListOrderedDictionary<CacheContent>(
           items: records.map { (key: $0.key, item: .notLoaded(size: $0.size)) }
@@ -37,7 +39,7 @@ public enum CacheFactory {
       cacheUrl: cacheUrl,
       ioQueue: queue,
       mainThreadRunner: onMainThread,
-      fileManager: FileManager(),
+      fileManager: fileManager,
       storageFactory: storageFactory,
       provideRecords: { $0.asArray() },
       serializeRecords: { try JSONEncoder().encode($0) },

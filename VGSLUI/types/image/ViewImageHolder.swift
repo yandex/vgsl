@@ -13,7 +13,9 @@ public final class ViewImageHolder: ImageHolder {
     self.viewProvider = viewProvider
   }
 
-  public func requestImageWithCompletion(_: @escaping ((Image?) -> Void)) -> Cancellable? {
+  public func requestImageWithCompletion(
+    _: @escaping @MainActor (Image?) -> Void
+  ) -> Cancellable? {
     nil
   }
 

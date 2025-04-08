@@ -2,21 +2,23 @@
 
 import Foundation
 
-public final class Atomic<T> {
+public final class Atomic<T>: @unchecked Sendable {
   private var unsafeValue: T
   private let lock = RWLock()
 
-  public init(initialValue: T) {
+  public init(initialValue: sending T) {
     unsafeValue = initialValue
   }
 
-  public func accessRead<U>(_ block: (T) throws -> U) rethrows -> U {
+  public func accessRead<U: Sendable>(
+    _ block: (T) throws -> U
+  ) rethrows -> U {
     try lock.read {
       try block(unsafeValue)
     }
   }
 
-  public func accessWrite<U>(_ block: (inout T) throws -> U) rethrows -> U {
+  public func accessWrite<U: Sendable>(_ block: (inout T) throws -> U) rethrows -> U {
     try lock.write {
       try block(&unsafeValue)
     }

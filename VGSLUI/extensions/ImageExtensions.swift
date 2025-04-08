@@ -298,14 +298,16 @@ extension Image {
   }
 }
 
-private let makeImage = memoize { (color: Color, size: CGSize) -> Image? in
+@MainActor
+private let makeImage = memoizeNonSendable { (color: Color, size: CGSize) -> Image? in
   Image.imageOfSize(size, opaque: true) { ctx in
     ctx.setFillColor(color.cgColor)
     ctx.fill(CGRect(origin: .zero, size: size))
   }
 }
 
-private let makeTransparentImage = memoize { (color: Color, size: CGSize) -> Image? in
+@MainActor
+private let makeTransparentImage = memoizeNonSendable { (color: Color, size: CGSize) -> Image? in
   Image.imageOfSize(size) { ctx in
     ctx.setFillColor(color.cgColor)
     ctx.fill(CGRect(origin: .zero, size: size))
@@ -329,16 +331,11 @@ public func imagesDataAreEqual(_ lhs: Image?, _ rhs: Image?) -> Bool {
   }
 }
 
-#if os(macOS)
-import AppKit
-extension NSImage: @retroactive @unchecked Sendable {}
-#endif
-
 extension Image: ImageHolder {
   public var image: Image? { self }
   public var placeholder: ImagePlaceholder? { .image(self) }
 
-  public func requestImageWithCompletion(_ completion: @escaping ((Image?) -> Void))
+  public func requestImageWithCompletion(_ completion: @escaping @MainActor (Image?) -> Void)
     -> Cancellable? {
     onMainThread {
       completion(self)

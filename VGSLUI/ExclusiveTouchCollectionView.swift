@@ -4,6 +4,7 @@ import UIKit
 
 // swiftlint:disable use_exclusive_touch_collection_view
 @available(tvOS, unavailable)
+@preconcurrency @MainActor
 public func ExclusiveTouchCollectionView(
   frame: CGRect,
   collectionViewLayout: UICollectionViewLayout

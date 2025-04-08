@@ -2,6 +2,7 @@
 
 import CoreGraphics
 
+@preconcurrency @MainActor
 public protocol ScrollDelegate: AnyObject {
   func onWillBeginDragging(_ scrollView: ScrollView)
   func onWillEndDragging(

@@ -5,7 +5,7 @@ import Foundation
 public final class Promise<T> {
   public let future: Future<T>
 
-  private let feed: (T) -> Void
+  private let feed: FutureFeed<T>
   private let shouldAssertOnMainThread: Bool
 
   public init(shouldAssertOnMainThread: Bool = false) {
@@ -20,6 +20,8 @@ public final class Promise<T> {
     feed(payload)
   }
 }
+
+extension Promise: Sendable where T: Sendable {}
 
 extension Promise where T == Void {
   public func resolve() {

@@ -3,6 +3,7 @@
 import Foundation
 import UIKit
 
+@preconcurrency @MainActor
 public protocol RemoteImageViewContentProtocol: UIView, ImageViewProtocol {
   func setImage(_ image: UIImage?, animated: Bool?)
 }

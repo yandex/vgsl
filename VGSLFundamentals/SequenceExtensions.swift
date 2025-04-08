@@ -114,39 +114,41 @@ extension Sequence {
     }
     return res
   }
+}
 
+extension Sequence where Element: Sendable {
   @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
-  public func map<T>(
+  public func map<T: Sendable>(
     concurrencyLimit: Int,
-    transform: @escaping (Element) async throws -> T
+    transform: @escaping @Sendable (Element) async throws -> T
   ) async rethrows -> [T] {
-    var result: [T] = []
-    try await forEach(concurrencyLimit: concurrencyLimit, transform: transform) {
-      result.append($0)
+    let lockedResult = AllocatedUnfairLock(initialState: [T]())
+    try await forEach(concurrencyLimit: concurrencyLimit, transform: transform) { value in
+      lockedResult.withLock { $0.append(value) }
     }
-    return result
+    return lockedResult.withLock { $0 }
   }
 
   @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
-  public func compactMap<T>(
+  public func compactMap<T: Sendable>(
     concurrencyLimit: Int,
-    transform: @escaping (Element) async throws -> T?
+    transform: @escaping @Sendable (Element) async throws -> T?
   ) async rethrows -> [T] {
-    var result: [T] = []
+    let lockedResult = AllocatedUnfairLock(initialState: [T]())
     try await forEach(concurrencyLimit: concurrencyLimit, transform: transform) {
       guard let value = $0 else { return }
-      result.append(value)
+      lockedResult.withLock { $0.append(value) }
     }
-    return result
+    return lockedResult.withLock { $0 }
   }
 
   // async forEach with concurrency limit
   // order of yield calls is guaranteed
   @available(iOS 13.0, tvOS 13.0, macOS 11.0, *)
-  public func forEach<T>(
+  public func forEach<T: Sendable>(
     concurrencyLimit: Int,
-    transform: @escaping (Element) async throws -> T,
-    yield: @escaping (T) async throws -> Void
+    transform: @escaping @Sendable (Element) async throws -> T,
+    yield: @escaping @Sendable (T) async throws -> Void
   ) async rethrows {
     try await withThrowingTaskGroup(of: Void.self) { syncGroup in
       let tasks = map { value in
@@ -168,6 +170,7 @@ extension Sequence {
           }
         }
       }
+
       syncGroup.addTask {
         for task in tasks {
           try await yield(task.value.value)
