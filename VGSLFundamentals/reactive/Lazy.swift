@@ -184,8 +184,8 @@ public final class Lazy<T> {
   /// `future` of the resulting Lazy will be resolved once the parent future is resolved.
   /// Use this function only if you intend to load the value **eagerly**.
   /// Otherwise consider other types of transformation,
-  /// i.e. `Lazy(getter: { someTranformation(anotherLazy.value) })`
-  /// or `lazyMap { someTranformation($0) }`.
+  /// i.e. `Lazy(getter: { someTransformation(anotherLazy.value) })`
+  /// or `lazyMap { someTransformation($0) }`.
   public func map<U>(_ transform: @escaping (T) -> U) -> Lazy<U> {
     traceMap(toType: U.self)
     func preload() {

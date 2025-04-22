@@ -44,6 +44,8 @@ extension UIView {
     }
   }
 
+  @available(iOS, deprecated: 9999, renamed: "firstSubview(withAccessibilityId:)")
+  @available(tvOS, deprecated: 9999, renamed: "firstSubview(withAccessibilityId:)")
   public func findSubview(withAccessibilityId accessibilityId: String) -> UIView? {
     if accessibilityIdentifier == accessibilityId {
       return self
@@ -267,3 +269,46 @@ extension CACornerMask {
 }
 
 public let snapshotDefaultScale = CGFloat(2)
+
+@MainActor
+extension UIView {
+  /// Returns first subview from hierarchy with matching `accessibilityIdentifier`
+  ///
+  /// In full hierarchy cases (e.g. all windows from `UIApplication`) `Sequence` extension may be
+  /// used
+  /// - SeeAlso: ``Sequence<UIView>.firstSubview(withAccessibilityId:)``
+  ///
+  /// - Parameters:
+  ///   - withAccessibilityId: `accessibilityIdentifier`.to match
+  ///
+  /// - Returns: first subview matching `accessibilityIdentifier` or nil, if none found
+  public func firstSubview(withAccessibilityId accessibilityId: String) -> UIView? {
+    if accessibilityIdentifier == accessibilityId {
+      return self
+    }
+    for subview in subviews {
+      if let view = subview.firstSubview(withAccessibilityId: accessibilityId) {
+        return view
+      }
+    }
+    return nil
+  }
+}
+
+@MainActor
+extension Sequence where Element: UIView {
+  /// Returns first subview from sequence of hierarchies with matching `accessibilityIdentifier`
+  ///
+  /// Can be useful for full hierarchy cases (e.g. all windows from `UIApplication`)
+  ///
+  /// - Parameters:
+  ///   - withAccessibilityId: `accessibilityIdentifier` to match
+  ///
+  /// - Returns: first subview matching `accessibilityIdentifier` or nil, if none found
+  public func firstSubview(withAccessibilityId accessibilityId: String) -> UIView? {
+    for view in self {
+      return view.firstSubview(withAccessibilityId: accessibilityId)
+    }
+    return nil
+  }
+}
