@@ -492,6 +492,25 @@ public func all<T, U, V>(
   return future
 }
 
+public func all<T1, T2, T3, T4>(
+  _ f1: Future<T1>,
+  _ f2: Future<T2>,
+  _ f3: Future<T3>,
+  _ f4: Future<T4>
+) -> Future<(T1, T2, T3, T4)> {
+  let (future, feed) = Future<(T1, T2, T3, T4)>.create()
+  f1.resolved { p1 in
+    f2.resolved { p2 in
+      f3.resolved { p3 in
+        f4.resolved { p4 in
+          feed((p1, p2, p3, p4))
+        }
+      }
+    }
+  }
+  return future
+}
+
 public func first<T, U>(_ a: Future<T>, _ b: Future<U>) -> Future<Either<T, U>> {
   let (future, feed) = Future<Either<T, U>>.create()
   var resolved = false
