@@ -6,6 +6,12 @@ let swiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("AccessLevelOnImport")
 ]
 
+let linkerSettings: [LinkerSetting] = [
+  .linkedFramework("Foundation"),
+  .linkedFramework("UIKit"),
+  .linkedFramework("CoreGraphics")
+]
+
 let compatibilityShims: (products: [PackageDescription.Product], targets: [PackageDescription.Target]) = (
   products: [
     .library(name: "BasePublic", targets: ["BasePublic"]),
@@ -21,43 +27,50 @@ let compatibilityShims: (products: [PackageDescription.Product], targets: [Packa
       name: "BasePublic",
       dependencies: ["VGSL", "BaseUIPublic", "NetworkingPublic"],
       path: "CompatibilityShims/BasePublic",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "BaseTinyPublic",
       dependencies: ["VGSL"],
       path: "CompatibilityShims/BaseTinyPublic",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "BaseUIPublic",
       dependencies: ["VGSL"],
       path: "CompatibilityShims/BaseUIPublic",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "CommonCorePublic",
       dependencies: ["VGSL", "BaseUIPublic"],
       path: "CompatibilityShims/CommonCorePublic",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "NetworkingPublic",
       dependencies: ["VGSL", "BaseUIPublic"],
       path: "CompatibilityShims/NetworkingPublic",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "VGSL_Fundamentals",
       dependencies: ["VGSL"],
       path: "CompatibilityShims/VGSL_Fundamentals",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "VGSL_Fundamentals_Tiny",
       dependencies: ["VGSL"],
       path: "CompatibilityShims/VGSL_Fundamentals_Tiny",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
   ]
 )
@@ -78,7 +91,8 @@ let package = Package(
     .target(
       name: "VGSLFundamentals",
       path: "VGSLFundamentals",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "VGSLUI",
@@ -86,7 +100,8 @@ let package = Package(
         "VGSLFundamentals",
       ],
       path: "VGSLUI",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "VGSLNetworking",
@@ -95,7 +110,8 @@ let package = Package(
         "VGSLUI"
       ],
       path: "VGSLNetworking",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
     .target(
       name: "VGSL",
@@ -105,7 +121,8 @@ let package = Package(
         "VGSLUI"
       ],
       path: "VGSL",
-      swiftSettings: swiftSettings
+      swiftSettings: swiftSettings,
+      linkerSettings: linkerSettings
     ),
   ] + compatibilityShims.targets
 )
