@@ -54,6 +54,10 @@ public final class VisibileBoundsTrackingRoot: UIView {
     }
   }
 
+  public override var intrinsicContentSize: CGSize {
+    content?.intrinsicContentSize ?? .zero
+  }
+
   public override func layoutSubviews() {
     super.layoutSubviews()
     guard let content else { return }

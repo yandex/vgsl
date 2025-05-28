@@ -8,8 +8,9 @@ extension UIView {
   #if !os(tvOS)
   @available(iOSApplicationExtension, unavailable)
   public var statusBarFrame: CGRect? {
-    guard let window else { return nil }
-    let appStatusBarFrame = UIApplication.shared.statusBarFrame
+    guard let window,
+          let statusBarManager = window.windowScene?.statusBarManager else { return nil }
+    let appStatusBarFrame = statusBarManager.statusBarFrame
     return convert(appStatusBarFrame, from: window)
   }
   #endif

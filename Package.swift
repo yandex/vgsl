@@ -78,8 +78,8 @@ let compatibilityShims: (products: [PackageDescription.Product], targets: [Packa
 let package = Package(
   name: "vgsl",
   platforms: [
-    .iOS(.v12),
-    .tvOS(.v12),
+    .iOS(.v13),
+    .tvOS(.v13),
   ],
   products: [
     .library(name: "VGSLFundamentals", targets: ["VGSLFundamentals"]),

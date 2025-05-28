@@ -199,7 +199,8 @@ extension MetalImageView: MTKViewDelegate {
       )
     }
 
-    buffer?.addCompletedHandler { [onImageDrawnPipe] buffer in
+    nonisolated(unsafe) let onImageDrawnPipe = onImageDrawnPipe
+    buffer?.addCompletedHandler { @Sendable buffer in
       guard case .completed = buffer.status else { return }
       onMainThread {
         onImageDrawnPipe.send()
