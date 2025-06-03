@@ -52,7 +52,8 @@ public final class RemoteImageHolder: ImageHolder {
     placeholder: ImagePlaceholder? = nil,
     requester: URLResourceRequesting,
     imageProcessingQueue: OperationQueueType,
-    imageLoadingOptimizationEnabled: Bool = false
+    imageLoadingOptimizationEnabled: Bool = false,
+    imageDecoder: (@Sendable (Data) -> Image?)? = nil
   ) {
     weak var weakSelf: RemoteImageHolder?
     let shouldCallCompletionWithNil = placeholder == nil
@@ -76,12 +77,17 @@ public final class RemoteImageHolder: ImageHolder {
           switch value.data.imageFormat {
           case .gif:
             image = Image.animatedImage(with: value.data as CFData)
+          case .unknown where imageDecoder != nil:
+            image = imageDecoder?(value.data)
           case .jpeg, .png, .tiff, .unknown:
             if imageLoadingOptimizationEnabled,
                let decodedImage = makeDecodedImage(data: value.data) {
               image = decodedImage
             } else {
-              image = Image(data: value.data, scale: PlatformDescription.screenScale())
+              image = Image(
+                data: value.data,
+                scale: PlatformDescription.screenScale()
+              )
             }
           }
           #else
