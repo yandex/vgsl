@@ -1412,7 +1412,7 @@ extension CTLine {
     context.addPath(
       run.strikethroughLine(
         forTextPosition: position,
-        offset: run.baselineOffset + ceil((run.font.xHeight - lineWidth) * 0.5)
+        offset: run.baselineOffset + ceil(run.font.xHeight * 0.5)
       )
     )
     context.strokePath()
