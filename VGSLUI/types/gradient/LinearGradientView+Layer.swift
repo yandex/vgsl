@@ -1,5 +1,6 @@
 // Copyright 2016 Yandex LLC. All rights reserved.
 
+import CoreGraphics
 import Foundation
 import UIKit
 
@@ -64,11 +65,37 @@ public final class LinearGradientLayer: CALayer {
       return
     }
 
+    let (startPoint, endPoint) = switch gradient.direction {
+    case let .angle(angle):
+      bounds.gradientDelta(angle: angle)
+    case let .relative(from: from, to: to):
+      (from.absolutePosition(in: bounds), to.absolutePosition(in: bounds))
+    }
+
     ctx.drawLinearGradient(
       cgGradient,
-      start: gradient.direction.from.absolutePosition(in: bounds),
-      end: gradient.direction.to.absolutePosition(in: bounds),
+      start: startPoint,
+      end: endPoint,
       options: [.drawsBeforeStartLocation, .drawsAfterEndLocation]
+    )
+  }
+}
+
+extension CGRect {
+  fileprivate func gradientDelta(
+    angle: Double
+  ) -> (startPoint: CGPoint, endPoint: CGPoint) {
+    let halfWidth = width / 2
+    let halfHeight = height / 2
+
+    let angleRad = angle / 180.0 * .pi
+    let gradientWidth = abs(width * cos(angleRad)) + abs(height * sin(angleRad))
+    let widthDelta = (cos(angleRad) * gradientWidth / 2)
+    let heightDelta = (sin(angleRad) * gradientWidth / 2)
+
+    return (
+      CGPoint(x: halfWidth - widthDelta, y: halfHeight + heightDelta),
+      CGPoint(x: halfWidth + widthDelta, y: halfHeight - heightDelta)
     )
   }
 }
