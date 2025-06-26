@@ -9,9 +9,35 @@ public enum Gradient: Equatable {
   public typealias Point = (color: Color, location: CGFloat)
 
   public struct Linear: Equatable {
-    public struct Direction: Equatable, Sendable {
-      public let from: RelativePoint
-      public let to: RelativePoint
+    public enum Direction: Equatable, Sendable {
+      case relative(from: RelativePoint, to: RelativePoint)
+      case angle(Double)
+
+      public var from: RelativePoint {
+        switch self {
+        case let .relative(from: from, to: _):
+          return from
+        case let .angle(angleValue):
+          let radians = angleValue * .pi / 180
+          return RelativePoint(
+            x: 0.5 - 0.5 * sin(radians),
+            y: 0.5 - 0.5 * cos(radians)
+          )
+        }
+      }
+
+      public var to: RelativePoint {
+        switch self {
+        case let .relative(from: _, to: to):
+          return to
+        case let .angle(angleValue):
+          let radians = angleValue * .pi / 180
+          return RelativePoint(
+            x: 0.5 + 0.5 * sin(radians),
+            y: 0.5 + 0.5 * cos(radians)
+          )
+        }
+      }
 
       public static let vertical = Direction(from: .midTop, to: .midBottom)
       public static let horizontal = Direction(from: .midLeft, to: .midRight)
@@ -22,13 +48,23 @@ public enum Gradient: Equatable {
       public static let antidiagonal = Direction(from: .topRight, to: .bottomLeft)
 
       public init(from: RelativePoint, to: RelativePoint) {
-        self.from = from
-        self.to = to
+        self = .relative(from: from, to: to)
+      }
+
+      public init(angle: Double) {
+        self = .angle(angle)
       }
 
       public static func ==(lhs: Direction, rhs: Direction) -> Bool {
-        lhs.from.isApproximatelyEqualTo(rhs.from)
-          && lhs.to.isApproximatelyEqualTo(rhs.to)
+        switch (lhs, rhs) {
+        case let (.relative(lhsFrom, lhsTo), .relative(rhsFrom, rhsTo)):
+          lhsFrom.isApproximatelyEqualTo(rhsFrom)
+            && lhsTo.isApproximatelyEqualTo(rhsTo)
+        case let (.angle(lValue), .angle(rValue)):
+          lValue.isApproximatelyEqualTo(rValue)
+        default:
+          false
+        }
       }
     }
 
@@ -181,8 +217,13 @@ extension Gradient.Linear.Direction: CustomDebugStringConvertible {
       return "↙︎"
     }
 
-    let step: CGFloat = 10e-3
-    return "(\(from.x.rounded(toStep: step)), \(from.y.rounded(toStep: step))) ⟶ (\(to.x.rounded(toStep: step)), \(to.y.rounded(toStep: step)))"
+    switch self {
+    case let .angle(value):
+      return "Angle - \(value)"
+    case let .relative(from: from, to: to):
+      let step: CGFloat = 10e-3
+      return "(\(from.x.rounded(toStep: step)), \(from.y.rounded(toStep: step))) ⟶ (\(to.x.rounded(toStep: step)), \(to.y.rounded(toStep: step)))"
+    }
   }
 }
 

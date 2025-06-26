@@ -78,7 +78,10 @@ public final class RemoteImageHolder: ImageHolder {
           case .gif:
             image = Image.animatedImage(with: value.data as CFData)
           case .unknown where imageDecoder != nil:
-            image = imageDecoder?(value.data)
+            image = imageDecoder?(value.data) ?? Image(
+              data: value.data,
+              scale: PlatformDescription.screenScale()
+            )
           case .jpeg, .png, .tiff, .unknown:
             if imageLoadingOptimizationEnabled,
                let decodedImage = makeDecodedImage(data: value.data) {
