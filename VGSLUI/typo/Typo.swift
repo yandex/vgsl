@@ -366,14 +366,10 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
   }
 
   public var allowHeightOverrun: Typo {
-    #if INTERNAL_BUILD
-    return self + Typo(heightOverrunAllowed: true)
-    #else
-    return self
-    #endif
+    self + Typo(heightOverrunAllowed: true)
   }
 
-  #if INTERNAL_BUILD
+  @_spi(Internal)
   public var isHeightSufficient: Bool {
     guard let font,
           let paragraphStyle,
@@ -386,7 +382,6 @@ public struct Typo: Equatable, CustomDebugStringConvertible {
       (font.defaultLineHeight() + baselineOffset <= maxLineHeight)
     return heightSufficient
   }
-  #endif
 
   public func apply(to str: CFMutableAttributedString, at range: CFRange) {
     str.apply(font, at: range, name: kCTFontAttributeName)

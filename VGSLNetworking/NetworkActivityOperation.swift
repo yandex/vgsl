@@ -51,10 +51,8 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
   @preconcurrency @MainActor
   public weak var lifecycleDelegate: NetworkActivityOperationLifecycleDelegate?
 
-  #if INTERNAL_BUILD
   @preconcurrency @MainActor
-  public var predefinedResponse: (body: Data, httpResponse: HTTPURLResponse)?
-  #endif
+  @_spi(Internal) public var predefinedResponse: (body: Data, httpResponse: HTTPURLResponse)?
 
   @preconcurrency @MainActor
   public convenience init(
@@ -153,7 +151,6 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
       return
     }
 
-    #if INTERNAL_BUILD
     if let response = predefinedResponse {
       after(0.5, onQueue: .global()) {
         let result = Result<Response, NSError>
@@ -164,7 +161,6 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
       }
       return
     }
-    #endif
 
     precondition(originalResource.headers?[userAgentHeaderName] == nil)
     let resourceWithUserAgent = originalResource.mergedWithHeaders(

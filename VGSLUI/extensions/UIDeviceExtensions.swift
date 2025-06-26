@@ -1,5 +1,6 @@
 // Copyright 2023 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreHaptics
 import UIKit
 
@@ -138,3 +139,4 @@ extension UIDevice {
     CHHapticEngine.capabilitiesForHardware().supportsHaptics
   }
 }
+#endif

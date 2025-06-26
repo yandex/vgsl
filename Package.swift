@@ -80,6 +80,7 @@ let package = Package(
   platforms: [
     .iOS(.v13),
     .tvOS(.v13),
+    .macOS(.v11),
   ],
   products: [
     .library(name: "VGSLFundamentals", targets: ["VGSLFundamentals"]),

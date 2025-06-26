@@ -1,5 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 #if !os(tvOS)
@@ -19,3 +20,4 @@ extension NetworkActivityIndicatorController {
 private final class NetworkActivityIndicatorStub: NetworkActivityIndicatorUI {
   var isNetworkActivityIndicatorVisible = false
 }
+#endif

@@ -49,21 +49,17 @@ public struct OSInfo: Sendable {
     return OSVersion(v.majorVersion, v.minorVersion, v.patchVersion)
   }
 
-  #if INTERNAL_BUILD
   private static let __current: AllocatedUnfairLock<Self> = .init(initialState: ._current)
   public static var current: Self {
-    get {
-      __current.withLock { $0 }
-    }
-    set {
-      __current.withLock { $0 = newValue }
-    }
+    __current.withLock { $0 }
+  }
+
+  @_spi(Internal)
+  public static func setCurrent(_ value: Self) {
+    __current.withLock { $0 = value }
   }
 
   static func restoreSystemCurrent() {
-    current = _current
+    setCurrent(_current)
   }
-  #else
-  public static let current: Self = ._current
-  #endif
 }

@@ -21,12 +21,10 @@ final class AuthChallengeHandler: ChallengeHandling {
     with protectionSpace: URLProtectionSpace,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
-    #if INTERNAL_BUILD
     if let host = request.url?.host, trustedHosts.contains(host) {
       completionHandler(.useCredential, URLCredential(trust: protectionSpace.serverTrust!))
       return
     }
-    #endif
 
     if let nextHandler {
       nextHandler.handleChallenge(

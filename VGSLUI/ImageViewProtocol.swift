@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 @preconcurrency @MainActor
@@ -40,3 +41,4 @@ public struct ImageViewAnimation: Sendable {
     self.options = options
   }
 }
+#endif

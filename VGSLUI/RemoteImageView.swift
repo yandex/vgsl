@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import UIKit
@@ -337,3 +338,4 @@ extension UIImage {
     return cropFilter.outputImage
   }
 }
+#endif

@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreGraphics
 import UIKit
 
@@ -77,3 +78,4 @@ public final class VisibileBoundsTrackingRoot: UIView {
     }
   }
 }
+#endif

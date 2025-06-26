@@ -1,5 +1,6 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
+#if os(iOS) || os(tvOS)
 import QuartzCore.CATransaction
 
 extension CATransaction {
@@ -10,3 +11,4 @@ extension CATransaction {
     setDisableActions(isActionsDisabled)
   }
 }
+#endif

@@ -1,5 +1,6 @@
 // Copyright 2017 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 import VGSLFundamentals
@@ -313,3 +314,4 @@ extension Sequence where Element: UIView {
     return nil
   }
 }
+#endif

@@ -1,5 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import Foundation
 import UIKit
 
@@ -95,3 +96,4 @@ private func gcd(_ a: Int, _ b: Int) -> Int {
   }
   return b
 }
+#endif

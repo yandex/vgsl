@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreGraphics
 
 extension Image {
@@ -13,3 +14,4 @@ extension Image {
     return Image(cgImage: imgRef, scale: newScale, orientation: imageOrientation)
   }
 }
+#endif

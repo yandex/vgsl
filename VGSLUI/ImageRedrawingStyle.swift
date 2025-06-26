@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 public struct ImageRedrawingStyle: Equatable, Sendable {
   public static func ==(lhs: ImageRedrawingStyle, rhs: ImageRedrawingStyle) -> Bool {
     lhs.tintColor == rhs.tintColor &&
@@ -21,3 +22,4 @@ public struct ImageRedrawingStyle: Equatable, Sendable {
     self.effects = effects
   }
 }
+#endif
