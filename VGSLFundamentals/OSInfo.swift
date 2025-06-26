@@ -35,8 +35,13 @@ public struct OSInfo: Sendable {
     version: OSVersion,
     platform: Platform
   ) {
-    self.version = version
-    self.platform = platform
+    self = .init(_version: version, _platform: platform)
+  }
+
+  @usableFromInline
+  internal init(_version: OSVersion, _platform: Platform) {
+    self.version = _version
+    self.platform = _platform
   }
 
   static let _current = Self(

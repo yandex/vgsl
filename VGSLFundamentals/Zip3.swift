@@ -15,7 +15,12 @@ public struct Zip3Sequence<Seq1: Sequence, Seq2: Sequence, Seq3: Sequence>: Sequ
       _ it2: Seq2.Iterator,
       _ it3: Seq3.Iterator
     ) {
-      _it = (it1, it2, it3)
+      self = .init(_it: (it1, it2, it3))
+    }
+
+    @usableFromInline
+    internal init(_it: (Seq1.Iterator, Seq2.Iterator, Seq3.Iterator)) {
+      self._it = _it
     }
 
     @inlinable
