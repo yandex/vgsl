@@ -27,6 +27,7 @@ public final class Lazy<T> {
   internal var _wasRead = false
   #endif
 
+  @usableFromInline
   internal init(state: State) {
     self.state = state
   }
