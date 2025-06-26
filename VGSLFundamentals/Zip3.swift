@@ -40,7 +40,7 @@ public struct Zip3Sequence<Seq1: Sequence, Seq2: Sequence, Seq3: Sequence>: Sequ
 
   @inlinable
   internal init(_ seq1: Seq1, _ seq2: Seq2, _ seq3: Seq3) {
-    _seq = (seq1, seq2, seq3)
+    self._seq = (seq1, seq2, seq3)
   }
 
   public func makeIterator() -> Iterator {
