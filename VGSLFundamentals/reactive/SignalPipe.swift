@@ -49,12 +49,7 @@ private class Bag<T> {
   }
 
   fileprivate func forEach(_ block: (T) -> Void) {
-    #if INTERNAL_BUILD
-    // ensure failure of code relying on the order of observers
-    let values = items.values.shuffled()
-    #else
     let values = items.values
-    #endif
 
     for item in values {
       if let payload = item.payload {

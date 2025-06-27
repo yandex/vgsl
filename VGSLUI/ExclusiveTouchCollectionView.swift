@@ -1,5 +1,6 @@
 // Copyright 2016 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 // swiftlint:disable use_exclusive_touch_collection_view
@@ -15,3 +16,4 @@ public func ExclusiveTouchCollectionView(
 }
 
 // swiftlint:enable use_exclusive_touch_collection_view
+#endif

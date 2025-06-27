@@ -1,5 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 import VGSLFundamentals
@@ -247,3 +248,4 @@ extension Typo {
     }
   }
 }
+#endif

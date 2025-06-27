@@ -1,5 +1,6 @@
 // Copyright 2016 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreGraphics
 import Foundation
 import UIKit
@@ -99,3 +100,4 @@ extension CGRect {
     )
   }
 }
+#endif

@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import MetalKit
 import UIKit
 
@@ -348,4 +349,5 @@ private func makeOrigin(
 #if DEBUG
 private let isSnapshotTest = ProcessInfo.processInfo
   .environment["XCTestConfigurationFilePath"] != nil
+#endif
 #endif

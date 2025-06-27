@@ -1,5 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import CoreGraphics
 import UIKit
 
@@ -221,3 +222,5 @@ extension KeyboardAppearance {
 /// Line width of one rendered pixel
 @preconcurrency @MainActor
 public let minimalLineWidth: CGFloat = 1 / UIScreen.main.scale
+
+#endif

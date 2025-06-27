@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 internal import AudioToolbox
@@ -28,3 +29,4 @@ public final class AudioFeedbackGenerator: PhysicalFeedbackGenerator {
     AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, nil)
   }
 }
+#endif

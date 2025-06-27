@@ -1,5 +1,6 @@
 // Copyright 2023 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 @preconcurrency @MainActor
@@ -54,3 +55,4 @@ extension ImageViewBackgroundModel {
     }
   }
 }
+#endif

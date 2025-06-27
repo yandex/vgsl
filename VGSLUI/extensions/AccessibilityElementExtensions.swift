@@ -1,5 +1,6 @@
 // Copyright 2020 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 @available(iOS 10.0, tvOS 10.0, *)
@@ -112,3 +113,4 @@ extension UIControl {
     accessibilityIdentifier = strings.identifier
   }
 }
+#endif

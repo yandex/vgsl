@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 extension UIImageView {
@@ -8,3 +9,4 @@ extension UIImageView {
     accessibilityTraits = .none
   }
 }
+#endif

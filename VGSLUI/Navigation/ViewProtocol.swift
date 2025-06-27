@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 import VGSLFundamentals
@@ -64,3 +65,4 @@ extension UIView: ViewProtocol {
     )
   }
 }
+#endif

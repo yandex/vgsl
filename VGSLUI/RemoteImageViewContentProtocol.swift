@@ -1,5 +1,6 @@
 // Copyright 2022 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import Foundation
 import UIKit
 
@@ -7,3 +8,4 @@ import UIKit
 public protocol RemoteImageViewContentProtocol: UIView, ImageViewProtocol {
   func setImage(_ image: UIImage?, animated: Bool?)
 }
+#endif

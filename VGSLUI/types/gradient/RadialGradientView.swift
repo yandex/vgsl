@@ -1,5 +1,6 @@
 // Copyright 2015 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 public final class RadialGradientView: UIView {
@@ -132,3 +133,4 @@ extension CGFloat {
     self == 0 || self == 1
   }
 }
+#endif

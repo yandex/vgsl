@@ -1,5 +1,6 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 @preconcurrency @MainActor
@@ -77,3 +78,4 @@ private final class ScrollViewWrapper: ScrollableContent, ScrollToDragContent {
     subject.panGestureRecognizer === gestureRecognizer
   }
 }
+#endif

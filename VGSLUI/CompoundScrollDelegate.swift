@@ -1,5 +1,6 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
+#if canImport(UIKit)
 import UIKit
 
 import VGSLFundamentals
@@ -125,3 +126,4 @@ extension CompoundScrollDelegate: UIScrollViewDelegate {
     onDidEndScrollingToTop(scrollView)
   }
 }
+#endif

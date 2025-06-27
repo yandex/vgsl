@@ -78,7 +78,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
     )
   }
 
-  #if INTERNAL_BUILD
+  @_spi(Internal)
   public convenience init(trustedHosts: [String], urlTransform: URLTransform?) {
     let delegate = URLSessionDelegateImpl()
     let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: .main)
@@ -90,7 +90,6 @@ public final class URLRequestPerformer: URLRequestPerforming {
       urlSessionShouldBeInvalidated: true
     )
   }
-  #endif
 
   deinit {
     if urlSessionShouldBeInvalidated {
