@@ -125,5 +125,6 @@ let package = Package(
       swiftSettings: swiftSettings,
       linkerSettings: linkerSettings
     ),
-  ] + compatibilityShims.targets
+  ] + compatibilityShims.targets,
+  swiftLanguageVersions: [.version("6")]
 )

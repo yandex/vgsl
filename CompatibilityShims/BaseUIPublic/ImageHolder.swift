@@ -1,5 +1,6 @@
 import VGSLUI
 
+@preconcurrency @MainActor
 public func ==(lhs: ImageHolder, rhs: ImageHolder) -> Bool {
   if lhs === rhs {
     return true
@@ -8,6 +9,7 @@ public func ==(lhs: ImageHolder, rhs: ImageHolder) -> Bool {
   return lhs.equals(rhs)
 }
 
+@preconcurrency @MainActor
 public func ==(lhs: ImageHolder?, rhs: ImageHolder?) -> Bool {
   switch (lhs, rhs) {
   case (.none, .none):
@@ -19,6 +21,7 @@ public func ==(lhs: ImageHolder?, rhs: ImageHolder?) -> Bool {
   }
 }
 
+@preconcurrency @MainActor
 public func !=(lhs: ImageHolder?, rhs: ImageHolder?) -> Bool {
   !(lhs == rhs)
 }
