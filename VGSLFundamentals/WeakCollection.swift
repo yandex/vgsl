@@ -1,6 +1,6 @@
 // Copyright 2016 Yandex LLC. All rights reserved.
 
-private final class Weak: @unchecked Sendable {
+private final class Weak {
   private(set) weak var value: AnyObject?
 
   init(value: AnyObject) {
@@ -8,7 +8,7 @@ private final class Weak: @unchecked Sendable {
   }
 }
 
-public struct WeakCollection<T>: Sendable {
+public struct WeakCollection<T> {
   private var array: [Weak] = []
 
   public var isEmpty: Bool {
