@@ -513,6 +513,7 @@ extension NSAttributedString {
       actionKey: nil,
       backgroundKey: nil,
       borderKey: nil,
+      rangeVerticalAlignmentKey: nil,
       selectedRange: nil
     ) as AttributedStringLayout<Void>
   }
@@ -533,6 +534,7 @@ extension NSAttributedString {
       actionKey: nil,
       backgroundKey: nil,
       borderKey: nil,
+      rangeVerticalAlignmentKey: nil,
       selectedRange: nil
     )
   }
@@ -543,10 +545,11 @@ extension NSAttributedString {
     rect: CGRect,
     textInsets: EdgeInsets = .zero,
     truncationToken: NSAttributedString? = nil,
-    actionKey: NSAttributedString.Key?,
-    backgroundKey: NSAttributedString.Key?,
-    borderKey: NSAttributedString.Key?,
-    selectedRange: Range<Int>?
+    actionKey: NSAttributedString.Key? = nil,
+    backgroundKey: NSAttributedString.Key? = nil,
+    borderKey: NSAttributedString.Key? = nil,
+    rangeVerticalAlignmentKey: NSAttributedString.Key? = nil,
+    selectedRange: Range<Int>? = nil
   ) -> AttributedStringLayout<ActionType> {
     context?.saveGState()
     defer {
@@ -577,6 +580,7 @@ extension NSAttributedString {
           actionKey: actionKey,
           backgroundKey: backgroundKey,
           borderKey: borderKey,
+          rangeVerticalAlignmentKey: rangeVerticalAlignmentKey,
           selectedRange: selectedRange
         )
       }
@@ -590,6 +594,7 @@ extension NSAttributedString {
       actionKey: actionKey,
       backgroundKey: backgroundKey,
       borderKey: borderKey,
+      rangeVerticalAlignmentKey: rangeVerticalAlignmentKey,
       selectedRange: selectedRange
     )
   }
@@ -603,6 +608,7 @@ extension NSAttributedString {
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
     borderKey: NSAttributedString.Key?,
+    rangeVerticalAlignmentKey: NSAttributedString.Key?,
     selectedRange _: Range<Int>?
   ) -> AttributedStringLayout<ActionType> {
     let layout = makeTextLayout(
@@ -657,9 +663,11 @@ extension NSAttributedString {
         let runsWithAction: [AttributedStringLayout<ActionType>.Run] = line.draw(
           at: textPosition,
           in: context,
+          rect: rect,
           layoutY: rect.maxY - lineOriginY,
           actionKey: actionKey,
           backgroundKey: backgroundKey,
+          rangeVerticalAlignmentKey: rangeVerticalAlignmentKey,
           borderKey: borderKey
         )
         runsLayout += runsWithAction
@@ -1283,9 +1291,11 @@ extension CTLine {
   fileprivate func draw<ActionType>(
     at position: CGPoint,
     in context: CGContext,
+    rect: CGRect,
     layoutY: CGFloat,
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
+    rangeVerticalAlignmentKey: NSAttributedString.Key?,
     borderKey: NSAttributedString.Key?
   ) -> [AttributedStringLayout<ActionType>.Run] {
     var runsWithActions = [AttributedStringLayout<ActionType>.Run]()
@@ -1305,6 +1315,7 @@ extension CTLine {
           )
         )
       }
+      var position = position
       #if os(iOS)
       let border = borderKey.flatMap(run.border)
       let background = backgroundKey.flatMap(run.background)
@@ -1357,6 +1368,22 @@ extension CTLine {
         context.closePath()
         context.drawPath(using: .fillStroke)
         context.restoreGState()
+      }
+
+      let verticalAlignment = run.rangeVerticalAlignment(for: RangeVerticalAlignmentAttribute.Key)
+
+      if let verticalAlignment = verticalAlignment?.verticalAlignment, run.baselineOffset == 0 {
+        let runHeight = run.typographicBounds.height
+        switch verticalAlignment {
+        case .top:
+        position.y = rect.height - run.typographicBounds.ascent
+        case .bottom:
+        position.y = run.typographicBounds.descent
+        case .center:
+        position.y = (rect.height - runHeight) / 2 + run.typographicBounds.descent
+        case .baseline:
+          break
+        }
       }
       #endif
 
@@ -1588,6 +1615,10 @@ extension CTRun {
 
   fileprivate func border(for key: NSAttributedString.Key) -> BorderAttribute? {
     attribute(withName: key) as BorderAttribute?
+  }
+
+  fileprivate func rangeVerticalAlignment(for key: NSAttributedString.Key) -> RangeVerticalAlignmentAttribute? {
+    attribute(withName: key) as RangeVerticalAlignmentAttribute?
   }
 
   fileprivate func glyphPaths(runPosition: CGPoint) -> [CGPath] {

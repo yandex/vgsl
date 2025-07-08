@@ -898,6 +898,7 @@
   "VGSLUI/typo/FontExtensions.swift":"mobile/vgsl/public/VGSLUI/typo/FontExtensions.swift",
   "VGSLUI/typo/FontSettings.swift":"mobile/vgsl/public/VGSLUI/typo/FontSettings.swift",
   "VGSLUI/typo/FontSpecifying.swift":"mobile/vgsl/public/VGSLUI/typo/FontSpecifying.swift",
+  "VGSLUI/typo/RangeVerticalAlignmentAttribute.swift":"mobile/vgsl/public/VGSLUI/typo/RangeVerticalAlignmentAttribute.swift",
   "VGSLUI/typo/StringAttribute.swift":"mobile/vgsl/public/VGSLUI/typo/StringAttribute.swift",
   "VGSLUI/typo/Typo.swift":"mobile/vgsl/public/VGSLUI/typo/Typo.swift",
   "VGSLUI/uikit/CALayerExtensions.swift":"mobile/vgsl/public/VGSLUI/uikit/CALayerExtensions.swift",
