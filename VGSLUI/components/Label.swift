@@ -203,6 +203,7 @@ public final class Label: UIView {
       actionKey: .link,
       backgroundKey: BackgroundAttribute.Key,
       borderKey: BorderAttribute.Key,
+      rangeVerticalAlignmentKey: RangeVerticalAlignmentAttribute.Key,
       selectedRange: nil
     )
     textLayout = layout

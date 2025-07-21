@@ -125,5 +125,12 @@ let package = Package(
       swiftSettings: swiftSettings,
       linkerSettings: linkerSettings
     ),
+    .testTarget(
+        name: "VGSL_Fundamentals_Tests",
+        dependencies: [ "VGSL" ],
+        path: "Tests",
+        swiftSettings: swiftSettings,
+        linkerSettings: linkerSettings
+    )
   ] + compatibilityShims.targets
 )

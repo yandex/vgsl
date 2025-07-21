@@ -1,6 +1,6 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-#if canImport(AppKit)
+#if os(macOS)
 import AppKit
 
 public typealias ViewType = AnyObject
