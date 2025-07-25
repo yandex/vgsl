@@ -87,7 +87,7 @@ extension CGSize {
         size.height / height
       }
 
-    return (self * multiplier).rounded()
+    return (self * multiplier)
   }
 
   public func frameToFit(rect: CGRect) -> CGRect? {
@@ -114,7 +114,7 @@ extension CGSize {
         size.width / width
       }
 
-    return (self * multiplier).rounded()
+    return (self * multiplier)
   }
 
   public var hasValidDimensions: Bool {
