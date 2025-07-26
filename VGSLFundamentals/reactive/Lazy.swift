@@ -27,12 +27,11 @@ public final class Lazy<T> {
   internal var _wasRead = false
   #endif
 
-  @inlinable
+  @usableFromInline
   internal init(state: State) {
     self.state = state
   }
 
-  @inlinable
   deinit {
     traceDeinit()
   }
