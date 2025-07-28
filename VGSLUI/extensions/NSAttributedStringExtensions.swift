@@ -1283,6 +1283,30 @@ extension CTLine {
     return (minHeight, maxHeight)
   }
 
+  private var overriddenTypographicBounds: (ascent: CGFloat, descent: CGFloat, leading: CGFloat) {
+    var lineAscent: CGFloat = 0
+    var lineDescent: CGFloat = 0
+    var lineLeading: CGFloat = 0
+
+    CTLineGetTypographicBounds(self, &lineAscent, &lineDescent, &lineLeading)
+
+    let (minHeight, maxHeight) = overriddenHeight
+    let currentLineHeight = lineAscent + lineDescent
+
+    var adjustedLineHeight = currentLineHeight
+    if maxHeight < .greatestFiniteMagnitude && currentLineHeight > maxHeight {
+        adjustedLineHeight = maxHeight
+    } else if minHeight > 0 && currentLineHeight < minHeight {
+        adjustedLineHeight = minHeight
+    }
+
+    let freeSpace = (adjustedLineHeight - currentLineHeight) / 2
+    let adjustedAscent = freeSpace + lineAscent
+    let adjustedDescent = freeSpace + lineDescent
+
+    return (adjustedAscent, adjustedDescent, lineLeading)
+  }
+
   struct CloudBackground {
     let rect: CGRect
     let info: CloudBackgroundAttribute
@@ -1370,17 +1394,23 @@ extension CTLine {
         context.restoreGState()
       }
 
-      let verticalAlignment = run.rangeVerticalAlignment(for: RangeVerticalAlignmentAttribute.Key)
+      if let key = rangeVerticalAlignmentKey,
+          let verticalAlignment = run.rangeVerticalAlignment(for: key)?.verticalAlignment,
+          run.baselineOffset == 0 {
+        let runAscent = run.typographicBounds.ascent
+        let runDescent = run.typographicBounds.descent
+        let lineAscent = overriddenTypographicBounds.ascent
+        let lineDescent = overriddenTypographicBounds.descent
 
-      if let verticalAlignment = verticalAlignment?.verticalAlignment, run.baselineOffset == 0 {
-        let runHeight = run.typographicBounds.height
         switch verticalAlignment {
         case .top:
-        position.y = rect.height - run.typographicBounds.ascent
+          position.y += lineAscent - runAscent
         case .bottom:
-        position.y = run.typographicBounds.descent
+          position.y -= lineDescent - runDescent
         case .center:
-        position.y = (rect.height - runHeight) / 2 + run.typographicBounds.descent
+          let lineCenter = (lineAscent - lineDescent) / 2
+          let textCenter = (runAscent - runDescent) / 2
+          position.y += lineCenter - textCenter
         case .baseline:
           break
         }
