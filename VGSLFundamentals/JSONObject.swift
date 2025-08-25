@@ -118,7 +118,7 @@ public enum JSONObject: Codable, Equatable, Sendable {
 }
 
 extension JSONObject {
-  private var shortDescription: String {
+  var shortDescription: String {
     switch self {
     case let .bool(bool):
       "bool: \(bool)"

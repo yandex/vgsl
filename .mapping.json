@@ -672,6 +672,7 @@
   "VGSLFundamentals/Functions.swift":"mobile/vgsl/public/VGSLFundamentals/Functions.swift",
   "VGSLFundamentals/IndexSetExtensions.swift":"mobile/vgsl/public/VGSLFundamentals/IndexSetExtensions.swift",
   "VGSLFundamentals/InvalidArgumentError.swift":"mobile/vgsl/public/VGSLFundamentals/InvalidArgumentError.swift",
+  "VGSLFundamentals/JSONDictionaryExtensions.swift":"mobile/vgsl/public/VGSLFundamentals/JSONDictionaryExtensions.swift",
   "VGSLFundamentals/JSONObject.swift":"mobile/vgsl/public/VGSLFundamentals/JSONObject.swift",
   "VGSLFundamentals/LoginWithSourcePerformer.swift":"mobile/vgsl/public/VGSLFundamentals/LoginWithSourcePerformer.swift",
   "VGSLFundamentals/Memoization.swift":"mobile/vgsl/public/VGSLFundamentals/Memoization.swift",
