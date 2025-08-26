@@ -52,6 +52,15 @@ extension UIScrollView: ScrollViewType {
     contentOffset.y < -contentInset.top
   }
 
+  public var isBouncingOnBottom: Bool {
+    contentSize.height + contentInset.top + contentInset.bottom >= bounds.height &&
+      contentOffset.y > contentSize.height - bounds.height + contentInset.bottom
+  }
+
+  public var isBouncingVertically: Bool {
+    isBouncingOnTop || isBouncingOnBottom
+  }
+
   public var isContentMoving: Bool {
     isDragging || isDecelerating || isZooming || isZoomBouncing
   }
