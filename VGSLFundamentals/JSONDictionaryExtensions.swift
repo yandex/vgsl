@@ -34,6 +34,10 @@ extension JSONDictionary {
     }
     return removedValue
   }
+  
+  public func allTerminalPaths() -> [JSONObject.Path] {
+    JSONObject.object(self).allTerminalPaths()
+  }
 }
 
 extension JSONObject {
@@ -168,6 +172,21 @@ extension JSONObject {
 
     default:
       return nil
+    }
+  }
+  
+  fileprivate func allTerminalPaths() -> [Path] {
+    switch self {
+    case let .object(dict):
+      dict.flatMap { key, element in
+        element.allTerminalPaths().map { Path(component: .key(key)).appending(path: $0) }
+      }
+    case let .array(array):
+      array.enumerated().flatMap { offset, element in
+        element.allTerminalPaths().map { Path(component: .index(offset)).appending(path: $0) }
+      }
+    case .string, .number, .bool, .null:
+      [.empty]
     }
   }
 }
