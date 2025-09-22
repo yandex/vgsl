@@ -16,6 +16,13 @@ public protocol ImageHolder: AnyObject, CustomDebugStringConvertible {
   func requestImageWithSource(_ completion: @escaping CompletionHandlerWithSource) -> Cancellable?
   func reused(with placeholder: ImagePlaceholder?, remoteImageURL: URL?) -> ImageHolder?
   func equals(_ other: ImageHolder) -> Bool
+  func usePlaceholderWhenImageIsEmpty() -> Bool
+}
+
+public extension ImageHolder {
+  func usePlaceholderWhenImageIsEmpty() -> Bool {
+    false
+  }
 }
 
 extension ImageHolder {
