@@ -15,7 +15,12 @@ public struct Zip3Sequence<Seq1: Sequence, Seq2: Sequence, Seq3: Sequence>: Sequ
       _ it2: Seq2.Iterator,
       _ it3: Seq3.Iterator
     ) {
-      _it = (it1, it2, it3)
+      self = .init(_it: (it1, it2, it3))
+    }
+
+    @usableFromInline
+    internal init(_it: (Seq1.Iterator, Seq2.Iterator, Seq3.Iterator)) {
+      self._it = _it
     }
 
     @inlinable
@@ -40,7 +45,12 @@ public struct Zip3Sequence<Seq1: Sequence, Seq2: Sequence, Seq3: Sequence>: Sequ
 
   @inlinable
   internal init(_ seq1: Seq1, _ seq2: Seq2, _ seq3: Seq3) {
-    _seq = (seq1, seq2, seq3)
+    self = .init(_seq: (seq1, seq2, seq3))
+  }
+
+  @usableFromInline
+  internal init(_seq: (Seq1, Seq2, Seq3)) {
+    self._seq = _seq
   }
 
   public func makeIterator() -> Iterator {
