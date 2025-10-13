@@ -3,12 +3,16 @@
 import Foundation
 
 extension Encodable {
-  public func toJSONString() throws -> String {
-    let data = try JSONEncoder().encode(self)
+  public func toJSONString(formatting: JSONEncoder.OutputFormatting? = nil) throws -> String {
+    let data = try jsonData(formatting: formatting)
     return String(data: data, encoding: .utf8)!
   }
 
-  public func jsonData() throws -> Data {
-    try JSONEncoder().encode(self)
+  public func jsonData(formatting: JSONEncoder.OutputFormatting? = nil) throws -> Data {
+    let encoder = JSONEncoder()
+    if let formatting {
+      encoder.outputFormatting = formatting
+    }
+    return try encoder.encode(self)
   }
 }
