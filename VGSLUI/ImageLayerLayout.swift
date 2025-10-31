@@ -99,36 +99,14 @@ private func makeAspectFitFrame(
   guard let size = contentSize.sizeToFit(size: bounds) else {
     return .zero
   }
-  
-  let minimumGapForAspectFit = 3.0
-  
-  let fittingGap: CGFloat? = switch true {
-    case bounds.width.isApproximatelyGreaterThan(size.width):
-      bounds.width - size.width
-    case bounds.height.isApproximatelyGreaterThan(size.height):
-      bounds.height - size.height
-    default:
-      nil
-  }
-    
-  return if let fittingGap,
-     fittingGap < minimumGapForAspectFit {
-    
-    makeAspectFillFrame(
-      contentMode: contentMode,
-      contentSize: contentSize,
-      bounds: bounds
-    )
-  } else {
-    CGRect(
-      origin: makeOrigin(
-        contentMode: contentMode,
-        contentSize: size,
-        bounds: bounds
-      ),
-      size: size
-    )
-  }
+
+  let origin = makeOrigin(
+    contentMode: contentMode,
+    contentSize: size,
+    bounds: bounds
+  )
+
+  return CGRect(origin: origin, size: size)
 }
 
 private func makeOrigin(
