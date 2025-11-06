@@ -76,7 +76,7 @@ public final class RemoteImageHolder: ImageHolder {
           #if os(iOS)
           switch value.data.imageFormat {
           case .gif:
-            image = Image.animatedImage(with: value.data as CFData)
+            image = Image.animatedImage(with: value.data as CFData, decode: imageLoadingOptimizationEnabled)
           case .unknown where imageDecoder != nil:
             image = imageDecoder?(value.data) ?? Image(
               data: value.data,
