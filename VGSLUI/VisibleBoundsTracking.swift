@@ -1,6 +1,7 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
 #if canImport(UIKit)
+import VGSLFundamentals
 import CoreGraphics
 import UIKit
 
@@ -18,14 +19,17 @@ extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
     guard !from.isEmpty || !to.isEmpty else {
       return
     }
-    visibleBoundsTrackingSubviews.forEach {
-      let fromFrame = convert(from, to: $0)
-      let toFrame = convert(to, to: $0)
+    visibleBoundsTrackingSubviews.forEach { boundsTrackingView in
+      let fromFrame = convert(from, to: boundsTrackingView)
+      let toFrame = convert(to, to: boundsTrackingView)
 
-      $0.onVisibleBoundsChanged(
-        from: $0.bounds.intersection(fromFrame),
-        to: $0.bounds.intersection(toFrame)
-      )
+      onMainThreadAsync {
+        boundsTrackingView.layoutIfNeeded()
+        boundsTrackingView.onVisibleBoundsChanged(
+          from: boundsTrackingView.bounds.intersection(fromFrame),
+          to: boundsTrackingView.bounds.intersection(toFrame)
+        )
+      }
     }
   }
 
