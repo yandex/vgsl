@@ -11,7 +11,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
   }
 
   private let urlSession: URLSession
-  private let URLSessionDelegate: URLSessionDelegateImpl
+  private let URLSessionDelegate: any URLSessionDelegating
   private let activeRequestsTracker: ActiveRequestsTracker?
   private let challengeHandler: ChallengeHandler?
   private let redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)?
@@ -24,7 +24,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
 
   private init(
     urlSession: URLSession,
-    URLSessionDelegate: URLSessionDelegateImpl,
+    URLSessionDelegate: any URLSessionDelegating,
     activeRequestsTracker: ActiveRequestsTracker? = nil,
     challengeHandler: ChallengeHandler? = nil,
     redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,
@@ -44,7 +44,7 @@ public final class URLRequestPerformer: URLRequestPerforming {
 
   public convenience init(
     urlSession: URLSession,
-    URLSessionDelegate: URLSessionDelegateImpl,
+    URLSessionDelegate: any URLSessionDelegating,
     activeRequestsTracker: ActiveRequestsTracker? = nil,
     challengeHandler: ChallengeHandler? = nil,
     redirectHandler: ((HTTPURLResponse, URLRequest) -> URLRequest)? = nil,

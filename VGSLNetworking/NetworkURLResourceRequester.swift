@@ -4,7 +4,7 @@ import Foundation
 
 import VGSLFundamentals
 
-@preconcurrency @MainActor
+@preconcurrency
 public final class NetworkURLResourceRequester: URLResourceRequesting {
   private let performer: URLRequestPerforming
 
@@ -17,12 +17,13 @@ public final class NetworkURLResourceRequester: URLResourceRequesting {
     completion: @escaping CompletionHandlerWithSource
   ) -> Cancellable? {
     performer.performRequest(URLRequest(url: url)) { result in
-      Thread.assertIsMain()
-      switch result {
-      case let .success((data, _)):
-        completion(.success(URLRequestResult(data: data, source: .network)))
-      case let .failure(error):
-        completion(.failure(error))
+      onMainThread {
+        switch result {
+        case let .success((data, _)):
+          completion(.success(URLRequestResult(data: data, source: .network)))
+        case let .failure(error):
+          completion(.failure(error))
+        }
       }
     }
   }

@@ -914,6 +914,7 @@
   "VGSLNetworking/URLRequestPerformer.swift":"mobile/vgsl/public/VGSLNetworking/URLRequestPerformer.swift",
   "VGSLNetworking/URLRequestPerforming.swift":"mobile/vgsl/public/VGSLNetworking/URLRequestPerforming.swift",
   "VGSLNetworking/URLSessionDelegateImpl.swift":"mobile/vgsl/public/VGSLNetworking/URLSessionDelegateImpl.swift",
+  "VGSLNetworking/URLSessionDelegating.swift":"mobile/vgsl/public/VGSLNetworking/URLSessionDelegating.swift",
   "VGSLNetworking/URLSessionTaskMetricsExtensions.swift":"mobile/vgsl/public/VGSLNetworking/URLSessionTaskMetricsExtensions.swift",
   "VGSLNetworking/URLTransform.swift":"mobile/vgsl/public/VGSLNetworking/URLTransform.swift",
   "VGSLNetworking/iOS.swift":"mobile/vgsl/public/VGSLNetworking/iOS.swift",

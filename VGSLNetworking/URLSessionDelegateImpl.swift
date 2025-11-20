@@ -13,7 +13,7 @@ private func isExpectedBytesCountToTransferValid(_ expectedBytesToTransfer: Int6
 
 @objc(YXURLSessionDelegateImpl)
 @preconcurrency @MainActor
-public final class URLSessionDelegateImpl: NSObject {
+public final class URLSessionDelegateImpl: NSObject, @preconcurrency URLSessionDelegating {
   public typealias ProgressChangeHandler = (Double) -> Void
   public typealias CompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
   public typealias RedirectHandler = (HTTPURLResponse, URLRequest) -> URLRequest

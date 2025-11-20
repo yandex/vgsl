@@ -8,7 +8,7 @@ public final class RetryingURLRequestPerformer: URLRequestPerforming {
   public typealias ChallengeHandler = URLRequestPerformer.ChallengeHandler
   public typealias FailureHandler = (NSError) -> Void
   private let urlSession: URLSession
-  private let URLSessionDelegate: URLSessionDelegateImpl
+  private let URLSessionDelegate: any URLSessionDelegating
   private let activeRequestsTracker: ActiveRequestsTracker?
   private let challengeHandler: ChallengeHandler?
   private let failureHandler: FailureHandler
@@ -16,7 +16,7 @@ public final class RetryingURLRequestPerformer: URLRequestPerforming {
 
   public init(
     urlSession: URLSession,
-    URLSessionDelegate: URLSessionDelegateImpl,
+    URLSessionDelegate: any URLSessionDelegating,
     activeRequestsTracker: ActiveRequestsTracker? = nil,
     challengeHandler: ChallengeHandler? = nil,
     failureHandler: @escaping FailureHandler,
@@ -62,14 +62,14 @@ public final class RetryingURLRequestPerformer: URLRequestPerforming {
     _ task: RetryingNetworkTask,
     completion: @escaping URLRequestCompletionHandler
   ) {
-    Thread.assertIsMain()
-
     self.activeRequestsTracker?.addRequest(task.request)
 
     URLSessionDelegate.setHandlers(
+      downloadProgressChange: nil,
+      uploadProgressChange: nil,
       challengeHandler: challengeHandler.preferredChallengeHandler,
+      redirectHandler: nil,
       completion: { [weak self] result in
-        Thread.assertIsMain()
         switch result {
         case .success:
           task.onSuccess()
