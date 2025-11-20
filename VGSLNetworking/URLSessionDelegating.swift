@@ -10,7 +10,7 @@ import VGSLFundamentals
 /// Note: Implementations can choose their own actor isolation strategy.
 /// For example, `URLSessionDelegateImpl` uses `@MainActor` isolation.
 @preconcurrency
-public protocol URLSessionDelegating: NSObjectProtocol, URLSessionDataDelegate, URLSessionTaskDelegate {
+public protocol NetworkingDelegate: URLSessionDataDelegate, URLSessionTaskDelegate {
   typealias ProgressChangeHandler = (Double) -> Void
   typealias CompletionHandler = (Result<(Data, HTTPURLResponse), NSError>) -> Void
   typealias RedirectHandler = (HTTPURLResponse, URLRequest) -> URLRequest
