@@ -7,15 +7,26 @@ import UIKit
 extension UIImage {
   private static func delayForImage(at index: Int, source: CGImageSource) -> Double {
     let delay = 0.1
-    guard let cfProperties = CGImageSourceCopyPropertiesAtIndex(source, index, nil),
-          let gifProperties =
-          (cfProperties as NSDictionary)[kCGImagePropertyGIFDictionary] as? NSDictionary else {
+    guard let cfProperties = CGImageSourceCopyPropertiesAtIndex(source, index, nil) else {
       return delay
     }
-    var delayObject = gifProperties[kCGImagePropertyGIFUnclampedDelayTime] as? Double
-    if delayObject == 0 {
-      delayObject = gifProperties[kCGImagePropertyGIFDelayTime] as? Double
+
+    let properties = cfProperties as NSDictionary
+    var delayObject: Double?
+
+    if let gifProperties = properties[kCGImagePropertyGIFDictionary] as? NSDictionary {
+      delayObject = gifProperties[kCGImagePropertyGIFUnclampedDelayTime] as? Double
+      if delayObject == 0 {
+        delayObject = gifProperties[kCGImagePropertyGIFDelayTime] as? Double
+      }
+    } else if #available(iOS 14.0, macOS 11.0, tvOS 14.0, *),
+              let webpProperties = properties[kCGImagePropertyWebPDictionary] as? NSDictionary {
+      delayObject = webpProperties[kCGImagePropertyWebPUnclampedDelayTime] as? Double
+      if delayObject == 0 {
+        delayObject = webpProperties[kCGImagePropertyWebPDelayTime] as? Double
+      }
     }
+
     if let delayObject, delayObject > 0 {
       return delayObject
     }
