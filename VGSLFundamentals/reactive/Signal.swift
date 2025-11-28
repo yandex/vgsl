@@ -160,8 +160,8 @@ extension Signal {
       weak var weakDisposable: Disposable?
       let disposable = self.addObserver { t in
         if remaining > 0 {
-          observer.action(t)
           remaining -= 1
+          observer.action(t)
         }
         if remaining == 0 {
           weakDisposable?.dispose()
