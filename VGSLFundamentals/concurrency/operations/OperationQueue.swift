@@ -6,11 +6,6 @@ public typealias MainQueueScheduler = (Operation) -> Void
 
 public protocol OperationQueueType: AnyObject, Sendable {
   func addOperation(_ operation: Operation)
-  #if swift(>=5.9)
-  func addOperation(_ block: @escaping @Sendable () -> Void)
-  #else
-  func addOperation(_ block: @escaping () -> Void)
-  #endif
 
   func cancelAllOperations()
 }
