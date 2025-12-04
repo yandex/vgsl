@@ -22,13 +22,18 @@ extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
     visibleBoundsTrackingSubviews.forEach { boundsTrackingView in
       let fromFrame = convert(from, to: boundsTrackingView)
       let toFrame = convert(to, to: boundsTrackingView)
-
-      onMainThreadAsync {
-        boundsTrackingView.layoutIfNeeded()
+      
+      let applyOnVisibleBoundsChanged = {
         boundsTrackingView.onVisibleBoundsChanged(
           from: boundsTrackingView.bounds.intersection(fromFrame),
           to: boundsTrackingView.bounds.intersection(toFrame)
         )
+      }
+
+      if boundsTrackingView.layer.needsLayout() {
+        onMainThreadAsync { applyOnVisibleBoundsChanged() }
+      } else {
+        applyOnVisibleBoundsChanged()
       }
     }
   }
