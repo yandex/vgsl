@@ -83,15 +83,10 @@ public final class RemoteImageHolder: ImageHolder {
               scale: PlatformDescription.screenScale()
             )
           case .jpeg, .png, .tiff, .unknown:
-            if imageLoadingOptimizationEnabled,
-               let decodedImage = makeDecodedImage(data: value.data) {
-              image = decodedImage
-            } else {
-              image = Image(
-                data: value.data,
-                scale: PlatformDescription.screenScale()
-              )
-            }
+            image = Image(
+              data: value.data,
+              scale: PlatformDescription.screenScale()
+            )
           }
           #else
           image = Image(data: value.data, scale: PlatformDescription.screenScale())
