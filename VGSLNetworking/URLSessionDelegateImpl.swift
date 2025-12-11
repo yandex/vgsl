@@ -35,8 +35,7 @@ public final class URLSessionDelegateImpl: NSObject, @preconcurrency NetworkingD
     self.errorInferrer = errorInferrer
   }
 
-  @preconcurrency @MainActor
-  public func setHandlers(
+  public nonisolated func setHandlers(
     downloadProgressChange: ProgressChangeHandler? = nil,
     uploadProgressChange: ProgressChangeHandler? = nil,
     challengeHandler: ChallengeHandling? = nil,
@@ -44,17 +43,18 @@ public final class URLSessionDelegateImpl: NSObject, @preconcurrency NetworkingD
     completion: @escaping CompletionHandler,
     forTask task: URLSessionDataTask
   ) {
-    Thread.assertIsMain()
-    assert(stateByTask[task] == nil && task.state == .suspended)
-    stateByTask[task] = TaskState(
-      downloadProgressChangeHandler: downloadProgressChange,
-      uploadProgressChangeHandler: uploadProgressChange,
-      challengeHandler: challengeHandler,
-      redirectHandler: redirectHandler,
-      completionHandler: completion,
-      receivedData: Data()
-    )
-    self.challengeHandler = challengeHandler
+    onMainThreadSync {
+      assert(self.stateByTask[task] == nil && task.state == .suspended)
+      self.stateByTask[task] = TaskState(
+        downloadProgressChangeHandler: downloadProgressChange,
+        uploadProgressChangeHandler: uploadProgressChange,
+        challengeHandler: challengeHandler,
+        redirectHandler: redirectHandler,
+        completionHandler: completion,
+        receivedData: Data()
+      )
+      self.challengeHandler = challengeHandler
+    }
   }
 }
 
