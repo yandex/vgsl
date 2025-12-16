@@ -1062,7 +1062,10 @@ extension NSAttributedString {
     if lineBreakMode == .byClipping {
       token = NSAttributedString()
     } else if let truncationToken {
-      token = truncationToken
+      token = adjustTruncationTokenRanges(
+        truncationToken,
+        truncationOffset: length - range.location
+      )
     } else {
       let allAttributes = attributes(at: range.endIndex - 1, effectiveRange: nil)
       token = NSAttributedString(string: ellipsis, attributes: allAttributes)
@@ -1106,6 +1109,35 @@ extension NSAttributedString {
     } else {
       return truncatedLine
     }
+  }
+
+  private func adjustTruncationTokenRanges(
+    _ token: NSAttributedString,
+    truncationOffset: Int
+  ) -> NSAttributedString {
+    guard let mutableToken = token.mutableCopy() as? NSMutableAttributedString else {
+      return self
+    }
+
+    let fullRange = NSRange(location: 0, length: token.length)
+    token.enumerateAttributes(in: fullRange, options: []) { attributes, range, _ in
+      if let border = attributes[BorderAttribute.Key] as? BorderAttribute {
+        var newAttributes = attributes
+        let adjustedRange = CFRange(
+          location: border.range.location + truncationOffset,
+          length: border.range.length
+        )
+        let adjustedBorder = BorderAttribute(
+          color: border.color,
+          width: border.width,
+          cornerRadius: border.cornerRadius,
+          range: adjustedRange
+        )
+        newAttributes[BorderAttribute.Key] = adjustedBorder
+        mutableToken.setAttributes(newAttributes, range: range)
+      }
+    }
+    return mutableToken
   }
 
   private var lineBreakMode: LineBreakMode {
@@ -1324,7 +1356,36 @@ extension CTLine {
   ) -> [AttributedStringLayout<ActionType>.Run] {
     var runsWithActions = [AttributedStringLayout<ActionType>.Run]()
     for run in runs {
-      let runPosition = CGPoint(x: position.x + run.origin.x, y: position.y)
+      var position = position
+
+      #if os(iOS)
+      if let key = rangeVerticalAlignmentKey,
+          let verticalAlignment = run.rangeVerticalAlignment(for: key)?.verticalAlignment,
+          run.baselineOffset == 0 {
+        let runAscent = run.typographicBounds.ascent
+        let runDescent = run.typographicBounds.descent
+        let lineAscent = overriddenTypographicBounds.ascent
+        let lineDescent = overriddenTypographicBounds.descent
+
+        switch verticalAlignment {
+        case .top:
+          position.y += lineAscent - runAscent
+        case .bottom:
+          position.y -= lineDescent - runDescent
+        case .center:
+          let lineCenter = (lineAscent - lineDescent) / 2
+          let textCenter = (runAscent - runDescent) / 2
+          position.y += lineCenter - textCenter
+        case .baseline:
+          break
+        }
+      }
+      #endif
+
+      let runPosition = CGPoint(
+        x: position.x + run.origin.x,
+        y: position.y + run.baselineOffset
+      )
       if let action = (actionKey.flatMap(run.action) as ActionType?) {
         let bounds = run.typographicBounds
         runsWithActions.append(
@@ -1339,7 +1400,6 @@ extension CTLine {
           )
         )
       }
-      var position = position
       #if os(iOS)
       let border = borderKey.flatMap(run.border)
       let background = backgroundKey.flatMap(run.background)
@@ -1392,28 +1452,6 @@ extension CTLine {
         context.closePath()
         context.drawPath(using: .fillStroke)
         context.restoreGState()
-      }
-
-      if let key = rangeVerticalAlignmentKey,
-          let verticalAlignment = run.rangeVerticalAlignment(for: key)?.verticalAlignment,
-          run.baselineOffset == 0 {
-        let runAscent = run.typographicBounds.ascent
-        let runDescent = run.typographicBounds.descent
-        let lineAscent = overriddenTypographicBounds.ascent
-        let lineDescent = overriddenTypographicBounds.descent
-
-        switch verticalAlignment {
-        case .top:
-          position.y += lineAscent - runAscent
-        case .bottom:
-          position.y -= lineDescent - runDescent
-        case .center:
-          let lineCenter = (lineAscent - lineDescent) / 2
-          let textCenter = (runAscent - runDescent) / 2
-          position.y += lineCenter - textCenter
-        case .baseline:
-          break
-        }
       }
       #endif
 
