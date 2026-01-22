@@ -15,7 +15,7 @@ extension Data {
     guard self.count > 2 else { return .unknown }
     switch self[0...2] {
     case pngData:
-        return .png
+      return .png
     case jpgData:
       return .jpeg
     case gifData:
@@ -25,11 +25,11 @@ extension Data {
     default:
       break
     }
-    
+
     if self.count > 12, self[0...3] == riffData, self[8...11] == webpData {
       return .gif
     }
-    
+
     return .unknown
   }
 }

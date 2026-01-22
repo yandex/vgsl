@@ -285,7 +285,7 @@ extension JSONObject {
 }
 
 extension JSONObject: CustomStringConvertible {
-  private func indentedDescription(indent: String) -> String {
+  public func indentedDescription(indent: String = "", sortKeys: Bool = false) -> String {
     switch self {
     case let .bool(value):
       return "\(value)"
@@ -295,12 +295,14 @@ extension JSONObject: CustomStringConvertible {
       return string
     case let .array(array):
       let contents = array
-        .map { $0.indentedDescription(indent: indent + "  ") }
+        .map { $0.indentedDescription(indent: indent + "  ", sortKeys: sortKeys) }
         .joined(separator: ",\n")
       return "\n\(indent)[\n" + contents + "\n\(indent)]"
     case let .object(dict):
-      let contents = dict
-        .map { "\(indent + "  ")\($0.key): \($0.value.indentedDescription(indent: indent + "  "))" }
+      let contents = (sortKeys ? dict.sorted { $0.key < $1.key } : dict.map { $0 })
+        .map {
+          "\(indent + "  ")\($0.key): \($0.value.indentedDescription(indent: indent + "  ", sortKeys: sortKeys))"
+        }
         .joined(separator: ",\n")
       return "\(indent){\n" + contents + "\n\(indent)}"
     case .null:

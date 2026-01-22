@@ -752,24 +752,24 @@ extension NSAttributedString {
       appendRect(cloudsRects[0].expanded(by: paddings))
     } else {
       for index in 0..<cloudsRects.count {
-        let newPaddings: EdgeInsets
-        if index == 0 {
-          newPaddings = EdgeInsets(
-            top: 0,
-            left: paddings.left,
-            bottom: paddings.bottom,
-            right: paddings.right
-          )
-        } else if index == cloudsRects.count - 1 {
-          newPaddings = EdgeInsets(
-            top: paddings.top,
-            left: paddings.left,
-            bottom: 0,
-            right: paddings.right
-          )
-        } else {
-          newPaddings = EdgeInsets(top: 0, left: paddings.left, bottom: 0, right: paddings.right)
-        }
+        let newPaddings: EdgeInsets =
+          if index == 0 {
+            .init(
+              top: 0,
+              left: paddings.left,
+              bottom: paddings.bottom,
+              right: paddings.right
+            )
+          } else if index == cloudsRects.count - 1 {
+            .init(
+              top: paddings.top,
+              left: paddings.left,
+              bottom: 0,
+              right: paddings.right
+            )
+          } else {
+            .init(top: 0, left: paddings.left, bottom: 0, right: paddings.right)
+          }
         appendRect(cloudsRects[index].expanded(by: newPaddings))
       }
     }
@@ -1326,10 +1326,10 @@ extension CTLine {
     let currentLineHeight = lineAscent + lineDescent
 
     var adjustedLineHeight = currentLineHeight
-    if maxHeight < .greatestFiniteMagnitude && currentLineHeight > maxHeight {
-        adjustedLineHeight = maxHeight
-    } else if minHeight > 0 && currentLineHeight < minHeight {
-        adjustedLineHeight = minHeight
+    if maxHeight < .greatestFiniteMagnitude, currentLineHeight > maxHeight {
+      adjustedLineHeight = maxHeight
+    } else if minHeight > 0, currentLineHeight < minHeight {
+      adjustedLineHeight = minHeight
     }
 
     let freeSpace = (adjustedLineHeight - currentLineHeight) / 2
@@ -1360,8 +1360,8 @@ extension CTLine {
 
       #if os(iOS)
       if let key = rangeVerticalAlignmentKey,
-          let verticalAlignment = run.rangeVerticalAlignment(for: key)?.verticalAlignment,
-          run.baselineOffset == 0 {
+         let verticalAlignment = run.rangeVerticalAlignment(for: key)?.verticalAlignment,
+         run.baselineOffset == 0 {
         let runAscent = run.typographicBounds.ascent
         let runDescent = run.typographicBounds.descent
         let lineAscent = overriddenTypographicBounds.ascent
@@ -1685,7 +1685,10 @@ extension CTRun {
     attribute(withName: key) as BorderAttribute?
   }
 
-  fileprivate func rangeVerticalAlignment(for key: NSAttributedString.Key) -> RangeVerticalAlignmentAttribute? {
+  fileprivate func rangeVerticalAlignment(
+    for key: NSAttributedString
+      .Key
+  ) -> RangeVerticalAlignmentAttribute? {
     attribute(withName: key) as RangeVerticalAlignmentAttribute?
   }
 

@@ -34,7 +34,7 @@ extension JSONDictionary {
     }
     return removedValue
   }
-  
+
   public func allTerminalPaths() -> [JSONObject.Path] {
     JSONObject.object(self).allTerminalPaths()
   }
@@ -174,7 +174,7 @@ extension JSONObject {
       return nil
     }
   }
-  
+
   fileprivate func allTerminalPaths() -> [Path] {
     switch self {
     case let .object(dict):
@@ -188,5 +188,11 @@ extension JSONObject {
     case .string, .number, .bool, .null:
       [.empty]
     }
+  }
+}
+
+extension JSONDictionary {
+  public func indentedDescription(indent: String = "", sortKeys: Bool = false) -> String {
+    JSONObject.object(self).indentedDescription(indent: indent, sortKeys: sortKeys)
   }
 }

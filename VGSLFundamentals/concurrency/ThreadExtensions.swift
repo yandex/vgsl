@@ -8,6 +8,6 @@ extension Thread {
     assert(isMainThread)
   }
 
-  //This function is deprecated. It will be removed in a future major release.
+  // This function is deprecated. It will be removed in a future major release.
   public static func assertIsNotMain() {}
 }

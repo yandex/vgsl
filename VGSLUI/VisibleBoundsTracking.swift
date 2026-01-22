@@ -1,9 +1,9 @@
 // Copyright 2019 Yandex LLC. All rights reserved.
 
 #if canImport(UIKit)
-import VGSLFundamentals
 import CoreGraphics
 import UIKit
+import VGSLFundamentals
 
 public protocol VisibleBoundsTracking {
   func onVisibleBoundsChanged(from: CGRect, to: CGRect)
@@ -22,7 +22,7 @@ extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
     visibleBoundsTrackingSubviews.forEach { boundsTrackingView in
       let fromFrame = convert(from, to: boundsTrackingView)
       let toFrame = convert(to, to: boundsTrackingView)
-      
+
       let applyOnVisibleBoundsChanged = {
         boundsTrackingView.onVisibleBoundsChanged(
           from: boundsTrackingView.bounds.intersection(fromFrame),

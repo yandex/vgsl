@@ -33,4 +33,3 @@ public protocol NetworkingDelegate: URLSessionDataDelegate, URLSessionTaskDelega
     forTask task: URLSessionDataTask
   )
 }
-

@@ -47,7 +47,7 @@ extension UIScrollView: ScrollViewType {
     contentSize.width + contentInset.left + contentInset.right > bounds.width &&
       contentOffset.x > contentSize.width - bounds.width + contentInset.right
   }
-  
+
   public var isBouncingVertically: Bool {
     isBouncingOnTop || isBouncingOnBottom
   }

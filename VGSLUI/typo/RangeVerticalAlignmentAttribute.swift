@@ -22,6 +22,11 @@ public final class RangeVerticalAlignmentAttribute: StringAttribute {
   }
 
   public func apply(to str: CFMutableAttributedString, at range: CFRange) {
-    CFAttributedStringSetAttribute(str, range, RangeVerticalAlignmentAttribute.Key as CFString, self)
+    CFAttributedStringSetAttribute(
+      str,
+      range,
+      RangeVerticalAlignmentAttribute.Key as CFString,
+      self
+    )
   }
 }
