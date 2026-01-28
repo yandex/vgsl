@@ -668,7 +668,8 @@ extension NSAttributedString {
           actionKey: actionKey,
           backgroundKey: backgroundKey,
           rangeVerticalAlignmentKey: rangeVerticalAlignmentKey,
-          borderKey: borderKey
+          borderKey: borderKey,
+          textOriginX: lineOriginX
         )
         runsLayout += runsWithAction
       } else {
@@ -1352,7 +1353,8 @@ extension CTLine {
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,
     rangeVerticalAlignmentKey: NSAttributedString.Key?,
-    borderKey: NSAttributedString.Key?
+    borderKey: NSAttributedString.Key?,
+    textOriginX: CGFloat
   ) -> [AttributedStringLayout<ActionType>.Run] {
     var runsWithActions = [AttributedStringLayout<ActionType>.Run]()
     for run in runs {
@@ -1456,13 +1458,17 @@ extension CTLine {
       #endif
 
       context.textPosition = position
-
       context.inSeparateGState {
         context.performDrawing(shadedWith: run.shadow) {
           CTRunDraw(run, context, .infinite)
           if run.isUnderline {
             if #available(iOS 18, tvOS 18, macOS 13, *) {
-              drawUnderline(for: run, at: runPosition, in: context)
+              drawUnderline(
+                for: run,
+                at: runPosition,
+                with: textOriginX,
+                in: context
+              )
             }
           }
           if run.isSingleStrikethrough {
@@ -1515,7 +1521,12 @@ extension CTLine {
   }
 
   @available(iOS 16, tvOS 16, macOS 13, *)
-  private func drawUnderline(for run: CTRun, at position: CGPoint, in context: CGContext) {
+  private func drawUnderline(
+    for run: CTRun,
+    at position: CGPoint,
+    with lineXCorrection: CGFloat,
+    in context: CGContext
+  ) {
     context.saveGState()
     context.setStrokeColor(run.color)
     context.setLineWidth(run.font.underlineThickness)
@@ -1524,7 +1535,12 @@ extension CTLine {
       forTextPosition: position,
       offset: run.font.underlinePosition - run.font.underlineThickness
     )
-    for glyphPath in run.glyphPaths(runPosition: position) {
+
+    let glyphStartPosition = CGPoint(
+      x: lineXCorrection,
+      y: position.y
+    )
+    for glyphPath in run.glyphPaths(runPosition: glyphStartPosition) {
       let thickedPath = glyphPath.copy(
         strokingWithWidth: run.font.underlineThickness * 2.5,
         lineCap: .round,
@@ -1701,8 +1717,10 @@ extension CTRun {
     CTRunGetPositions(self, .infinite, &positions)
 
     return zip(glyphs, positions).compactMap { glyph, position in
-      var transform = CGAffineTransform.identity
-        .translatedBy(x: position.x, y: runPosition.y + position.y)
+      var transform = CGAffineTransform.identity.translatedBy(
+        x: runPosition.x + position.x,
+        y: runPosition.y + position.y
+      )
       return CTFontCreatePathForGlyph(font, glyph, &transform)
     }
   }
