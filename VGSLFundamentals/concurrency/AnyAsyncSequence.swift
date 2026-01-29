@@ -7,7 +7,12 @@ public struct AnyAsyncIterator<Element>: AsyncIteratorProtocol {
 
   @inlinable
   public init(_ body: @escaping () async throws -> Element?) {
-    _body = body
+    self = .init(_body: body)
+  }
+
+  @usableFromInline
+  internal init(_body: @escaping () async throws -> Element?) {
+    self._body = _body
   }
 
   @inlinable
@@ -34,12 +39,18 @@ public struct AnyAsyncSequence<Element>: AsyncSequence {
   public init<I: AsyncIteratorProtocol>(
     _ makeUnderlyingIterator: @escaping () -> I
   ) where Element == I.Element {
-    _makeIterator = {
+    let makeIterator = {
       var it = makeUnderlyingIterator()
-      return AnyAsyncIterator {
+      return AnyAsyncIterator(_body: {
         try await it.next()
-      }
+      })
     }
+    self = .init(_makeIterator: makeIterator)
+  }
+
+  @usableFromInline
+  internal init(_makeIterator: @escaping () -> AnyAsyncIterator<Element>) {
+    self._makeIterator = _makeIterator
   }
 
   @inlinable
