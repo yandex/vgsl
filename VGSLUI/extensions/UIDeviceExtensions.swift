@@ -131,6 +131,8 @@ extension UIDevice {
     case "iPad16,1", "iPad16,2": return "iPad mini (A17 Pro)"
     case "iPad16,3", "iPad16,4": return "iPad Pro 11\" (M4)"
     case "iPad16,5", "iPad16,6": return "iPad Pro 13\" (M4)"
+    case "iPad17,1", "iPad17,2": return "iPad Pro 11\" (M5)"
+    case "iPad17,3", "iPad17,4": return "iPad Pro 13\" (M5)"
     default:
       assertionFailure()
       return model

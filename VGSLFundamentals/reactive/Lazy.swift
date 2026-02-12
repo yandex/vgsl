@@ -2,58 +2,44 @@
 
 import Foundation
 
-#if DEBUG && canImport(OSLog)
-internal import OSLog
-#endif
-
 @dynamicMemberLookup
 public final class Lazy<T> {
-  @usableFromInline
-  internal typealias Preload = () -> Void
   public typealias Getter = () -> T
 
-  @usableFromInline
-  internal enum State {
-    case created(Preload, Getter, Promise<T>)
-    case loading(Future<T>)
-    case loaded(T)
-  }
-
-  @usableFromInline
-  internal var state: State
-
-  #if DEBUG
-  @usableFromInline
-  internal var _wasRead = false
-  #endif
-
-  @inlinable
-  internal init(state: State) {
-    self.state = state
-  }
-
-  @inlinable
-  deinit {
-    traceDeinit()
-  }
-
-  @inlinable
-  public convenience init(getter: @escaping Getter) {
-    self.init(preload: {}, getter: getter)
-  }
-
-  @inlinable
-  public convenience init(onMainThreadGetter getter: @escaping Getter) {
-    func onMainThreadGetter() -> T {
-      assert(Thread.isMainThread)
-      return getter()
+  private static func makeOneShotGetter(_ getter: @escaping Getter) -> Getter {
+    var state = Either<Getter, T>.left(getter)
+    return {
+      switch state {
+      case let .left(getter):
+        let result = getter()
+        state = .right(result)
+        return result
+      case let .right(value):
+        return value
+      }
     }
-    self.init(getter: onMainThreadGetter)
   }
 
-  @inlinable
+  private let impl: ResettableLazy<T>
+
+  public var value: T {
+    impl.value
+  }
+
+  public var currentValue: T? {
+    impl.currentValue
+  }
+
+  public convenience init(getter: @escaping Getter) {
+    self.init(impl: ResettableLazy(getter: Self.makeOneShotGetter(getter)))
+  }
+
+  public convenience init(onMainThreadGetter getter: @escaping Getter) {
+    self.init(impl: ResettableLazy(onMainThreadGetter: Self.makeOneShotGetter(getter)))
+  }
+
   public convenience init(preload: @escaping () -> Void, getter: @escaping () -> T) {
-    self.init(state: .created(preload, getter, Promise()))
+    self.init(impl: ResettableLazy(preload: preload, getter: Self.makeOneShotGetter(getter)))
   }
 
   /// Produces a Lazy in not loaded state with a given value.
@@ -62,118 +48,31 @@ public final class Lazy<T> {
   /// behave like it was created with a getter, and `currentValue`
   /// will be `nil` until the Lazy is read.
   /// Use `init(loaded:)` when you need a Lazy in loaded state.
-  @inlinable
   public convenience init(value: T) {
-    self.init(getter: { value })
+    self.init(impl: ResettableLazy(value: value))
   }
 
   /// Produces a Lazy in loaded state with a given value.
   ///
   /// The resulting Lazy will immediately have a non-nil `currentValue`.
-  @inlinable
   public convenience init(loaded value: T) {
-    self.init(state: .loaded(value))
+    self.init(impl: ResettableLazy(loaded: value))
   }
 
-  @inlinable
-  public var value: T {
-    #if DEBUG
-    _wasRead = true
-    #endif
-    return getValue(eagerEvaluation: false, expectLoaded: false)
+  private init(impl: ResettableLazy<T>) {
+    self.impl = impl
   }
 
-  @inlinable
-  public var currentValue: T? {
-    switch state {
-    case .created, .loading:
-      return nil
-    case let .loaded(value):
-      return value
-    }
-  }
-
-  @inlinable
   public var future: Future<T> {
-    func doNothingRetainSelf(_: T) {
-      // Capture self until self is loaded.
-      // Ownership graph will look as follows:
-      // self -> stored future -> interface future
-      // interface future -> self
-      // We expect this closure (and its captured `self`) to be released once
-      // the stored future is resolved.
-      // See `test_NonStoredLazyIsRetainedByFuture` for details.
-      withExtendedLifetime(self) {}
-    }
-
-    func makeFutureWithAssociatedSelf(parent: Future<T>) -> Future<T> {
-      let result = parent.map(identity(_:))
-      result.resolved(doNothingRetainSelf(_:)) // associate self with the result
-      return result
-    }
-
-    switch state {
-    case let .created(_, _, promise):
-      let storedFuture = promise.future
-      return makeFutureWithAssociatedSelf(parent: storedFuture)
-
-    case let .loading(storedFuture):
-      return makeFutureWithAssociatedSelf(parent: storedFuture)
-
-    case let .loaded(value):
-      // If the Lazy is already loaded we don't need to keep a reference to it
-      return Future(payload: value)
-    }
+    impl.future
   }
 
-  @inlinable
-  internal func getValue(eagerEvaluation: Bool, expectLoaded: Bool) -> T {
-    while true {
-      switch state {
-      case let .created(preload, getter, _):
-        assert(!expectLoaded, "Value is expected to be loaded")
-        preload()
-
-        guard case let .created(_, _, promise) = state else {
-          // During invocation of `preload` we could enter the `getValue` again
-          // and change the state. In this case by the time we return to this frame
-          // the state is probably `loaded` already, so we reevaluate the switch.
-          continue
-        }
-        state = .loading(promise.future)
-
-        traceWillLoad(eagerEvaluation: eagerEvaluation)
-        let value = getter()
-
-        if case .loading = state {
-        } else {
-          assertionFailure()
-        }
-        state = .loaded(value)
-        promise.resolve(value)
-
-      case .loading:
-        fatalError("Attempt to load Lazy while in loading state")
-
-      case let .loaded(value):
-        return value
-      }
-    }
-  }
-
-  @inlinable
   public func whenLoaded(perform body: @escaping Future<T>.Callback) {
-    future.resolved(body)
+    impl.whenLoaded(perform: body)
   }
 
-  @inlinable
   public func ensureIsLoaded() {
-    switch state {
-    case .created:
-      _ = getValue(eagerEvaluation: false, expectLoaded: false)
-    case .loading, .loaded:
-      break
-    }
+    impl.ensureIsLoaded()
   }
 
   /// Transforms this lazy into a new one **eagerly**.
@@ -187,123 +86,16 @@ public final class Lazy<T> {
   /// i.e. `Lazy(getter: { someTransformation(anotherLazy.value) })`
   /// or `lazyMap { someTransformation($0) }`.
   public func map<U>(_ transform: @escaping (T) -> U) -> Lazy<U> {
-    traceMap(toType: U.self)
-    func preload() {
-      self.ensureIsLoaded()
-    }
-    func transformingGetter() -> U {
-      transform(self.getValue(eagerEvaluation: false, expectLoaded: true))
-    }
-    let result = Lazy<U>(preload: preload, getter: transformingGetter)
-    weak var weakResult: Lazy<U>? = result
-    func onResolved(_: T) {
-      _ = weakResult?.getValue(eagerEvaluation: true, expectLoaded: false)
-    }
-    future.resolved(onResolved)
-    return result
+    Lazy<U>(impl: impl.map(transform))
   }
 
-  @inlinable
+  /// Same as `map`, but the transformation is performed lazily
+  /// (resulting lazy is not loaded when the current one loads).
   public func lazyMap<U>(_ transform: @escaping (T) -> U) -> Lazy<U> {
-    traceMap(toType: U.self)
-    func preload() {
-      self.ensureIsLoaded()
-    }
-    func transformingGetter() -> U {
-      transform(self.getValue(eagerEvaluation: false, expectLoaded: true))
-    }
-    let result = Lazy<U>(preload: preload, getter: transformingGetter)
-    return result
+    Lazy<U>(impl: impl.lazyMap(transform))
   }
 
-  @inlinable
   public subscript<U>(dynamicMember path: KeyPath<T, U>) -> Lazy<U> {
-    func dynamicMemberGetter(_ object: T) -> U {
-      object[keyPath: path]
-    }
-    return map(dynamicMemberGetter)
+    Lazy<U>(impl: impl[dynamicMember: path])
   }
 }
-
-extension Lazy {
-  @inlinable
-  internal func traceWillLoad(eagerEvaluation: Bool) {
-    #if DEBUG
-    if _LazyTraceLoggingEnabled {
-      logDebug("Lazy: Will load. eager=\(eagerEvaluation) T=<\(T.self)>")
-    }
-    if eagerEvaluation {
-      _traceWillLoadEager()
-    } else {
-      _traceWillLoadNotEager()
-    }
-    #endif
-  }
-
-  @inlinable
-  internal func traceMap(toType: (some Any).Type) {
-    #if DEBUG
-    let isLoaded = future.isFulfilled
-    if _LazyTraceLoggingEnabled {
-      logDebug("Lazy: Create map. isLoaded=\(isLoaded) T=<\(T.self)> U=<\(toType)>")
-    }
-    if isLoaded {
-      _traceMapFromLoaded()
-    }
-    #endif
-  }
-
-  @inlinable
-  internal func traceDeinit() {
-    #if DEBUG
-    let isLoaded = future.isFulfilled
-    if _LazyTraceLoggingEnabled {
-      logDebug("Lazy: Deinit. isLoaded=\(isLoaded) wasRead=\(_wasRead) T=<\(T.self)>")
-    }
-    if !isLoaded {
-      _traceDeinitNotLoaded()
-    }
-    if !_wasRead {
-      _traceDeinitNotRead()
-    }
-    #endif
-  }
-
-  #if DEBUG
-  @usableFromInline
-  internal func logDebug(_ string: String) {
-    #if canImport(OSLog)
-    if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
-      Logger(subsystem: "Lazy", category: "Trace").debug("\(string)")
-    }
-    #endif
-  }
-
-  @inlinable
-  internal func _traceWillLoadEager() {}
-
-  @inlinable
-  internal func _traceWillLoadNotEager() {}
-
-  @inlinable
-  internal func _traceMapFromLoaded() {}
-
-  @inlinable
-  internal func _traceDeinitNotLoaded() {}
-
-  @inlinable
-  internal func _traceDeinitNotRead() {}
-  #endif
-}
-
-#if DEBUG
-private let __LazyTraceLoggingEnabled: AllocatedUnfairLock<Bool> = .init(initialState: false)
-public var _LazyTraceLoggingEnabled: Bool {
-  get {
-    __LazyTraceLoggingEnabled.withLock { $0 }
-  }
-  set {
-    __LazyTraceLoggingEnabled.withLock { $0 = newValue }
-  }
-}
-#endif

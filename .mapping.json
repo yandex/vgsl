@@ -939,6 +939,7 @@
   "VGSLFundamentals/reactive/DebugInfo.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/DebugInfo.swift",
   "VGSLFundamentals/reactive/Lazy.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/Lazy.swift",
   "VGSLFundamentals/reactive/Property.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/Property.swift",
+  "VGSLFundamentals/reactive/ResettableLazy.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/ResettableLazy.swift",
   "VGSLFundamentals/reactive/Result.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/Result.swift",
   "VGSLFundamentals/reactive/Signal+CombineLatest.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/Signal+CombineLatest.swift",
   "VGSLFundamentals/reactive/Signal.swift":"mobile/vgsl/public/VGSLFundamentals/reactive/Signal.swift",
