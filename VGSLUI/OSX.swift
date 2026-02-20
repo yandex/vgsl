@@ -293,6 +293,10 @@ extension NSImage {
   public convenience init?(systemName: String) {
     self.init(systemSymbolName: systemName, accessibilityDescription: nil)
   }
+
+  public convenience init?(named: String, in _: Bundle?) {
+    self.init(named: named)
+  }
 }
 
 extension Image {

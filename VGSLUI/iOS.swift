@@ -95,6 +95,10 @@ extension UIImage {
 
     return UIImage(cgImage: image, scale: actualScale, orientation: orientation)
   }
+
+  public convenience init?(named: String, in bundle: Bundle?) {
+    self.init(named: named, in: bundle, compatibleWith: nil)
+  }
 }
 
 extension Image {
