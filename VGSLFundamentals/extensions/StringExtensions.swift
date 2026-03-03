@@ -2,7 +2,6 @@
 
 import Foundation
 
-// TODO(dmt021): @_spi(Extensions)
 extension String {
   public enum PaddingSide {
     case left

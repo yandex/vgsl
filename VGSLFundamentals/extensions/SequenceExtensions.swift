@@ -1,6 +1,5 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-// TODO(dmt021): @_spi(Extensions)
 extension Sequence {
   public func group(batchSize: Int) -> [[Element]] {
     var result = [[Element]]()
@@ -183,7 +182,6 @@ extension Sequence where Element: Sendable {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Sequence where Element: Hashable {
   @inlinable
   public func makeDictionary<T>(withValueForKey valueForKey: (Element) throws -> T?) rethrows
@@ -208,7 +206,6 @@ extension Sequence where Element: Hashable {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Sequence where Element: Numeric {
   @inlinable
   public var partialSums: [Element] {

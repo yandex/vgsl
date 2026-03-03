@@ -2,7 +2,6 @@
 
 import Foundation
 
-// TODO(dmt021): @_spi(Extensions)
 extension IndexSet {
   public func shifting(by delta: Int) -> IndexSet {
     var result = self

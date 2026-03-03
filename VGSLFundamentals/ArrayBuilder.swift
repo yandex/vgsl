@@ -51,7 +51,6 @@ public enum ArrayBuilder<Element>: Sendable {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Array {
   @inlinable
   public static func build(

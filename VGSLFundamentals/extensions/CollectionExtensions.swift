@@ -2,7 +2,6 @@
 
 // Collection
 
-// TODO(dmt021): @_spi(Extensions)
 extension Collection {
   @inlinable
   public func firstMatchWithIndex(
@@ -36,7 +35,6 @@ extension Collection {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Collection where Element: Equatable {
   @inlinable
   public func element(after item: Element) -> Element? {
@@ -59,7 +57,6 @@ public func reverseIndex<T: Collection>(_ index: T.Index, inCollection collectio
 
 // RangeReplaceableCollection
 
-// TODO(dmt021): @_spi(Extensions)
 extension RangeReplaceableCollection {
   public init(repeating element: Element, times: UInt) {
     // swiftlint:disable no_direct_use_of_repeating_count_initializer
@@ -82,7 +79,6 @@ extension RangeReplaceableCollection {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension RangeReplaceableCollection where Index == Int {
   @inlinable
   public func stableSort(isLessOrEqual: (Element, Element) -> Bool) -> Self {
@@ -134,7 +130,6 @@ public func += <T: RangeReplaceableCollection>(
 
 // MutableCollection
 
-// TODO(dmt021): @_spi(Extensions)
 extension MutableCollection where Element: MutableCollection {
   @inlinable
   public subscript(coords: (Index, Element.Index)) -> Element.Element {
@@ -149,7 +144,6 @@ extension MutableCollection where Element: MutableCollection {
 
 // RandomAccessCollection
 
-// TODO(dmt021): @_spi(Extensions)
 extension RandomAccessCollection {
   public var lastElementIndex: Index? {
     isEmpty ? nil : index(before: endIndex)

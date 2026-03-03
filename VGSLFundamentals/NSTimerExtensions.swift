@@ -75,7 +75,6 @@ public final class TimerScheduler: Scheduling {
 
 extension Timer: TimerType {}
 
-// TODO(dmt021): @_spi(Extensions)
 extension Timer {
   public static func make(
     withTimeInterval ti: TimeInterval,

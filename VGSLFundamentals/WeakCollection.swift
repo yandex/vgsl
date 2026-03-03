@@ -15,18 +15,25 @@ public struct WeakCollection<T> {
     array.isEmpty
   }
 
+  @inlinable
   public mutating func append(_ object: T) {
     assert((object as AnyObject) is T)
     compact()
-    array.append(Weak(value: object as AnyObject))
+    append(object as AnyObject)
   }
 
+  @inlinable
   public mutating func append(_ objects: [T]) {
     compact()
     for object in objects {
       assert((object as AnyObject) is T)
-      array.append(Weak(value: object as AnyObject))
+      append(object as AnyObject)
     }
+  }
+
+  @usableFromInline
+  internal mutating func append(_ object: AnyObject) {
+    array.append(Weak(value: object))
   }
 
   public mutating func remove(_ object: T) {
@@ -56,7 +63,7 @@ public struct WeakCollection<T> {
   }
 
   public mutating func compact() {
-    array = array.filter { $0.value != nil }
+    array.removeAll { $0.value == nil }
   }
 }
 

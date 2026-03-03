@@ -2,7 +2,6 @@
 
 import Foundation
 
-// TODO(dmt021): @_spi(Extensions)
 extension String {
   public func range(from nsRange: NSRange) -> Range<Index>? {
     let validPositions = (indices + [endIndex]).map { $0.utf16Offset(in: self) }

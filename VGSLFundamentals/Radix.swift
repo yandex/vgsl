@@ -6,7 +6,6 @@ public enum Radix: Int, Sendable {
   case hex = 16
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension FixedWidthInteger {
   @inlinable
   public init?(_ text: some StringProtocol, safeRadix radix: Radix) {
@@ -16,7 +15,6 @@ extension FixedWidthInteger {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension String {
   @inlinable
   public init(_ value: some BinaryInteger, safeRadix radix: Radix, uppercase: Bool = false) {

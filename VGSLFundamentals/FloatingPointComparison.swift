@@ -1,6 +1,5 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-// TODO(dmt021): @_spi(Extensions)
 extension FloatingPoint where Self.Stride: ExpressibleByFloatLiteral {
   public func isApproximatelyGreaterThan(
     _ number: Self,
@@ -65,7 +64,6 @@ extension FloatingPoint where Self.Stride: ExpressibleByFloatLiteral {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension BinaryFloatingPoint {
   // https://github.com/apple/swift-evolution/blob/master/proposals/0259-approximately-equal.md
   @inlinable

@@ -128,6 +128,9 @@ extension ObservableVariable {
 
   /// Transforms the variable's value to another type and returns a new `ObservableVariable` of that
   /// type.
+  /// One should not rely on timing when the transform function is called. Moreover, using external
+  /// non-constant state inside the transform function is strongly discouraged. This may lead to
+  /// unexpected (non-deterministic) behavior and should be avoided at all costs.
   /// - Parameter transform: A function that converts `T` to `U`.
   public func map<U>(_ transform: @escaping (T) -> U) -> ObservableVariable<U> {
     ObservableVariable<U>(

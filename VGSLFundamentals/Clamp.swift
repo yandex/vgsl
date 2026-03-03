@@ -34,14 +34,12 @@ public func clamp(
   )
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Comparable {
   public func clamp(_ range: ClosedRange<Self>) -> Self {
     max(range.lowerBound, min(range.upperBound, self))
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Comparable where Self: Strideable, Self.Stride: SignedInteger {
   public func clamp(_ range: Range<Self>) -> Self? {
     guard !range.isEmpty else {

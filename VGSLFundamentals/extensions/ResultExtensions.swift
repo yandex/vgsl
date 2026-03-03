@@ -1,6 +1,5 @@
 // Copyright 2021 Yandex LLC. All rights reserved.
 
-// TODO(dmt021): @_spi(Extensions)
 extension Result {
   @inlinable
   public func map<U>(_ transform: (Success) throws -> U) -> Result<U, Error> {

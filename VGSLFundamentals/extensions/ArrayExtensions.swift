@@ -1,6 +1,5 @@
 // Copyright 2015 Yandex LLC. All rights reserved.
 
-// TODO(dmt021): @_spi(Extensions)
 extension Array {
   @inlinable
   public func iterativeFlatMap<T>(_ transform: (Element, Index) throws -> T?) rethrows -> [T] {
@@ -43,7 +42,6 @@ extension Array {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Array where Element: Equatable {
   @inlinable
   public func endsWith(_ other: [Element]) -> Bool {
@@ -51,7 +49,6 @@ extension Array where Element: Equatable {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Array where Element: Hashable {
   @inlinable
   public func isPermutation(of other: Array) -> Bool {
@@ -79,7 +76,6 @@ extension Array where Element: Hashable {
   }
 }
 
-// TODO(dmt021): @_spi(Extensions)
 extension Array where Element: AnyObject {
   @inlinable
   public func isEqualByReferences(_ rhs: [Element]) -> Bool {

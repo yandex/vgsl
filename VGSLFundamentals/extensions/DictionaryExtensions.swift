@@ -2,7 +2,6 @@
 
 import Foundation
 
-// TODO(dmt021): @_spi(Extensions)
 extension Dictionary {
   @inlinable
   public init(_ keys: some Sequence<Key>, _ values: some Sequence<Value>) {
