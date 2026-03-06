@@ -34,17 +34,20 @@ public final class RemoteImageHolder: ImageHolder {
   private let resourceRequester: AsyncImageRequester
   private let imageProcessingQueue: OperationQueueType
   private let loadEventPipe = SignalPipe<LoadEvent>()
+  private let imageDecoder: (@Sendable (Data) -> Image?)?
 
   private init(
     url: URL,
     placeholder: ImagePlaceholder? = nil,
     resourceRequester: @escaping AsyncImageRequester,
-    imageProcessingQueue: OperationQueueType
+    imageProcessingQueue: OperationQueueType,
+    imageDecoder: (@Sendable (Data) -> Image?)?
   ) {
     self.url = url
     self.placeholder = placeholder
     self.resourceRequester = resourceRequester
     self.imageProcessingQueue = imageProcessingQueue
+    self.imageDecoder = imageDecoder
   }
 
   public convenience init(
@@ -109,7 +112,8 @@ public final class RemoteImageHolder: ImageHolder {
       url: url,
       placeholder: placeholder,
       resourceRequester: resourceRequester.requestResource,
-      imageProcessingQueue: imageProcessingQueue
+      imageProcessingQueue: imageProcessingQueue,
+      imageDecoder: imageDecoder
     )
     weakSelf = self
   }
@@ -138,7 +142,7 @@ public final class RemoteImageHolder: ImageHolder {
     case let .image(image)?:
       completion((image, .cache))
     case let .imageData(imageData)?:
-      imageData.makeImage(queue: imageProcessingQueue) { image in
+      imageData.makeImage(queue: imageProcessingQueue, decoder: imageDecoder) { image in
         completion((image, .cache))
       }
     case .view, .color, .none:

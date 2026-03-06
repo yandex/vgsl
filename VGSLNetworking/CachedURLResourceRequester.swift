@@ -68,6 +68,7 @@ public final class CachedURLResourceRequester: URLResourceRequesting, LocalResou
 
 private final class DeferredCancel: Cancellable {
   private let isCancelled: AllocatedUnfairLock<Bool> = .init(initialState: false)
+  @MainActor
   private let completion: @MainActor (Result<URLRequestResult, NSError>) -> Void
 
   @MainActor
@@ -79,6 +80,7 @@ private final class DeferredCancel: Cancellable {
     }
   }
 
+  @MainActor
   init(completion: @escaping @MainActor (Result<URLRequestResult, NSError>) -> Void) {
     self.completion = completion
   }

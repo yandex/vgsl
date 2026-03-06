@@ -266,16 +266,16 @@ extension Signal where T: Sendable {
       Signal<U> { observer -> Disposable in
         Thread.assertIsMain()
         nonisolated(unsafe) let observer = observer
-        var disposed = false
+        let disposed: AllocatedUnfairLock<Bool> = .init(initialState: false)
         backgroundRunner {
           let value = transform(it)
           mainThreadAsyncRunner {
             Thread.assertIsMain()
-            guard !disposed else { return }
+            guard !disposed.withLock({ $0 }) else { return }
             observer.action(value)
           }
         }
-        return Disposable { disposed = true }
+        return Disposable { disposed.withLock { $0 = true } }
       }
     }
   }

@@ -10,7 +10,7 @@ public protocol NetworkTask: AnyObject, Cancellable {
   func resume()
 }
 
-extension Foundation.URLSessionTask: VGSLNetworking.NetworkTask {}
+extension Foundation.URLSessionTask: VGSLNetworking.NetworkTask, @retroactive Cancellable {}
 
 public typealias URLRequestCompletionHandler =
   @MainActor (Result<(Data, HTTPURLResponse), NSError>) -> Void

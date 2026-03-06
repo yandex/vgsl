@@ -84,10 +84,11 @@ public struct ImageData: Hashable, Sendable {
 
   public func makeImage(
     queue: OperationQueueType,
+    decoder: (@Sendable (_ data: Data) -> Image?)? = nil,
     completion: @escaping @MainActor @Sendable (Image) -> Void
   ) {
     let action: @Sendable () -> Void = {
-      if let image = makeImage() {
+      if let image = makeImage(decoder: decoder) {
         onMainThread {
           completion(image)
         }
@@ -100,8 +101,10 @@ public struct ImageData: Hashable, Sendable {
     }
   }
 
-  public func makeImage() -> Image? {
-    decode(base64: base64).flatMap(Image.init(data:))
+  public func makeImage(decoder: (@Sendable (_ data: Data) -> Image?)? = nil) -> Image? {
+    decode(base64: base64).map {
+      decoder?($0) ?? Image(data: $0)
+    } ?? nil
   }
 }
 

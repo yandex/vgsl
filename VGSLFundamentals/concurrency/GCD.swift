@@ -51,7 +51,11 @@ public func onMainThread(_ block: @escaping @MainActor () -> Void) {
       block()
     }
   } else {
-    DispatchQueue.main.async(execute: block)
+    DispatchQueue.main.async {
+      assumeIsolatedToMainActor {
+        block()
+      }
+    }
   }
 }
 
@@ -94,7 +98,11 @@ public func runUnsafelyOnMainActor<T>(_ body: @MainActor () throws -> T) rethrow
 @Sendable
 @inlinable
 public func onMainThreadAsync(_ block: @escaping @MainActor () -> Void) {
-  DispatchQueue.main.async(execute: block)
+  DispatchQueue.main.async {
+    assumeIsolatedToMainActor {
+      block()
+    }
+  }
 }
 
 @inlinable
