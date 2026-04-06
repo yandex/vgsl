@@ -31,6 +31,11 @@ public final class RemoteImageHolder: ImageHolder {
   public let url: URL
   public var loadEventSignal: Signal<LoadEvent> { loadEventPipe.signal }
   public private(set) weak var image: Image?
+
+  private var storedDisplaySize: CGSize?
+  public var displaySize: CGSize? {
+    image == nil ? nil : storedDisplaySize
+  }
   private let resourceRequester: AsyncImageRequester
   private let imageProcessingQueue: OperationQueueType
   private let loadEventPipe = SignalPipe<LoadEvent>()
@@ -76,6 +81,7 @@ public final class RemoteImageHolder: ImageHolder {
         }
         imageProcessingQueue.addOperation {
           let image: Image?
+          var loadedDisplaySize: CGSize?
           #if os(iOS)
           switch value.data.imageFormat {
           case .gif:
@@ -84,10 +90,12 @@ public final class RemoteImageHolder: ImageHolder {
               decode: imageLoadingOptimizationEnabled
             )
           case .unknown where imageDecoder != nil:
-            image = imageDecoder?(value.data) ?? Image(
+            let decodedImage = imageDecoder?(value.data)
+            image = decodedImage ?? Image(
               data: value.data,
               scale: PlatformDescription.screenScale()
             )
+            loadedDisplaySize = decodedImage?.size
           case .jpeg, .png, .tiff, .unknown:
             image = Image(
               data: value.data,
@@ -100,6 +108,7 @@ public final class RemoteImageHolder: ImageHolder {
           onMainThread {
             if let image = self.image ?? image {
               self.image = image
+              self.storedDisplaySize = loadedDisplaySize ?? image.size * image.scale
               completion((image, value.source))
             } else if shouldCallCompletionWithNil {
               completion(nil)

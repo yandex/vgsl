@@ -10,12 +10,23 @@ public protocol ImageHolder: AnyObject, CustomDebugStringConvertible {
 
   var image: Image? { get }
   var placeholder: ImagePlaceholder? { get }
+
+  /// Intended render size of the image — the dimensions at which it should be
+  /// displayed. The coordinate system (pixels vs points) depends on the image
+  /// source.
+  var displaySize: CGSize? { get }
   @discardableResult
   func requestImageWithCompletion(_ completion: @escaping @MainActor (Image?) -> Void)
     -> Cancellable?
   func requestImageWithSource(_ completion: @escaping CompletionHandlerWithSource) -> Cancellable?
   func reused(with placeholder: ImagePlaceholder?, remoteImageURL: URL?) -> ImageHolder?
   func equals(_ other: ImageHolder) -> Bool
+}
+
+extension ImageHolder {
+  public var displaySize: CGSize? {
+    image?.size
+  }
 }
 
 extension ImageHolder {

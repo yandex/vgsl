@@ -43,19 +43,25 @@ public final class Lazy<T> {
   }
 
   /// Produces a Lazy in not loaded state with a given value.
+  /// May be useful to mimic real lazy loading behavior in tests.
   ///
   /// Even thou the value is already on hands the resulting Lazy will
   /// behave like it was created with a getter, and `currentValue`
   /// will be `nil` until the Lazy is read.
   /// Use `init(loaded:)` when you need a Lazy in loaded state.
-  public convenience init(value: T) {
-    self.init(impl: ResettableLazy(value: value))
+  public convenience init(deferred value: T) {
+    self.init(impl: ResettableLazy(deferred: value))
   }
 
   /// Produces a Lazy in loaded state with a given value.
   ///
   /// The resulting Lazy will immediately have a non-nil `currentValue`.
   public convenience init(loaded value: T) {
+    self.init(impl: ResettableLazy(loaded: value))
+  }
+
+  /// Shortcut for `init(loaded:)`.
+  public convenience init(value: T) {
     self.init(impl: ResettableLazy(loaded: value))
   }
 

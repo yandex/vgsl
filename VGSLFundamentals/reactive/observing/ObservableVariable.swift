@@ -226,7 +226,7 @@ extension ObservableVariable {
   public var lazy: ObservableVariable<Lazy<T>> {
     ObservableVariable<Lazy<T>>(
       getter: { Lazy(getter: { self.value }) },
-      newValues: newValues.map { Lazy(value: $0) },
+      newValues: newValues.map { Lazy(loaded: $0) },
       ancestors: [debugInfo]
     )
   }
