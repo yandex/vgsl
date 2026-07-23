@@ -74,6 +74,10 @@ extension String {
     endIndex..<endIndex
   }
 
+  public var stringStartRange: Range<Index> {
+    startIndex..<startIndex
+  }
+
   public func rangeOfCommonWordPrefixWithString(_ str: String) -> CountableRange<Int> {
     var idx = 0
     let words = allWords()
@@ -107,7 +111,7 @@ extension String {
     return String(s1WithoutWhitespace) == String(s2WithoutWhitespace)
   }
 
-  public func substringToString(_ string: String) -> String {
+  public func substring(until string: String) -> String {
     components(separatedBy: string).first ?? ""
   }
 
@@ -153,7 +157,8 @@ extension String {
     return (String(result.prefix(lengthLimit)), insertionOffset)
   }
 
-  public var sanitizedPath: String {
+  /// Removes leading, trailing, and consecutive slashes from a path string.
+  public var removingRedundantSlashes: String {
     split(separator: "/").joined(separator: "/")
   }
 
@@ -162,11 +167,17 @@ extension String {
   }
 
   public func formatted(_ args: CVarArg...) -> Self {
-    String(format: self, args)
+    String(format: self, arguments: args)
   }
 }
 
 extension String {
+  public var capitalizingFirst: String {
+    guard !self.isEmpty else { return self }
+    let secondCharIndex = index(after: startIndex)
+    return self[startIndex].uppercased() + self[secondCharIndex...]
+  }
+
   /// This method is really slow and should be used only to format debugDescription.
   public func indented(level: Int = 1) -> String {
     // swiftlint:disable no_direct_use_of_repeating_count_initializer
@@ -184,12 +195,6 @@ extension String {
 
   public func rangeOfCharsIn(_ range: Range<Int>) -> Range<Index> {
     index(startIndex, offsetBy: range.lowerBound)..<index(startIndex, offsetBy: range.upperBound)
-  }
-
-  public func stringWithFirstCharCapitalized() -> String {
-    guard !self.isEmpty else { return self }
-    let secondCharIndex = index(after: startIndex)
-    return self[startIndex].uppercased() + self[secondCharIndex...]
   }
 }
 
@@ -214,6 +219,10 @@ extension String {
   public var percentEncodedURLString: String {
     let stringWithoutEncoding = removingPercentEncoding ?? self
     return stringWithoutEncoding.addingPercentEncoding(withAllowedCharacters: URLAllowedCharSet)!
+  }
+
+  public func replacingPlusesWithSpaces() -> String {
+    replacingOccurrences(of: "+", with: " ")
   }
 
   public var percentEncodedExceptSpecialAndLatin: String {
@@ -241,3 +250,20 @@ private let URLSpecialAndLatinChars = URLReservedChars + URLUnreservedChars + "%
 private let URLUnreservedCharSet = CharacterSet(charactersIn: URLUnreservedChars)
 private let URLAllowedCharSet = CharacterSet(charactersIn: URLReservedChars + URLUnreservedChars)
 private let URLSpecialAndLatinCharSet = CharacterSet(charactersIn: URLSpecialAndLatinChars)
+
+// MARK: - Deprecated
+
+extension String {
+  @available(*, deprecated, renamed: "substring(until:)")
+  public func substringToString(_ string: String) -> String {
+    substring(until: string)
+  }
+
+  @available(*, deprecated, renamed: "removingRedundantSlashes")
+  public var sanitizedPath: String { removingRedundantSlashes }
+
+  @available(*, deprecated, renamed: "capitalizingFirst")
+  public func stringWithFirstCharCapitalized() -> String {
+    capitalizingFirst
+  }
+}

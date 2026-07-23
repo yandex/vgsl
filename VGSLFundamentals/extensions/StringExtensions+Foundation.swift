@@ -8,7 +8,7 @@ extension String {
 
     guard let from = (
       validPositions.firstIndex(of: nsRange.lowerBound)
-        ?? validPositions.firstIndex(where: { $0 > nsRange.lowerBound }).map { $0 - 1 }
+        ?? validPositions.firstIndex(where: { $0 > nsRange.lowerBound }).map { max(0, $0 - 1) }
     ),
       let to = (
         validPositions.firstIndex(of: nsRange.upperBound)
@@ -17,7 +17,8 @@ extension String {
       )
     else { return nil }
 
-    guard let fromIndex = index(startIndex, offsetBy: from, limitedBy: endIndex),
+    guard from <= to,
+          let fromIndex = index(startIndex, offsetBy: from, limitedBy: endIndex),
           let toIndex = index(startIndex, offsetBy: to, limitedBy: endIndex) else { return nil }
 
     return fromIndex..<toIndex

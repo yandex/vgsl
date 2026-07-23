@@ -12,12 +12,7 @@ extension HTTPURLResponse {
       value(forHTTPHeaderField: headerName)
     } else {
       // https://bugs.swift.org/browse/SR-2429
-      cast((allHeaderFields as NSDictionary)[headerName], to: String.self)
+      (allHeaderFields as NSDictionary)[headerName] as? String
     }
   }
-}
-
-// https://github.com/apple/swift/issues/69764
-private func cast<T>(_ k: Any?, to _: T.Type) -> T? {
-  k as? T
 }

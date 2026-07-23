@@ -234,7 +234,7 @@ public final class ResettableLazy<T> {
       transform(self.getValue(eagerEvaluation: false, expectLoaded: true))
     }
     let result = ResettableLazy<U>(preload: preload, getter: transformingGetter)
-    #if swift(>=6.2)
+    #if swift(>=6.3)
     weak let weakResult: ResettableLazy<U>? = result
     #else
     weak var weakResult: ResettableLazy<U>? = result

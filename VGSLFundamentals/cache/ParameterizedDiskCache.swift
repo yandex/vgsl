@@ -2,7 +2,7 @@
 
 import Foundation
 
-final class ParameterizedDiskCache<Storage: CacheStorage>: Cache
+final class ParameterizedDiskCache<Storage: CacheStorage & SendableMetatype>: Cache
   where Storage.Item == CacheContent {
   typealias StorageFactory = @Sendable ([CacheRecord]) -> Storage
   typealias ProvideRecords = @Sendable (Storage) -> [CacheRecord]

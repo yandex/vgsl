@@ -316,14 +316,20 @@ extension UIImage {
     mode: TintMode,
     scale: CGFloat = 1.0
   ) -> UIImage? {
-    let drawRect = CGRect(origin: .zero, size: size)
-    UIGraphicsBeginImageContextWithOptions(drawRect.size, true, scale)
-    color.setFill()
-    UIRectFill(drawRect)
-    draw(in: drawRect, blendMode: mode.cgBlendMode, alpha: 1.0)
-    let image = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
-    return image
+    // Wrap in an autoreleasepool: this runs on the main thread during layout and
+    // builds a full-size offscreen bitmap whose result image is autoreleased.
+    // Draining promptly avoids accumulating bitmaps when many tinted images are
+    // (re)drawn in one runloop turn.
+    withImageDecodingAutoreleasePool {
+      let drawRect = CGRect(origin: .zero, size: size)
+      UIGraphicsBeginImageContextWithOptions(drawRect.size, true, scale)
+      color.setFill()
+      UIRectFill(drawRect)
+      draw(in: drawRect, blendMode: mode.cgBlendMode, alpha: 1.0)
+      let image = UIGraphicsGetImageFromCurrentImageContext()
+      UIGraphicsEndImageContext()
+      return image
+    }
   }
 
   @available(iOS 14.0, tvOS 14.0, *)

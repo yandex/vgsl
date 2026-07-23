@@ -62,6 +62,21 @@ extension FloatingPoint where Self.Stride: ExpressibleByFloatLiteral {
   public func isApproximatelyNotEqualTo(_ number: Self) -> Bool {
     !isApproximatelyEqualTo(number, withAccuracy: defaultAccuracy())
   }
+
+  public func isApproximatelyBetween(
+    _ lhs: Self,
+    _ rhs: Self,
+    withAccuracy accuracy: Self.Stride
+  ) -> Bool {
+    let minValue = min(lhs, rhs)
+    let maxValue = max(lhs, rhs)
+    return minValue.isApproximatelyLessOrEqualThan(self, withAccuracy: accuracy) &&
+      maxValue.isApproximatelyGreaterOrEqualThan(self, withAccuracy: accuracy)
+  }
+
+  public func isApproximatelyBetween(_ lhs: Self, _ rhs: Self) -> Bool {
+    isApproximatelyBetween(lhs, rhs, withAccuracy: defaultAccuracy())
+  }
 }
 
 extension BinaryFloatingPoint {
@@ -90,8 +105,16 @@ extension BinaryFloatingPoint {
 }
 
 @inlinable
-public func lerp<T: FloatingPoint>(at: T, beetween lhs: T, _ rhs: T) -> T {
+public func lerp<T: FloatingPoint>(at: T, between lhs: T, _ rhs: T) -> T {
   lhs + (rhs - lhs) * at
 }
 
 private func defaultAccuracy<Type: ExpressibleByFloatLiteral>() -> Type { 1e-8 }
+
+// MARK: - Deprecated
+
+@inlinable
+@available(*, deprecated, renamed: "lerp(at:between:_:)")
+public func lerp<T: FloatingPoint>(at: T, beetween lhs: T, _ rhs: T) -> T {
+  lerp(at: at, between: lhs, rhs)
+}

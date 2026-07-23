@@ -43,6 +43,11 @@ public final class URLSessionDelegateImpl: NSObject, NetworkingDelegate {
     completion: @escaping CompletionHandler,
     forTask task: URLSessionDataTask
   ) {
+    nonisolated(unsafe) let downloadProgressChange = downloadProgressChange
+    nonisolated(unsafe) let uploadProgressChange = uploadProgressChange
+    nonisolated(unsafe) let challengeHandler = challengeHandler
+    nonisolated(unsafe) let redirectHandler = redirectHandler
+    nonisolated(unsafe) let completion = completion
     onMainThreadSync {
       assert(self.stateByTask[task] == nil && task.state == .suspended)
       self.stateByTask[task] = TaskState(

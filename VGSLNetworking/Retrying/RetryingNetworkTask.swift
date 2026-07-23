@@ -22,8 +22,6 @@ public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrateg
   private let retryAction: (RetryingNetworkTask) -> Void
   private var retainSelf: RetryingNetworkTask?
 
-  private let queue = DispatchQueue(label: "com.retryingNetworkTask.queue")
-
   public init(
     request: URLRequest,
     dataTaskFactory: @escaping (URLRequest) -> URLSessionDataTask,
@@ -44,7 +42,7 @@ public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrateg
   }
 
   public nonisolated func cancel() {
-    queue.async { [self] in
+    onMainThread { [self] in
       currentTask.cancel()
       retryStrategy.delegate = nil
       retainSelf = nil
@@ -64,7 +62,7 @@ public final class RetryingNetworkTask: NetworkTask, NetworkErrorHandlingStrateg
   }
 
   public nonisolated func performRetry() {
-    queue.async { [self] in
+    onMainThread { [self] in
       currentTask = dataTaskFactory(request)
       retryAction(self)
     }

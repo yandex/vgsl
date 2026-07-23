@@ -52,10 +52,27 @@ extension Array where Element: Equatable {
 extension Array where Element: Hashable {
   @inlinable
   public func isPermutation(of other: Array) -> Bool {
-    let set = Set(self)
-    let otherSet = Set(other)
-    let diff = set.symmetricDifference(otherSet)
-    return diff.isEmpty
+    guard count == other.count else { return false }
+
+    let hashSum = reduce(0) { $0 &+ $1.hashValue }
+    let otherHashSum = other.reduce(0) { $0 &+ $1.hashValue }
+    guard hashSum == otherHashSum else { return false }
+
+    var counts = [Element: Int](minimumCapacity: count)
+    for element in self {
+      counts[element, default: 0] += 1
+    }
+    for element in other {
+      guard let count = counts[element], count > 0 else {
+        return false
+      }
+      if count == 1 {
+        counts[element] = nil
+      } else {
+        counts[element] = count - 1
+      }
+    }
+    return counts.isEmpty
   }
 
   @inlinable
@@ -65,8 +82,7 @@ extension Array where Element: Hashable {
       var inserted = Set<Element>(minimumCapacity: count)
       while currentSource < count {
         let element = self[currentSource]
-        if !inserted.contains(element) {
-          inserted.insert(element)
+        if inserted.insert(element).inserted {
           buffer.initializeElement(at: initializedCount, to: element)
           initializedCount += 1
         }

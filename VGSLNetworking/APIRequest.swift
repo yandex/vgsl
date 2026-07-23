@@ -88,7 +88,9 @@ public func APIRequest<T>(
           let result = try resource.parser(data, response)
           onMainThread {
             observer?.requestParsingDidEnd(responseData: data)
-            completion(.success(result))
+            // TODO(VGSL-194): make value concurrency-safe
+            nonisolated(unsafe) let payload = Result<T, NSError>.success(result)
+            completion(payload)
           }
         } catch {
           let parsingError = NSError(
@@ -99,7 +101,9 @@ public func APIRequest<T>(
 
           onMainThread {
             observer?.requestParsingDidFail(error: parsingError, responseData: data)
-            completion(.failure(parsingError))
+            // TODO(VGSL-194): make value concurrency-safe
+            nonisolated(unsafe) let payload = Result<T, NSError>.failure(parsingError)
+            completion(payload)
           }
         }
       }

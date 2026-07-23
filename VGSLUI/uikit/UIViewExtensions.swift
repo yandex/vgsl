@@ -181,6 +181,8 @@ extension UIView {
       feedbackGenerator?.generateFeedback()
     }
 
+    // TODO(VGSL-194): make value concurrency-safe
+    nonisolated(unsafe) let completion = completion
     UIView.animateKeyframes(withDuration: 0.4, delay: 0, options: [], animations: {
       UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.02, animations: {
         effectsView.alpha = 1
@@ -189,8 +191,10 @@ extension UIView {
         effectsView.alpha = 0
       })
     }, completion: { _ in
-      effectsView.removeFromSuperview()
-      completion(screenshot)
+      assumeIsolatedToMainActor {
+        effectsView.removeFromSuperview()
+        completion(screenshot)
+      }
     })
   }
 

@@ -87,6 +87,7 @@ extension UIDevice {
     case "iPhone18,2": return "iPhone 17 Pro Max"
     case "iPhone18,3": return "iPhone 17"
     case "iPhone18,4": return "iPhone Air"
+    case "iPhone18,5": return "iPhone 17e"
     case "iPad1,1", "iPad1,2": return "iPad"
     case "iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4": return "iPad 2"
     case "iPad3,1", "iPad3,2", "iPad3,3": return "iPad 3"

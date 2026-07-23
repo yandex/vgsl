@@ -2,11 +2,11 @@
 
 import Foundation
 
-/// `ObservableVariableConnection` makes single
+/// `ObservableVariableConnection` makes a single
 /// `ObservableVariable` (`target`) from other observable variables,
 /// that are switching over time (`current`).
-/// It is useful then source of some value changes, or arrives later.
-/// It can also be used as property wrapper, `wrappedValue` sets a new source,
+/// It is useful when the source of some value changes, or arrives later.
+/// It can also be used as a property wrapper, `wrappedValue` sets a new source,
 /// and gets the target.
 @propertyWrapper
 public struct ObservableVariableConnection<T> {

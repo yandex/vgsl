@@ -3,7 +3,8 @@
 import Foundation
 
 import VGSLFundamentals
-import VGSLUI
+
+@_spi(Internal) import VGSLUI
 
 @preconcurrency @MainActor
 public final class RemoteImageHolder: ImageHolder {
@@ -36,6 +37,7 @@ public final class RemoteImageHolder: ImageHolder {
   public var displaySize: CGSize? {
     image == nil ? nil : storedDisplaySize
   }
+
   private let resourceRequester: AsyncImageRequester
   private let imageProcessingQueue: OperationQueueType
   private let loadEventPipe = SignalPipe<LoadEvent>()
@@ -80,31 +82,43 @@ public final class RemoteImageHolder: ImageHolder {
           return
         }
         imageProcessingQueue.addOperation {
-          let image: Image?
-          var loadedDisplaySize: CGSize?
-          #if os(iOS)
-          switch value.data.imageFormat {
-          case .gif:
-            image = Image.animatedImage(
-              with: value.data as CFData,
-              decode: imageLoadingOptimizationEnabled
-            )
-          case .unknown where imageDecoder != nil:
-            let decodedImage = imageDecoder?(value.data)
-            image = decodedImage ?? Image(
-              data: value.data,
-              scale: PlatformDescription.screenScale()
-            )
-            loadedDisplaySize = decodedImage?.size
-          case .jpeg, .png, .tiff, .unknown:
-            image = Image(
-              data: value.data,
-              scale: PlatformDescription.screenScale()
-            )
+          // Decode inside an autoreleasepool so the transient decode scratch
+          // (CFData bridges, CGImageSource, intermediate buffers) is freed as
+          // soon as the operation finishes instead of piling up on the queue
+          // worker thread across a burst of decodes (e.g. fast feed scroll).
+          let (image, loadedDisplaySize): (Image?, CGSize?) = withImageDecodingAutoreleasePool {
+            #if os(iOS)
+            switch value.data.imageFormat {
+            case .gif:
+              return (
+                Image.animatedImage(
+                  with: value.data as CFData,
+                  decode: imageLoadingOptimizationEnabled
+                ),
+                nil
+              )
+            case .unknown where imageDecoder != nil:
+              let decodedImage = imageDecoder?(value.data)
+              return (
+                decodedImage ?? Image(
+                  data: value.data,
+                  scale: PlatformDescription.screenScale()
+                ),
+                decodedImage?.size
+              )
+            case .jpeg, .png, .tiff, .unknown:
+              return (
+                Image(
+                  data: value.data,
+                  scale: PlatformDescription.screenScale()
+                ),
+                nil
+              )
+            }
+            #else
+            return (Image(data: value.data, scale: PlatformDescription.screenScale()), nil)
+            #endif
           }
-          #else
-          image = Image(data: value.data, scale: PlatformDescription.screenScale())
-          #endif
           onMainThread {
             if let image = self.image ?? image {
               self.image = image

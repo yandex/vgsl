@@ -29,6 +29,7 @@ public struct FontSize: RawRepresentable, Sendable {
   public static let textXL = FontSize(rawValue: 17)
   public static let textXXL = FontSize(rawValue: 18)
   public static let title = FontSize(rawValue: 20)
+  public static let titleM = FontSize(rawValue: 22)
   public static let titleL = FontSize(rawValue: 24)
 
   public private(set) var rawValue: CGFloat
@@ -50,6 +51,7 @@ public struct FontLineHeight: RawRepresentable, Sendable {
   public static let textL = FontLineHeight(rawValue: 20)
   public static let textXL = FontLineHeight(rawValue: 20)
   public static let title = FontLineHeight(rawValue: 24)
+  public static let titleM = FontLineHeight(rawValue: 26)
   public static let titleL = FontLineHeight(rawValue: 28)
 
   public private(set) var rawValue: CGFloat

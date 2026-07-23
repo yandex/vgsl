@@ -1065,6 +1065,7 @@
   "VGSLUI/CompoundScrollDelegate.swift":"mobile/vgsl/public/VGSLUI/CompoundScrollDelegate.swift",
   "VGSLUI/ExclusiveTouchCollectionView.swift":"mobile/vgsl/public/VGSLUI/ExclusiveTouchCollectionView.swift",
   "VGSLUI/ImageContaining.swift":"mobile/vgsl/public/VGSLUI/ImageContaining.swift",
+  "VGSLUI/ImageDecodingMemoryOptimization.swift":"mobile/vgsl/public/VGSLUI/ImageDecodingMemoryOptimization.swift",
   "VGSLUI/ImageLayerLayout.swift":"mobile/vgsl/public/VGSLUI/ImageLayerLayout.swift",
   "VGSLUI/ImageRedrawingStyle.swift":"mobile/vgsl/public/VGSLUI/ImageRedrawingStyle.swift",
   "VGSLUI/ImageViewBackgroundModel.swift":"mobile/vgsl/public/VGSLUI/ImageViewBackgroundModel.swift",

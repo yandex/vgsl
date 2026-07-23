@@ -158,6 +158,11 @@ extension CGSize {
   public func isApproximatelyEqualTo(_ other: CGSize) -> Bool {
     width.isApproximatelyEqualTo(other.width) && height.isApproximatelyEqualTo(other.height)
   }
+
+  public func isApproximatelyGreaterOrEqualThan(_ other: CGSize) -> Bool {
+    width.isApproximatelyGreaterOrEqualThan(other.width) &&
+      height.isApproximatelyGreaterOrEqualThan(other.height)
+  }
 }
 
 public protocol YCEdgeInsets {

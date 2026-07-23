@@ -66,12 +66,17 @@ extension UIImage {
     var delays = [Int]()
 
     for i in 0..<count {
-      if let image = imageMaker(source, i, options) {
-        images.append(image)
-      }
+      // Each frame's property dictionaries and decode scratch are autoreleased;
+      // drain them per iteration so peak transient memory stays bounded while
+      // decoding a many-frame animated image (GIF / animated WebP).
+      withImageDecodingAutoreleasePool {
+        if let image = imageMaker(source, i, options) {
+          images.append(image)
+        }
 
-      let delaySeconds = Image.delayForImage(at: i, source: source)
-      delays.append(Int(delaySeconds * 1000.0))
+        let delaySeconds = Image.delayForImage(at: i, source: source)
+        delays.append(Int(delaySeconds * 1000.0))
+      }
     }
     guard images.count > 1 else { return images.first.map { Image(cgImage: $0) } }
 

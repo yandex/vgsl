@@ -194,6 +194,8 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     defer { complete() }
     guard !wasCancelled else { return }
     self.result = result
+    // TODO(VGSL-194): make value concurrency-safe
+    nonisolated(unsafe) let result = result
     completion(result)
   }
 }
