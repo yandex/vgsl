@@ -20,14 +20,12 @@ extension NSAttributedString {
   }
 
   public func sizeForWidth(_ width: CGFloat) -> CGSize {
-    sizeForString(
-      TextLayoutParams(
-        string: self,
-        maxTextSize: CGSize(width: width, height: .infinity),
-        maxNumberOfLines: Int.max,
-        truncationToken: nil
-      )
-    )
+    TextLayoutParams(
+      string: self,
+      maxTextSize: CGSize(width: width, height: .infinity),
+      maxNumberOfLines: Int.max,
+      truncationToken: nil
+    ).size()
   }
 
   /// Calculates the height required to display the attributed string within a specified width,
@@ -66,29 +64,25 @@ extension NSAttributedString {
       truncationToken: truncationToken
     )
 
-    return sizeForString(layoutParams).height
+    return layoutParams.size().height
   }
 
   public func heightForWidth(_ width: CGFloat, maxTextHeight: CGFloat) -> CGFloat {
-    sizeForString(
-      TextLayoutParams(
-        string: self,
-        maxTextSize: CGSize(width: width, height: maxTextHeight),
-        maxNumberOfLines: Int.max,
-        truncationToken: nil
-      )
-    ).height
+    TextLayoutParams(
+      string: self,
+      maxTextSize: CGSize(width: width, height: maxTextHeight),
+      maxNumberOfLines: Int.max,
+      truncationToken: nil
+    ).size().height
   }
 
   public func sizeThatFits(_ size: CGSize, maxNumberOfLines: Int) -> CGSize {
-    sizeForString(
-      TextLayoutParams(
-        string: self,
-        maxTextSize: size,
-        maxNumberOfLines: maxNumberOfLines,
-        truncationToken: nil
-      )
-    )
+    TextLayoutParams(
+      string: self,
+      maxTextSize: size,
+      maxNumberOfLines: maxNumberOfLines,
+      truncationToken: nil
+    ).size()
   }
 
   public func ascent(forWidth width: CGFloat) -> CGFloat? {
@@ -116,18 +110,28 @@ public func measureString(
   return (layout.size, layout.lines.count)
 }
 
-private let sizeForString =
-  memoize { (
-    layoutParams: TextLayoutParams
-  ) -> CGSize in
-    let layout = computeLayout(
-      for: layoutParams.string,
-      maxTextSize: layoutParams.maxTextSize,
-      maxNumberOfLines: layoutParams.maxNumberOfLines,
-      truncationToken: layoutParams.truncationToken
-    )
-    return layout.size
+private let textLayoutCache = TextLayoutCache()
+
+private extension TextLayoutParams {
+  func size() -> CGSize {
+    if isCacheable,
+       let cachedSize = textLayoutCache.value(for: self) {
+      return cachedSize
+    }
+
+    let size = computeLayout(
+      for: string,
+      maxTextSize: maxTextSize,
+      maxNumberOfLines: maxNumberOfLines,
+      truncationToken: truncationToken
+    ).size
+
+    if isCacheable {
+      textLayoutCache.insert(size, for: self)
+    }
+    return size
   }
+}
 
 private func computeLayout(
   for string: NSAttributedString,
@@ -154,114 +158,6 @@ private func computeLayout(
     breakWords: true,
     truncationToken: truncationToken
   )
-}
-
-private struct TextLayoutParams: Hashable, @unchecked Sendable {
-  let string: NSAttributedString
-  let maxTextSize: CGSize
-  let maxNumberOfLines: Int
-  let truncationToken: NSAttributedString?
-
-  init(
-    string: NSAttributedString,
-    maxTextSize: CGSize,
-    maxNumberOfLines: Int,
-    truncationToken: NSAttributedString?
-  ) {
-    if string is NSMutableAttributedString {
-      self.string = string.copy() as! NSAttributedString
-    } else {
-      self.string = string
-    }
-    self.maxTextSize = maxTextSize
-    self.maxNumberOfLines = maxNumberOfLines
-    if let truncationToken, truncationToken is NSMutableAttributedString {
-      self.truncationToken = truncationToken.copy() as? NSAttributedString
-    } else {
-      self.truncationToken = truncationToken
-    }
-  }
-}
-
-struct TypographicBounds {
-  var ascent: CGFloat
-  var descent: CGFloat
-  let width: CGFloat
-
-  static let `default` = TypographicBounds(
-    ascent: Font.systemFontWithDefaultSize().ascender,
-    descent: abs(Font.systemFontWithDefaultSize().descender),
-    width: 0
-  )
-
-  var height: CGFloat {
-    ascent + descent
-  }
-
-  func constrained(width maxWidth: CGFloat) -> TypographicBounds {
-    TypographicBounds(
-      ascent: ascent,
-      descent: descent,
-      width: min(width, maxWidth)
-    )
-  }
-}
-
-typealias LineLayout = (
-  line: CTLine,
-  bounds: TypographicBounds,
-  range: NSRange,
-  isTruncated: Bool,
-  paragraphAttributes: ParagraphAttributes
-)
-
-struct TextLayout {
-  var lines: [LineLayout]
-  private var sourceLength: Int
-
-  var width: CGFloat {
-    lines.map { $0.bounds.width + $0.paragraphAttributes.headIndent }.max() ?? 0
-  }
-
-  var height: CGFloat {
-    lines.reduce(0) { $0 + $1.bounds.height + $1.paragraphAttributes.spacingBefore }
-  }
-
-  var size: CGSize {
-    CGSize(width: width, height: height).ceiled()
-  }
-
-  var range: NSRange {
-    let location = lines.first?.range.location ?? 0
-    return NSRange(location: location, length: textLength)
-  }
-
-  var textLength: Int {
-    lines.reduce(0) { $0 + $1.range.length }
-  }
-
-  var ascent: CGFloat? {
-    guard lines.count > 0 else {
-      return nil
-    }
-    return lines[0].bounds.ascent
-  }
-
-  init(lines: [LineLayout], sourceLength: Int) {
-    self.lines = lines
-    self.sourceLength = sourceLength
-  }
-
-  func entireTextFits(_ size: CGSize) -> Bool {
-    sourceLength == textLength &&
-      width <= size.width &&
-      height <= size.height
-  }
-}
-
-struct ParagraphAttributes {
-  let headIndent: CGFloat
-  let spacingBefore: CGFloat
 }
 
 private let ellipsis = "\u{2026}"
@@ -663,7 +559,6 @@ extension NSAttributedString {
         let runsWithAction: [AttributedStringLayout<ActionType>.Run] = line.draw(
           at: textPosition,
           in: context,
-          rect: rect,
           layoutY: rect.maxY - lineOriginY,
           actionKey: actionKey,
           backgroundKey: backgroundKey,
@@ -1348,7 +1243,6 @@ extension CTLine {
   fileprivate func draw<ActionType>(
     at position: CGPoint,
     in context: CGContext,
-    rect: CGRect,
     layoutY: CGFloat,
     actionKey: NSAttributedString.Key?,
     backgroundKey: NSAttributedString.Key?,

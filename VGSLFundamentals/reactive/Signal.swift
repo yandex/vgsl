@@ -283,7 +283,7 @@ extension Signal where T: Sendable {
 
 extension Signal {
   public static func fromAsync(_ asyncResultAction: @escaping AsyncResultAction<T>) -> Signal<T> {
-    Signal<T>.init { (observer: Observer<T>) -> Disposable in
+    Signal<T> { (observer: Observer<T>) -> Disposable in
       var disposed = false
       let disposable = Disposable {
         disposed = true
@@ -371,7 +371,7 @@ extension Signal {
     onNSObject object: Root,
     options: NSKeyValueObservingOptions
   ) -> Signal where T == (object: Root, change: NSKeyValueObservedChange<Value>) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       nonisolated(unsafe) let observer = observer
       let token = object.observe(keyPath, options: options, changeHandler: { object, change in
         observer.action((object, change))

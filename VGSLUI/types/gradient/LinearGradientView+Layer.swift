@@ -66,12 +66,13 @@ public final class LinearGradientLayer: CALayer {
       return
     }
 
-    let (startPoint, endPoint) = switch gradient.direction {
-    case let .angle(angle):
-      bounds.gradientDelta(angle: angle)
-    case let .relative(from: from, to: to):
-      (from.absolutePosition(in: bounds), to.absolutePosition(in: bounds))
-    }
+    let (startPoint, endPoint) =
+      switch gradient.direction {
+      case let .angle(angle):
+        bounds.gradientDelta(angle: angle)
+      case let .relative(from: from, to: to):
+        (from.absolutePosition(in: bounds), to.absolutePosition(in: bounds))
+      }
 
     ctx.drawLinearGradient(
       cgGradient,

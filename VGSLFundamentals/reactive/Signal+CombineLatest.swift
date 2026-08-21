@@ -26,7 +26,7 @@ extension Signal {
     _ signal0: Signal<U0>,
     _ signal1: Signal<U1>
   ) -> Signal where T == (U0, U1) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       var latest: (U0?, U1?) = (nil, nil)
       func sendAll() {
         if let u0 = latest.0, let u1 = latest.1 {
@@ -52,7 +52,7 @@ extension Signal {
     _ signal1: Signal<U1>,
     _ signal2: Signal<U2>
   ) -> Signal where T == (U0, U1, U2) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       var latest: (U0?, U1?, U2?) = (nil, nil, nil)
       func sendAll() {
         if let u0 = latest.0, let u1 = latest.1, let u2 = latest.2 {
@@ -83,7 +83,7 @@ extension Signal {
     _ signal2: Signal<U2>,
     _ signal3: Signal<U3>
   ) -> Signal where T == (U0, U1, U2, U3) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       var latest: (U0?, U1?, U2?, U3?) = (nil, nil, nil, nil)
       func sendAll() {
         if let u0 = latest.0, let u1 = latest.1, let u2 = latest.2, let u3 = latest.3 {
@@ -119,7 +119,7 @@ extension Signal {
     _ signal3: Signal<U3>,
     _ signal4: Signal<U4>
   ) -> Signal where T == (U0, U1, U2, U3, U4) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       var latest: (U0?, U1?, U2?, U3?, U4?) = (nil, nil, nil, nil, nil)
       func sendAll() {
         if let u0 = latest.0, let u1 = latest.1, let u2 = latest.2, let u3 = latest.3,
@@ -161,7 +161,7 @@ extension Signal {
     _ signal4: Signal<U4>,
     _ signal5: Signal<U5>
   ) -> Signal where T == (U0, U1, U2, U3, U4, U5) {
-    return Signal(addObserver: { observer in
+    Signal(addObserver: { observer in
       var latest: (U0?, U1?, U2?, U3?, U4?, U5?) = (nil, nil, nil, nil, nil, nil)
       func sendAll() {
         if let u0 = latest.0,

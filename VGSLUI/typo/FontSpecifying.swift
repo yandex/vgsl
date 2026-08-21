@@ -10,15 +10,18 @@ public struct FontSpecifiers: Sendable {
   public var text: FontSpecifying
   public var display: FontSpecifying
   public var wide: FontSpecifying?
+  public var cond: FontSpecifying?
 
   public init(
     text: FontSpecifying,
     display: FontSpecifying,
-    wide: FontSpecifying? = nil
+    wide: FontSpecifying? = nil,
+    cond: FontSpecifying? = nil
   ) {
     self.text = text
     self.display = display
     self.wide = wide
+    self.cond = cond
   }
 
   public func font(family: FontFamily, weight: FontWeight, size: CGFloat) -> Font {

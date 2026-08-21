@@ -1,18 +1,22 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 
 import PackageDescription
 
 let swiftSettings: [SwiftSetting] = [
-  .enableExperimentalFeature("AccessLevelOnImport")
+  .enableExperimentalFeature("AccessLevelOnImport"),
 ]
 
 let linkerSettings: [LinkerSetting] = [
   .linkedFramework("Foundation"),
-  .linkedFramework("UIKit"),
-  .linkedFramework("CoreGraphics")
+  .linkedFramework("UIKit", .when(platforms: [.iOS])),
+  .linkedFramework("AppKit", .when(platforms: [.macOS])),
+  .linkedFramework("CoreGraphics"),
 ]
 
-let compatibilityShims: (products: [PackageDescription.Product], targets: [PackageDescription.Target]) = (
+let compatibilityShims: (
+  products: [PackageDescription.Product],
+  targets: [PackageDescription.Target]
+) = (
   products: [
     .library(name: "BasePublic", targets: ["BasePublic"]),
     .library(name: "BaseTinyPublic", targets: ["BaseTinyPublic"]),
@@ -93,7 +97,10 @@ let package = Package(
       name: "VGSLFundamentals",
       path: "VGSLFundamentals",
       swiftSettings: swiftSettings,
-      linkerSettings: linkerSettings
+      linkerSettings: [
+        .linkedFramework("Foundation"),
+        .linkedFramework("CoreGraphics"),
+      ]
     ),
     .target(
       name: "VGSLUI",
@@ -108,7 +115,7 @@ let package = Package(
       name: "VGSLNetworking",
       dependencies: [
         "VGSLFundamentals",
-        "VGSLUI"
+        "VGSLUI",
       ],
       path: "VGSLNetworking",
       swiftSettings: swiftSettings,
@@ -119,11 +126,12 @@ let package = Package(
       dependencies: [
         "VGSLFundamentals",
         "VGSLNetworking",
-        "VGSLUI"
+        "VGSLUI",
       ],
       path: "VGSL",
       swiftSettings: swiftSettings,
       linkerSettings: linkerSettings
     ),
-  ] + compatibilityShims.targets
+  ] + compatibilityShims.targets,
+  swiftLanguageModes: [.v6]
 )
