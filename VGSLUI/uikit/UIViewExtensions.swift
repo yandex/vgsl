@@ -158,7 +158,7 @@ extension UIView {
 
   public func makeInteractiveScreenshot(
     feedbackGenerator: PhysicalFeedbackGenerator?,
-    completion: @escaping (Image?) -> Void
+    completion: @escaping @MainActor @Sendable (Image?) -> Void
   ) {
     guard let window else {
       completion(nil)
@@ -181,8 +181,6 @@ extension UIView {
       feedbackGenerator?.generateFeedback()
     }
 
-    // TODO(VGSL-194): make value concurrency-safe
-    nonisolated(unsafe) let completion = completion
     UIView.animateKeyframes(withDuration: 0.4, delay: 0, options: [], animations: {
       UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.02, animations: {
         effectsView.alpha = 1

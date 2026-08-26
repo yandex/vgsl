@@ -71,20 +71,6 @@ public final class ResettableLazy<T> {
     self.init(state: .created(preload, getter, Promise()), preload: preload, getter: getter)
   }
 
-  /// Produces a ResettableLazy in not loaded state with a given value.
-  /// May be useful to mimic real lazy loading behavior in tests.
-  ///
-  /// Even thou the value is already on hands the resulting ResettableLazy will
-  /// behave like it was created with a getter, and `currentValue`
-  /// will be `nil` until the ResettableLazy is read.
-  /// Use `init(loaded:)` when you need a ResettableLazy in loaded state.
-  @inlinable
-  public convenience init(deferred value: T) {
-    let getter = { value }
-    let preload = {}
-    self.init(state: .created(preload, getter, Promise()), preload: preload, getter: getter)
-  }
-
   /// Produces a ResettableLazy in loaded state with a given value.
   ///
   /// The resulting ResettableLazy will immediately have a non-nil `currentValue`.

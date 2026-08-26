@@ -73,10 +73,12 @@ extension UIImage.Orientation {
 #endif
 
 extension Image {
+  @preconcurrency @MainActor
   public class func imageWithSolidColor(_ color: Color, size: CGSize) -> Image? {
     makeImage(color, size)
   }
 
+  @preconcurrency @MainActor
   public class func transparentImageWithSolidColor(_ color: Color, size: CGSize) -> Image? {
     makeTransparentImage(color, size)
   }

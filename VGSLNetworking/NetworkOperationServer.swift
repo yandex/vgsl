@@ -7,7 +7,7 @@ import VGSLFundamentals
 @preconcurrency @MainActor
 public protocol NetworkOperationServing: AnyObject {
   associatedtype RequestArgs
-  associatedtype Response
+  associatedtype Response: Sendable
 
   @discardableResult
   func performRequest(
@@ -18,7 +18,8 @@ public protocol NetworkOperationServing: AnyObject {
   func cancel()
 }
 
-public final class NetworkOperationServer<RequestArgs, Response>: NetworkOperationServing {
+public final class NetworkOperationServer<RequestArgs, Response: Sendable>:
+  NetworkOperationServing {
   public typealias NetworkOperation = NetworkActivityOperation<Response>
   public typealias Completion = NetworkOperation.Completion
   public typealias OperationFactory = (_ args: RequestArgs, _ completion: @escaping Completion)
@@ -43,7 +44,10 @@ public final class NetworkOperationServer<RequestArgs, Response>: NetworkOperati
   }
 
   @discardableResult
-  public func performRequest(_ args: RequestArgs, completion: Completion? = nil) -> Operation {
+  public func performRequest(
+    _ args: RequestArgs,
+    completion: Completion? = nil
+  ) -> Operation {
     precondition(Thread.isMainThread)
     if shouldCancelCurrentOperation {
       currentOperation?.cancel()
@@ -72,14 +76,13 @@ extension NetworkOperationServing {
   @MainActor
   public func performRequest(_ args: RequestArgs) async throws -> Response {
     try await withCheckedThrowingContinuation { continuation in
-      nonisolated(unsafe) var receivedResult: Result<Response, NSError>?
+      var receivedResult: Result<Response, NSError>?
       let serverOp = performRequest(args, completion: { result in
         receivedResult = result
       })
       let continuationOp = BlockOperation {
         MainActor.assumeIsolated {
           if let receivedResult {
-            nonisolated(unsafe) let receivedResult = receivedResult
             continuation.resume(with: receivedResult)
           } else {
             continuation.resume(throwing: CancellationError())

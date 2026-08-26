@@ -9,7 +9,7 @@ public let APIRequestResponseParsingErrorCode = 0
 
 @inlinable
 @preconcurrency @MainActor
-public func wrappedAPIRequest<T>(
+public func wrappedAPIRequest<T: Sendable>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
   preRequestAction: (() -> Void)? = nil,
@@ -36,7 +36,7 @@ public func wrappedAPIRequest<T>(
 @inlinable
 @available(iOSApplicationExtension, unavailable)
 @preconcurrency @MainActor
-public func wrappedAPIRequest<T>(
+public func wrappedAPIRequest<T: Sendable>(
   _ requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
   preRequestAction: (() -> Void)? = nil,
@@ -55,7 +55,7 @@ public func wrappedAPIRequest<T>(
 
 @inlinable
 @preconcurrency @MainActor
-public func APIRequest<T>(
+public func APIRequest<T: Sendable>(
   requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
   baseURL: URL,
@@ -64,7 +64,7 @@ public func APIRequest<T>(
   downloadProgressHandler: ((Double) -> Void)? = nil,
   uploadProgressHandler: ((Double) -> Void)? = nil,
   observer: APIRequestObserving? = nil,
-  completion: @escaping @MainActor (sending Result<T, NSError>) -> Void
+  completion: @escaping @MainActor @Sendable (Result<T, NSError>) -> Void
 ) -> NetworkTask {
   let request = URLRequestForResource(resource, withBaseURL: baseURL)
 
@@ -88,9 +88,7 @@ public func APIRequest<T>(
           let result = try resource.parser(data, response)
           onMainThread {
             observer?.requestParsingDidEnd(responseData: data)
-            // TODO(VGSL-194): make value concurrency-safe
-            nonisolated(unsafe) let payload = Result<T, NSError>.success(result)
-            completion(payload)
+            completion(.success(result))
           }
         } catch {
           let parsingError = NSError(
@@ -101,9 +99,7 @@ public func APIRequest<T>(
 
           onMainThread {
             observer?.requestParsingDidFail(error: parsingError, responseData: data)
-            // TODO(VGSL-194): make value concurrency-safe
-            nonisolated(unsafe) let payload = Result<T, NSError>.failure(parsingError)
-            completion(payload)
+            completion(.failure(parsingError))
           }
         }
       }
@@ -124,7 +120,7 @@ public func APIRequest<T>(
 @available(iOSApplicationExtension, unavailable)
 @inlinable
 @preconcurrency @MainActor
-public func APIRequest<T>(
+public func APIRequest<T: Sendable>(
   requestPerformer: URLRequestPerforming,
   parsingQueue: OperationQueueType,
   baseURL: URL,
@@ -133,7 +129,7 @@ public func APIRequest<T>(
   downloadProgressHandler: ((Double) -> Void)? = nil,
   uploadProgressHandler: ((Double) -> Void)? = nil,
   observer: APIRequestObserving? = nil,
-  completion: @escaping @MainActor (sending Result<T, NSError>) -> Void
+  completion: @escaping @MainActor @Sendable (Result<T, NSError>) -> Void
 ) -> NetworkTask {
   APIRequest(
     requestPerformer: requestPerformer,

@@ -1,26 +1,21 @@
 // Copyright 2018 Yandex LLC. All rights reserved.
 
-import Foundation
-
-public final class Atomic<T>: @unchecked Sendable {
-  private var unsafeValue: T
-  private let lock = RWLock()
+public final class Atomic<T>: Sendable {
+  private let value: AllocatedUnfairLock<T>
 
   public init(initialValue: sending T) {
-    unsafeValue = initialValue
+    value = AllocatedUnfairLock(sendingState: initialValue)
   }
 
   public func accessRead<U: Sendable>(
     _ block: (T) throws -> U
   ) rethrows -> U {
-    try lock.read {
-      try block(unsafeValue)
+    try value.withLockUnchecked {
+      try block($0)
     }
   }
 
   public func accessWrite<U: Sendable>(_ block: (inout T) throws -> U) rethrows -> U {
-    try lock.write {
-      try block(&unsafeValue)
-    }
+    try value.withLockUnchecked(block)
   }
 }

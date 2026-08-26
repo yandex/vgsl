@@ -11,7 +11,8 @@ public enum NetworkActivityOperationErrorCode: Int {
   case cancelled
 }
 
-public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecked Sendable {
+public final class NetworkActivityOperation<Response: Sendable>: AsyncOperation,
+  @unchecked Sendable {
   public typealias ResourceFactory = Variable<Resource<Response>?>
   public typealias ResourceFutureFactory = Variable<Future<Resource<Response>>?>
   public typealias Request = (
@@ -22,7 +23,7 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
     @escaping Completion
   ) -> NetworkTask
   public typealias ProgressHandler = @MainActor (Double) -> Void
-  public typealias Completion = @MainActor (sending Result<Response, NSError>) -> Void
+  public typealias Completion = @MainActor @Sendable (Result<Response, NSError>) -> Void
 
   @MainActor
   private let baseURLProvider: Variable<URL>
@@ -190,12 +191,10 @@ public final class NetworkActivityOperation<Response>: AsyncOperation, @unchecke
   }
 
   @MainActor
-  private func completeWith(_ result: sending Result<Response, NSError>) {
+  private func completeWith(_ result: Result<Response, NSError>) {
     defer { complete() }
     guard !wasCancelled else { return }
     self.result = result
-    // TODO(VGSL-194): make value concurrency-safe
-    nonisolated(unsafe) let result = result
     completion(result)
   }
 }
