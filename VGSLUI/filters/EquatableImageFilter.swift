@@ -4,7 +4,14 @@ import CoreImage
 
 public protocol EquatableImageFilter: Equatable, Sendable {
   func apply(to image: CIImage) -> CIImage?
+  func apply(to image: CIImage, scale: CGFloat) -> CIImage?
   var showOriginalImageIfFailed: Bool { get }
+}
+
+extension EquatableImageFilter {
+  public func apply(to image: CIImage, scale _: CGFloat) -> CIImage? {
+    apply(to: image)
+  }
 }
 
 public struct AnyEquatableImageFilter: Sendable {

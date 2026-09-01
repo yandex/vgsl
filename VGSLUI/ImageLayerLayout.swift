@@ -51,6 +51,70 @@ public struct ImageLayerLayout: Sendable {
   }
 }
 
+struct ImageFilterLayout: Equatable, Sendable {
+  let contentSize: CGSize
+  let boundsSize: CGSize
+  let frame: CGRect
+  let imageRect: CGRect
+
+  init?(
+    contentMode: ImageContentMode,
+    contentSize: CGSize,
+    boundsSize: CGSize,
+    capInsets: EdgeInsets
+  ) {
+    let bounds = CGRect(origin: .zero, size: boundsSize)
+    guard contentSize.width > 0,
+          contentSize.height > 0,
+          !bounds.isEmpty else {
+      return nil
+    }
+
+    self.contentSize = contentSize
+    self.boundsSize = boundsSize
+
+    let fullImageFrame: CGRect
+    if contentMode.scale == .noScale {
+      fullImageFrame = CGRect(
+        origin: makeOrigin(
+          contentMode: contentMode,
+          contentSize: contentSize,
+          bounds: boundsSize
+        ),
+        size: contentSize
+      )
+    } else {
+      let layerLayout = ImageLayerLayout(
+        contentMode: contentMode,
+        contentSize: contentSize,
+        boundsSize: boundsSize,
+        capInsets: capInsets
+      )
+      let contentRect = layerLayout.contentRect
+      guard contentRect.width > 0, contentRect.height > 0 else {
+        return nil
+      }
+      let fullImageSize = CGSize(
+        width: layerLayout.frame.width / contentRect.width,
+        height: layerLayout.frame.height / contentRect.height
+      )
+      fullImageFrame = CGRect(
+        x: layerLayout.frame.minX - contentRect.minX * fullImageSize.width,
+        y: layerLayout.frame.minY - contentRect.minY * fullImageSize.height,
+        width: fullImageSize.width,
+        height: fullImageSize.height
+      )
+    }
+
+    let visibleFrame = fullImageFrame.intersection(bounds)
+    guard !visibleFrame.isNull, !visibleFrame.isEmpty else {
+      return nil
+    }
+    frame = visibleFrame
+    imageRect = fullImageFrame.offsetBy(dx: -visibleFrame.minX, dy: -visibleFrame.minY)
+  }
+}
+
 private let defaultContentRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
 private func makeTopContentRect(for contentSize: CGSize, bounds: CGSize) -> CGRect {

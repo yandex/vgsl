@@ -2,7 +2,6 @@
 
 #if canImport(UIKit)
 import CoreImage
-import CoreImage.CIFilterBuiltins
 import UIKit
 
 import VGSLFundamentals
@@ -17,6 +16,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
 
   private let contentsView = UIView()
   private lazy var contentsLayer = contentsView.layer
+  private var filteredImageLayout: ImageFilterLayout?
   private lazy var clipMask: CALayer = {
     let mask = CALayer()
     mask.backgroundColor = UIColor.white.cgColor
@@ -39,6 +39,7 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   private var templateLayer: CALayer?
 
   private func updateContent() {
+    filteredImageLayout = nil
     let content = Content(
       image: image,
       imageRedrawingColor: imageRedrawingStyle?.tintColor,
@@ -155,16 +156,29 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   public override func layoutSubviews() {
     super.layoutSubviews()
 
+    let contentSize = image?.size ?? bounds.size
     let layout = ImageLayerLayout(
       contentMode: imageContentMode,
-      contentSize: image?.size ?? bounds.size,
+      contentSize: contentSize,
+      boundsSize: bounds.size,
+      capInsets: image?.capInsets ?? .zero
+    )
+    let currentFilterLayout = ImageFilterLayout(
+      contentMode: imageContentMode,
+      contentSize: contentSize,
       boundsSize: bounds.size,
       capInsets: image?.capInsets ?? .zero
     )
 
-    contentsView.frame = layout.frame
-    contentsLayer.contentsRect = layout.contentRect
-    contentsLayer.contentsCenter = layout.contentCenter
+    if let filteredImageLayout, filteredImageLayout == currentFilterLayout {
+      contentsView.frame = filteredImageLayout.frame
+      contentsLayer.contentsRect = unitRect
+      contentsLayer.contentsCenter = unitRect
+    } else {
+      contentsView.frame = layout.frame
+      contentsLayer.contentsRect = layout.contentRect
+      contentsLayer.contentsCenter = layout.contentCenter
+    }
 
     templateLayer?.frame = contentsView.bounds
     templateLayer?.contentsRect = layout.contentRect
@@ -177,17 +191,31 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
 
   @available(iOS 14.0, tvOS 14.0, *)
   private func applyAsyncFilter(_ filter: AnyEquatableImageFilter, imageToUpdate: UIImage) {
-    let imageRect = bounds
+    let viewBounds = bounds
+    let contentMode = imageContentMode
+    let contentScale = window?.screen.scale ?? UIScreen.main.scale
+    let filterLayout = ImageFilterLayout(
+      contentMode: contentMode,
+      contentSize: imageToUpdate.size,
+      boundsSize: viewBounds.size,
+      capInsets: imageToUpdate.capInsets
+    )
     let resultHandler: @Sendable (CGImage?) -> Void = { cgImage in
       onMainThreadAsync { [weak self] in
         guard let self,
               self.image === imageToUpdate,
-              self.bounds == imageRect,
+              self.bounds == viewBounds,
+              self.imageContentMode == contentMode,
               self.filter == filter else {
           return
         }
-        if let cgImage {
+        if let cgImage, let filterLayout {
+          self.filteredImageLayout = filterLayout
           self.contentsLayer.contents = cgImage
+          self.contentsLayer.setAffineTransform(.identity)
+          self.contentsLayer.contentsGravity = .resize
+          self.contentsLayer.contentsScale = contentScale
+          self.forceLayout()
           self.visualEffectView = nil
         } else if filter.value.showOriginalImageIfFailed {
           self.visualEffectView = nil
@@ -195,8 +223,12 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
       }
     }
     onBackgroundThread(qos: .userInitiated)({
-      if let ciImage = imageToUpdate.cropped(to: imageRect),
-         let filteredCIImage = filter.value.apply(to: ciImage),
+      if let filterLayout,
+         let ciImage = imageToUpdate.preparedForFiltering(
+           layout: filterLayout,
+           scale: contentScale
+         ),
+         let filteredCIImage = filter.value.apply(to: ciImage, scale: contentScale),
          let cgImage = CIContext().createCGImage(filteredCIImage, from: filteredCIImage.extent) {
         resultHandler(cgImage)
       } else {
@@ -332,16 +364,20 @@ extension UIImage {
     }
   }
 
-  @available(iOS 14.0, tvOS 14.0, *)
-  fileprivate func cropped(to rect: CGRect) -> CIImage? {
-    guard !rect.isEmpty else { return nil }
-    guard let ciImage = CIImage(image: self) else { return nil }
-    let cropFilter = CIFilter.stretchCrop()
-    cropFilter.inputImage = ciImage
-    cropFilter.size = CGPoint(x: scale * rect.width, y: scale * rect.height)
-    cropFilter.cropAmount = 1
-    cropFilter.centerStretchAmount = 0
-    return cropFilter.outputImage
+  fileprivate func preparedForFiltering(
+    layout: ImageFilterLayout,
+    scale: CGFloat
+  ) -> CIImage? {
+    guard scale > 0 else { return nil }
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = scale
+    format.opaque = false
+    let image = UIGraphicsImageRenderer(size: layout.frame.size, format: format).image { _ in
+      draw(in: layout.imageRect)
+    }
+    return image.cgImage.map(CIImage.init(cgImage:))
   }
 }
+
+private let unitRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 #endif
