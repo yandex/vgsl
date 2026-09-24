@@ -8,13 +8,15 @@ final class TextLayoutParams: NSObject, @unchecked Sendable {
   let maxTextSize: CGSize
   let maxNumberOfLines: Int
   let truncationToken: NSAttributedString?
+  let truncationPolicy: TextTruncationPolicy
   let isCacheable: Bool
 
   init(
     string: NSAttributedString,
     maxTextSize: CGSize,
     maxNumberOfLines: Int,
-    truncationToken: NSAttributedString?
+    truncationToken: NSAttributedString?,
+    truncationPolicy: TextTruncationPolicy = .grapheme
   ) {
     isCacheable = !(string is NSMutableAttributedString) &&
       !(truncationToken is NSMutableAttributedString)
@@ -25,6 +27,7 @@ final class TextLayoutParams: NSObject, @unchecked Sendable {
     }
     self.maxTextSize = maxTextSize
     self.maxNumberOfLines = maxNumberOfLines
+    self.truncationPolicy = truncationPolicy
     if let truncationToken, truncationToken is NSMutableAttributedString {
       self.truncationToken = NSAttributedString(attributedString: truncationToken)
     } else {
@@ -40,6 +43,7 @@ final class TextLayoutParams: NSObject, @unchecked Sendable {
     hasher.combine(maxTextSize)
     hasher.combine(maxNumberOfLines)
     hasher.combine(truncationToken.map(ObjectIdentifier.init))
+    hasher.combine(truncationPolicy)
     return hasher.finalize()
   }
 
@@ -47,6 +51,7 @@ final class TextLayoutParams: NSObject, @unchecked Sendable {
     guard let other = object as? TextLayoutParams,
           maxTextSize == other.maxTextSize,
           maxNumberOfLines == other.maxNumberOfLines,
+          truncationPolicy == other.truncationPolicy,
           string === other.string else {
       return false
     }
