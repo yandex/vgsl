@@ -100,10 +100,12 @@ extension RelativeRect {
 extension CGRect {
   public func relative(in bounds: CGRect) -> RelativeRect {
     guard !bounds.isEmpty else { return .zero }
-    let transform = CGAffineTransform(scaleX: 1 / bounds.width, y: 1 / bounds.height)
     return RelativeRect(
-      origin: RelativePoint(rawValue: (origin - bounds.origin).applying(transform)),
-      size: RelativeSize(rawValue: size.applying(transform))
+      origin: RelativePoint(
+        x: (origin.x - bounds.origin.x) / bounds.width,
+        y: (origin.y - bounds.origin.y) / bounds.height
+      ),
+      size: size.relative(in: bounds.size)
     )
   }
 }
