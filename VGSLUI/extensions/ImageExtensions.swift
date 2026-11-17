@@ -140,8 +140,11 @@ extension Image {
   }
 
   public func addingShadow(offset: CGSize, blur: CGFloat, color: Color) -> Image {
-    InternalImageDescriptor(image: self)
-      .imageWithShadow(offset: offset, blur: blur, color: color)
+    guard let descriptor = InternalImageDescriptor(image: self) else {
+      return self
+    }
+    return descriptor.makeImageWithShadow(offset: offset, blur: blur, color: color)
+      ?? self
   }
 
   public func redrawn(
@@ -199,6 +202,7 @@ extension Image {
     overlayDrawingHandler drawHandler: (CGContext, CGRect) -> Void
   ) -> Image {
     let contextSize = convertSizeForCGContext(size ?? self.size)
+    guard let cgImage = cgImg else { return self }
 
     #if os(iOS) || os(tvOS)
     return Image.imageOfSize(
@@ -208,19 +212,19 @@ extension Image {
       transformForUIKitCompatibility: false,
       drawingHandler: { ctx in
         let rect = CGRect(origin: .zero, size: contextSize)
-        ctx.draw(cgImg!, in: rect)
+        ctx.draw(cgImage, in: rect)
         drawHandler(ctx, rect)
       }
-    )!
+    ) ?? self
     #else
     return Image.imageOfSize(
       contextSize,
       drawingHandler: { ctx in
         let rect = CGRect(origin: .zero, size: contextSize)
-        ctx.draw(cgImg!, in: rect)
+        ctx.draw(cgImage, in: rect)
         drawHandler(ctx, rect)
       }
-    )!
+    ) ?? self
     #endif
   }
 
@@ -391,10 +395,11 @@ extension CGImage {
 }
 
 extension InternalImageDescriptor {
-  fileprivate init(image: Image) {
+  fileprivate init?(image: Image) {
+    guard let cgImage = image.cgImg else { return nil }
     let size = image.convertSizeForCGContext(image.size)
     let drawingHandler: (CGContext) -> Void = { [size] in
-      $0.draw(image.cgImg!, in: CGRect(origin: .zero, size: size))
+      $0.draw(cgImage, in: CGRect(origin: .zero, size: size))
     }
     self.init(drawingHandler: drawingHandler, size: size)
   }

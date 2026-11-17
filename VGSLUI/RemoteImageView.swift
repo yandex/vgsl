@@ -37,15 +37,33 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
   public var appearanceAnimation: ImageViewAnimation?
 
   private var templateLayer: CALayer?
+  private var scalableImageRendering: ScalableImageRendering?
+  private var isScalableImageRenderInFlight = false
 
-  private func updateContent() {
-    filteredImageLayout = nil
-    let content = Content(
+  private var content: Content {
+    Content(
       image: image,
       imageRedrawingColor: imageRedrawingStyle?.tintColor,
       imageRedrawingTintMode: imageRedrawingStyle?.tintMode,
       effects: imageRedrawingStyle?.effects ?? []
     )
+  }
+
+  /// The layer that shows the bitmap of `image` without changes, if any.
+  private var unmodifiedImageLayer: CALayer? {
+    switch content {
+    case .plain:
+      filter == nil ? contentsLayer : nil
+    case .template:
+      templateLayer
+    case .effects:
+      nil
+    }
+  }
+
+  private func updateContent() {
+    filteredImageLayout = nil
+    let content = self.content
 
     let gravity = imageContentMode
       .contentsGravity(isGeometryFlipped: contentsLayer.contentsAreFlipped())
@@ -183,10 +201,98 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
     templateLayer?.frame = contentsView.bounds
     templateLayer?.contentsRect = layout.contentRect
     templateLayer?.contentsCenter = layout.contentCenter
+    updateScalableImageContents(imageSize: currentFilterLayout?.imageRect.size)
 
     visualEffectView?.frame = bounds
 
     updateMask()
+  }
+
+  /// Replaces the bitmap of an image that has a `scalableSource` with one
+  /// rendered at the pixel size the whole image is displayed at. The layer
+  /// keeps its geometry.
+  private func updateScalableImageContents(imageSize: CGSize?) {
+    guard let image,
+          image.scalableSource != nil,
+          image.capInsets == .zero,
+          let layer = unmodifiedImageLayer,
+          let imageSize else {
+      scalableImageRendering = nil
+      return
+    }
+
+    let screen = window?.screen ?? UIScreen.main
+    let scale = screen.scale
+    let longestScreenSide = max(screen.bounds.width, screen.bounds.height) * scale
+    let pixelSize = CGSize(
+      width: imageSize.width * scale,
+      height: imageSize.height * scale
+    ).ceiled()
+    let originalPixelSize = image.cgImage.map {
+      CGSize(width: $0.width, height: $0.height)
+    }
+    // Allow a square covering the screen, but cap the area of oversized
+    // clipped aspectFill/aspectWidth images.
+    guard pixelSize.width.isFinite, pixelSize.height.isFinite,
+          pixelSize.width > 0, pixelSize.height > 0,
+          pixelSize.width * pixelSize.height <= longestScreenSide * longestScreenSide,
+          pixelSize != originalPixelSize else {
+      scalableImageRendering = nil
+      CATransaction.performWithoutAnimations {
+        layer.setContents(image)
+      }
+      return
+    }
+    if let rendering = scalableImageRendering,
+       rendering.image === image,
+       rendering.pixelSize == pixelSize {
+      if let bitmap = rendering.bitmap {
+        CATransaction.performWithoutAnimations {
+          layer.contents = bitmap
+          layer.contentsScale = scale
+          layer.setAffineTransform(.identity)
+        }
+      }
+      return
+    }
+
+    // Until the bitmap is rendered, the layer keeps its current contents.
+    scalableImageRendering = ScalableImageRendering(image: image, pixelSize: pixelSize)
+    renderScalableImageIfNeeded()
+  }
+
+  private func renderScalableImageIfNeeded() {
+    guard !isScalableImageRenderInFlight,
+          let rendering = scalableImageRendering,
+          rendering.bitmap == nil,
+          let source = rendering.image.scalableSource else {
+      return
+    }
+
+    isScalableImageRenderInFlight = true
+    let pixelSize = rendering.pixelSize
+    let resultHandler: @MainActor @Sendable (CGImage?) -> Void = {
+      [weak self, weak rendering] bitmap in
+      guard let self else { return }
+      self.isScalableImageRenderInFlight = false
+      guard let rendering, rendering === self.scalableImageRendering else {
+        // Intermediate sizes are replaced by the latest requested image/size.
+        self.renderScalableImageIfNeeded()
+        return
+      }
+      rendering.bitmap = bitmap
+      self.setNeedsLayout()
+    }
+    // The view releases the rendering when it is destroyed or a newer request
+    // replaces it; the render is skipped then.
+    onBackgroundThread(qos: .userInitiated)({ [weak rendering] in
+      let bitmap = rendering == nil
+        ? nil
+        : autoreleasepool { source.render(pixelSize: pixelSize) }
+      onMainThreadAsync {
+        resultHandler(bitmap)
+      }
+    })
   }
 
   @available(iOS 14.0, tvOS 14.0, *)
@@ -254,6 +360,18 @@ public final class RemoteImageView: UIView, RemoteImageViewContentProtocol {
       layer.mask = nil
     }
     layer.masksToBounds = true
+  }
+}
+
+@MainActor
+private final class ScalableImageRendering {
+  let image: Image
+  let pixelSize: CGSize
+  var bitmap: CGImage?
+
+  init(image: Image, pixelSize: CGSize) {
+    self.image = image
+    self.pixelSize = pixelSize
   }
 }
 

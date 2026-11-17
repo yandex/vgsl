@@ -6,7 +6,18 @@ import UIKit
 import VGSLFundamentals
 
 public protocol VisibleBoundsTracking {
+  /// Whether the receiver's own layout is pending, regardless of descendant layout.
+  ///
+  /// Implementations backed by a UIView should keep this true until their own
+  /// `layoutSubviews()` returns, preserving new requests made during that pass.
+  /// Supplements the layer's system layout flag.
+  var isPendingLayout: Bool { get }
+
   func onVisibleBoundsChanged(from: CGRect, to: CGRect)
+}
+
+extension VisibleBoundsTracking {
+  public var isPendingLayout: Bool { false }
 }
 
 public protocol VisibleBoundsTrackingContainer: VisibleBoundsTracking {
@@ -20,17 +31,20 @@ extension VisibleBoundsTrackingContainer where Self: UICoordinateSpace {
       return
     }
     visibleBoundsTrackingSubviews.forEach { boundsTrackingView in
-      let fromFrame = convert(from, to: boundsTrackingView)
-      let toFrame = convert(to, to: boundsTrackingView)
-
       let applyOnVisibleBoundsChanged = {
+        let fromFrame = self.convert(from, to: boundsTrackingView)
+        let toFrame = self.convert(to, to: boundsTrackingView)
+
         boundsTrackingView.onVisibleBoundsChanged(
           from: boundsTrackingView.bounds.intersection(fromFrame),
           to: boundsTrackingView.bounds.intersection(toFrame)
         )
       }
 
-      if boundsTrackingView.layer.needsLayout() {
+      let needsDeferredDelivery = boundsTrackingView.layer.needsLayout()
+        || boundsTrackingView.isPendingLayout
+
+      if needsDeferredDelivery {
         onMainThreadAsync { applyOnVisibleBoundsChanged() }
       } else {
         applyOnVisibleBoundsChanged()

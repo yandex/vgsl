@@ -8,6 +8,7 @@ public typealias MainActorAction = @MainActor () -> Void
 /// Sendable closure with no parameters and no return value.
 public typealias SendableAction = @Sendable () -> Void
 public typealias ResultAction<T> = (_ result: T) -> Void
+public typealias MainActorResultAction<T> = @MainActor (_ result: T) -> Void
 public typealias AsyncAction = (_ completion: @escaping Action) -> Void
 public typealias AsyncResultAction<T> = (_ completion: @escaping (_ result: T) -> Void) -> Void
 public typealias AsyncResultVoidAction = (_ completion: @escaping () -> Void) -> Void

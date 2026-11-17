@@ -14,6 +14,14 @@ public struct InternalImageDescriptor {
   }
 
   public func imageWithShadow(offset: CGSize, blur: CGFloat, color: Color) -> Image {
+    makeImageWithShadow(offset: offset, blur: blur, color: color)!
+  }
+
+  func makeImageWithShadow(
+    offset: CGSize,
+    blur: CGFloat,
+    color: Color
+  ) -> Image? {
     let spaceExpansionX = abs(offset.width) + blur
     let spaceExpansionY = abs(offset.height) + blur
     let requiredSize = CGSize(
@@ -32,12 +40,12 @@ public struct InternalImageDescriptor {
       requiredSize,
       transformForUIKitCompatibility: false,
       drawingHandler: internalDrawingHandler
-    )!
+    )
     #else
     return Image.imageOfSize(
       requiredSize,
       drawingHandler: internalDrawingHandler
-    )!
+    )
     #endif
   }
 }

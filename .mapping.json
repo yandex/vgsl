@@ -1209,6 +1209,7 @@
   "VGSLUI/types/image/ImageHolder.swift":"mobile/vgsl/public/VGSLUI/types/image/ImageHolder.swift",
   "VGSLUI/types/image/ImagePlaceholder.swift":"mobile/vgsl/public/VGSLUI/types/image/ImagePlaceholder.swift",
   "VGSLUI/types/image/NilImageHolder.swift":"mobile/vgsl/public/VGSLUI/types/image/NilImageHolder.swift",
+  "VGSLUI/types/image/ScalableImageSource.swift":"mobile/vgsl/public/VGSLUI/types/image/ScalableImageSource.swift",
   "VGSLUI/types/image/ViewImageHolder.swift":"mobile/vgsl/public/VGSLUI/types/image/ViewImageHolder.swift",
   "VGSLUI/types/image/ViewProvider.swift":"mobile/vgsl/public/VGSLUI/types/image/ViewProvider.swift",
   "VGSLUI/types/relative/RelativePoint.swift":"mobile/vgsl/public/VGSLUI/types/relative/RelativePoint.swift",

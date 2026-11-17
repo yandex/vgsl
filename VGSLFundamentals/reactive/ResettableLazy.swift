@@ -188,7 +188,14 @@ public final class ResettableLazy<T> {
 
   @inlinable
   public func whenLoaded(perform body: @escaping Future<T>.Callback) {
-    future.resolved(body)
+    switch state {
+    case let .created(_, _, promise):
+      promise.future.resolved(body)
+    case let .loading(storedFuture):
+      storedFuture.resolved(body)
+    case let .loaded(value):
+      body(value)
+    }
   }
 
   @inlinable
@@ -228,7 +235,7 @@ public final class ResettableLazy<T> {
     func onResolved(_: T) {
       _ = weakResult?.getValue(eagerEvaluation: true, expectLoaded: false)
     }
-    future.resolved(onResolved)
+    whenLoaded(perform: onResolved)
     return result
   }
 
@@ -274,7 +281,7 @@ extension ResettableLazy {
   @inlinable
   func traceMap(toType: (some Any).Type) {
     #if DEBUG
-    let isLoaded = future.isFulfilled
+    let isLoaded = hasLoadedValue
     if _ResettableLazyTraceLoggingEnabled {
       logDebug("ResettableLazy: Create map. isLoaded=\(isLoaded) T=<\(T.self)> U=<\(toType)>")
     }
@@ -287,7 +294,7 @@ extension ResettableLazy {
   @inlinable
   func traceDeinit() {
     #if DEBUG
-    let isLoaded = future.isFulfilled
+    let isLoaded = hasLoadedValue
     if _ResettableLazyTraceLoggingEnabled {
       logDebug("ResettableLazy: Deinit. isLoaded=\(isLoaded) wasRead=\(_wasRead) T=<\(T.self)>")
     }
@@ -301,6 +308,16 @@ extension ResettableLazy {
   }
 
   #if DEBUG
+  @inlinable
+  var hasLoadedValue: Bool {
+    switch state {
+    case .created, .loading:
+      false
+    case .loaded:
+      true
+    }
+  }
+
   @usableFromInline
   func logDebug(_ string: String) {
     #if canImport(OSLog)
