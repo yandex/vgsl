@@ -6,6 +6,7 @@ import Foundation
 import VGSLFundamentals
 
 #if os(iOS) || os(tvOS)
+import ImageIO
 import UIKit
 
 extension Image {
@@ -59,6 +60,47 @@ func imageOrientationTransform(
 #endif
 
 extension UIImage.Orientation {
+  var inverse: Self {
+    switch self {
+    case .left: .right
+    case .right: .left
+    default: self
+    }
+  }
+
+  func orientedInsets(_ insets: UIEdgeInsets) -> UIEdgeInsets {
+    let top = insets.top
+    let left = insets.left
+    let bottom = insets.bottom
+    let right = insets.right
+    let edges: (top: CGFloat, left: CGFloat, bottom: CGFloat, right: CGFloat) = switch self {
+    case .up: (top, left, bottom, right)
+    case .upMirrored: (top, right, bottom, left)
+    case .down: (bottom, right, top, left)
+    case .downMirrored: (bottom, left, top, right)
+    case .left: (right, top, left, bottom)
+    case .leftMirrored: (left, top, right, bottom)
+    case .right: (left, bottom, right, top)
+    case .rightMirrored: (right, bottom, left, top)
+    @unknown default: (top, left, bottom, right)
+    }
+    return UIEdgeInsets(top: edges.top, left: edges.left, bottom: edges.bottom, right: edges.right)
+  }
+
+  var exifOrientation: CGImagePropertyOrientation {
+    switch self {
+    case .up: .up
+    case .upMirrored: .upMirrored
+    case .down: .down
+    case .downMirrored: .downMirrored
+    case .leftMirrored: .leftMirrored
+    case .right: .right
+    case .rightMirrored: .rightMirrored
+    case .left: .left
+    @unknown default: .up
+    }
+  }
+
   public var sizeDimensionsAreFlippedInCGImage: Bool {
     switch self {
     case .left, .leftMirrored, .right, .rightMirrored:

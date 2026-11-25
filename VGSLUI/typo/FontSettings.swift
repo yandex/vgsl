@@ -39,7 +39,7 @@ public struct FontSize: RawRepresentable, Sendable {
   }
 }
 
-public struct FontLineHeight: RawRepresentable, Sendable {
+public struct FontLineHeight: RawRepresentable, Equatable, Sendable {
   public static let unspecified = FontLineHeight(rawValue: 0) // not constrained
   public static let textXS = FontLineHeight(rawValue: 14)
   public static let caption = FontLineHeight(rawValue: 16)
